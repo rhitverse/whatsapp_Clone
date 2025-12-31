@@ -26,6 +26,20 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
     }
   }
 
+  Widget _navIcon(IconData icon, int index) {
+    final bool isSelected = _currentIndex == index;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 4),
+      decoration: BoxDecoration(
+        color: isSelected ? const Color(0xFF1F3D2B) : Colors.transparent,
+        borderRadius: BorderRadius.circular(40),
+      ),
+      child: Icon(icon, color: Colors.white, size: 24),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,23 +121,36 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
 
         type: BottomNavigationBarType.fixed,
         backgroundColor: backgroundColor,
+
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white,
 
+        selectedFontSize: 12,
+        unselectedFontSize: 12,
+
+        selectedLabelStyle: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
         items: [
-          const BottomNavigationBarItem(icon: Icon(Icons.chat), label: "Chats"),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.update),
+          BottomNavigationBarItem(
+            icon: _navIcon(Icons.chat, 0),
+            label: "Chats",
+          ),
+          BottomNavigationBarItem(
+            icon: _navIcon(Icons.update_outlined, 1),
             label: "Updates",
           ),
-
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.groups_3_outlined),
+          BottomNavigationBarItem(
+            icon: _navIcon(Icons.groups_3_outlined, 2),
             label: "Communities",
           ),
-
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.call_outlined),
+          BottomNavigationBarItem(
+            icon: _navIcon(Icons.call_outlined, 3),
             label: "Calls",
           ),
         ],
