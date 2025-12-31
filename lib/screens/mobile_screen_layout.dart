@@ -19,6 +19,8 @@ class MobileScreenLayout extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
+          centerTitle: false,
+          actions: [],
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(65),
             child: Padding(
@@ -32,7 +34,10 @@ class MobileScreenLayout extends StatelessWidget {
                 child: const TextField(
                   style: TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    prefixIcon: Icon(Icons.search, color: Colors.grey),
+                    prefixIcon: Padding(
+                      padding: EdgeInsets.only(left: 26, right: 6),
+                      child: Icon(Icons.search, color: Colors.grey),
+                    ),
                     hintText: 'Ask Meta AI or Search',
                     hintStyle: TextStyle(color: Colors.grey),
                     border: InputBorder.none,
