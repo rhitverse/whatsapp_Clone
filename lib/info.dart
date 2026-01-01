@@ -4,21 +4,21 @@ const info = [
     'message': 'Hey, how are you doing?',
     'time': '3:53 pm',
     'profilePic':
-        'https://upload.wikimedia.org/wikipedia/commons/8/85/Elon_Musk_Royal_Society_%28crop1%29.jpg',
+        'https://i.pinimg.com/1200x/d9/80/e1/d980e18ce118c695b09db7c16cc27f53.jpg',
   },
   {
     'name': 'Mike Wheeler',
     'message': 'Hello, whats up',
     'time': '2:25 pm',
     'profilePic':
-        'https://www.socialketchup.in/wp-content/uploads/2020/05/fi-vill-JOHN-DOE.jpg',
+        'https://i.pinimg.com/736x/2d/45/9a/2d459a724434fd05c0a0a0914ef97429.jpg',
   },
   {
-    'name': 'Nancy Wheeler',
-    'message': 'Hello, I want to sleep.',
+    'name': 'Neeraj Baby',
+    'message': 'Hello, I want to sleep baby.',
     'time': '1:03 pm',
     'profilePic':
-        'https://media.cntraveler.com/photos/60596b398f4452dac88c59f8/16:9/w_3999,h_2249,c_limit/MtFuji-GettyImages-959111140.jpg',
+        'https://i.pinimg.com/1200x/28/c3/a0/28c3a018dff6da2a3edf10ff90730a9f.jpg',
   },
   {
     'name': 'Dad',
@@ -35,11 +35,11 @@ const info = [
         'https://uploads.dailydot.com/2018/10/olli-the-polite-cat.jpg?auto=compress%2Cformat&ixlib=php-3.3.0',
   },
   {
-    'name': 'Erica',
+    'name': 'Max',
     'message': 'Yo!!!!! Long time, no see!?',
     'time': '9:53 am',
     'profilePic':
-        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8cmFuZG9tJTIwcGVvcGxlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=900&q=60',
+        'https://i.pinimg.com/736x/15/2d/7a/152d7a28e309aed6f53a458be9a8ba74.jpg',
   },
   {
     'name': 'Albert Dera',
