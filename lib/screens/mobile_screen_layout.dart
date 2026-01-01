@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/widgets/contacts_list.dart';
+import 'package:whatsapp_clone/widgets/custom_bottom_nav_bar.dart';
 
 class MobileScreenLayout extends StatefulWidget {
   const MobileScreenLayout({super.key});
@@ -11,34 +13,18 @@ class MobileScreenLayout extends StatefulWidget {
 class _MobileScreenLayoutState extends State<MobileScreenLayout> {
   int _currentIndex = 0;
 
-  String _getPageText() {
-    switch (_currentIndex) {
-      case 0:
-        return "This is Chats";
-      case 1:
-        return "This is Updates";
-      case 2:
-        return "This is Communities";
-      case 3:
-        return "This is Calls";
-      default:
-        return "";
-    }
-  }
-
-  Widget _navIcon(IconData icon, int index) {
-    final bool isSelected = _currentIndex == index;
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 4),
-      decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFF1F3D2B) : Colors.transparent,
-        borderRadius: BorderRadius.circular(40),
-      ),
-      child: Icon(icon, color: Colors.white, size: 24),
-    );
-  }
+  final List<Widget> _pages = [
+    const ContactsList(),
+    const Center(
+      child: Text("Updates", style: TextStyle(color: Colors.white)),
+    ),
+    const Center(
+      child: Text("Communities", style: TextStyle(color: Colors.white)),
+    ),
+    const Center(
+      child: Text("Calls", style: TextStyle(color: Colors.white)),
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -99,61 +85,14 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
           ),
         ),
       ),
-
-      body: Center(
-        child: Text(
-          _getPageText(),
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-
-      bottomNavigationBar: BottomNavigationBar(
+      body: _pages[_currentIndex],
+      bottomNavigationBar: CustomBottomNavBar(
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: backgroundColor,
-
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white,
-
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-
-        selectedLabelStyle: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
-        unselectedLabelStyle: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
-        items: [
-          BottomNavigationBarItem(
-            icon: _navIcon(Icons.chat, 0),
-            label: "Chats",
-          ),
-          BottomNavigationBarItem(
-            icon: _navIcon(Icons.update_outlined, 1),
-            label: "Updates",
-          ),
-          BottomNavigationBarItem(
-            icon: _navIcon(Icons.groups_3_outlined, 2),
-            label: "Communities",
-          ),
-          BottomNavigationBarItem(
-            icon: _navIcon(Icons.call_outlined, 3),
-            label: "Calls",
-          ),
-        ],
       ),
     );
   }
