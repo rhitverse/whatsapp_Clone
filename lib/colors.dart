@@ -13,3 +13,4 @@ const searchBarColor = Color(0xff23282c);
 const dividerColor = Color.fromRGBO(37, 45, 50, 1);
 const chatBarMessage = Color.fromRGBO(30, 36, 40, 1);
 const mobileChatBoxColor = Color.fromRGBO(31, 44, 52, 1);
+const leftBarColor = Color(0xFF111B21);

@@ -4,21 +4,21 @@ const info = [
     'message': 'Hey, how are you doing?',
     'time': '3:53 pm',
     'profilePic':
-        'https://i.pinimg.com/1200x/d9/80/e1/d980e18ce118c695b09db7c16cc27f53.jpg',
+        'https://upload.wikimedia.org/wikipedia/en/8/8b/ST3_Steve_Harrington_portrait.jpg?20191213000350',
   },
   {
     'name': 'Mike Wheeler',
     'message': 'Hello, whats up',
     'time': '2:25 pm',
     'profilePic':
-        'https://i.pinimg.com/736x/2d/45/9a/2d459a724434fd05c0a0a0914ef97429.jpg',
+        'https://upload.wikimedia.org/wikipedia/en/thumb/9/91/Mike_Wheeler.png/250px-Mike_Wheeler.png',
   },
   {
     'name': 'Neeraj Baby',
     'message': 'Hello, I want to sleep baby.',
     'time': '1:03 pm',
     'profilePic':
-        'https://i.pinimg.com/1200x/28/c3/a0/28c3a018dff6da2a3edf10ff90730a9f.jpg',
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Mia_Khalifa_in_2019.png/250px-Mia_Khalifa_in_2019.png',
   },
   {
     'name': 'Dad',
@@ -39,7 +39,7 @@ const info = [
     'message': 'Yo!!!!! Long time, no see!?',
     'time': '9:53 am',
     'profilePic':
-        'https://i.pinimg.com/736x/15/2d/7a/152d7a28e309aed6f53a458be9a8ba74.jpg',
+        'https://upload.wikimedia.org/wikipedia/en/thumb/e/ec/Max_Season_5.png/250px-Max_Season_5.png',
   },
   {
     'name': 'Albert Dera',
