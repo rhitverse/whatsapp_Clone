@@ -28,7 +28,7 @@ class WebScreenLayout extends StatelessWidget {
                   padding: EdgeInsets.only(bottom: 16),
                   child: CircleAvatar(
                     radius: 18,
-                    backgroundImage: AssetImage('assets/profile.jpg'),
+                    backgroundImage: AssetImage('assets/backgroundImage.png'),
                   ),
                 ),
               ],
