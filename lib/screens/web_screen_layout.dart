@@ -20,7 +20,7 @@ class WebScreenLayout extends StatelessWidget {
                 SizedBox(height: 20),
                 Icon(Icons.chat, color: Colors.white),
                 SizedBox(height: 25),
-                Icon(Icons.circle_outlined, color: Colors.grey),
+                Icon(Icons.update_outlined, color: Colors.grey),
                 SizedBox(height: 25),
                 Icon(Icons.groups, color: Colors.grey),
                 Spacer(),
@@ -57,7 +57,13 @@ class WebScreenLayout extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      Icon(Icons.more_vert, color: Colors.white),
+                      Row(
+                        children: [
+                          Icon(Icons.chat, color: Colors.white),
+                          SizedBox(width: 25),
+                          Icon(Icons.more_vert, color: Colors.white),
+                        ],
+                      ),
                     ],
                   ),
                 ),
