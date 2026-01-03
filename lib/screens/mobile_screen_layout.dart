@@ -86,16 +86,52 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
           ),
         ),
       ),
+
       body: _pages[_currentIndex],
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: const Color(0xFF25D366),
-        elevation: 6,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: SvgPicture.asset('assets/svg/add.svg', width: 26, height: 26),
+      floatingActionButton: Stack(
+        alignment: Alignment.bottomRight,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 80, right: 4),
+            child: SizedBox(
+              width: 42,
+              height: 42,
+              child: FloatingActionButton(
+                heroTag: "meta_ai",
+                onPressed: () {},
+                backgroundColor: const Color.fromARGB(255, 37, 37, 37),
+                elevation: 6,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: SvgPicture.asset(
+                  'assets/svg/metaAi.svg',
+                  width: 27,
+                  height: 27,
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: FloatingActionButton(
+              heroTag: "chat",
+              onPressed: () {},
+              backgroundColor: const Color(0xFF00C357),
+              elevation: 6,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: SvgPicture.asset(
+                'assets/svg/add.svg',
+                width: 26,
+                height: 26,
+              ),
+            ),
+          ),
+        ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-
       bottomNavigationBar: CustomBottomNavBar(
         currentIndex: _currentIndex,
         onTap: (index) {

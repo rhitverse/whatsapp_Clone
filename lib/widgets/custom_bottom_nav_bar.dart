@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whatsapp_clone/colors.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
@@ -10,6 +11,24 @@ class CustomBottomNavBar extends StatelessWidget {
     required this.currentIndex,
     required this.onTap,
   });
+
+  Widget navSvgIcon(String assetPath, int index) {
+    final bool isSelected = currentIndex == index;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 6),
+      decoration: BoxDecoration(
+        color: isSelected ? const Color(0xFF1F3D2B) : Colors.transparent,
+        borderRadius: BorderRadius.circular(40),
+      ),
+      child: SvgPicture.asset(
+        assetPath,
+        width: 17,
+        height: 17,
+        colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+      ),
+    );
+  }
 
   Widget _navIcon(IconData icon, int index) {
     final bool isSelected = currentIndex == index;
@@ -45,9 +64,12 @@ class CustomBottomNavBar extends StatelessWidget {
         fontWeight: FontWeight.bold,
       ),
       items: [
-        BottomNavigationBarItem(icon: _navIcon(Icons.chat, 0), label: "Chats"),
         BottomNavigationBarItem(
-          icon: _navIcon(Icons.update_outlined, 1),
+          icon: navSvgIcon('assets/svg/chat.svg', 0),
+          label: "Chats",
+        ),
+        BottomNavigationBarItem(
+          icon: navSvgIcon('assets/svg/update.svg', 1),
           label: "Updates",
         ),
         BottomNavigationBarItem(
