@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/widgets/chat_filter_items.dart';
 import 'package:whatsapp_clone/widgets/contacts_list.dart';
 import 'package:whatsapp_clone/widgets/custom_bottom_nav_bar.dart';
 
@@ -29,6 +30,8 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: backgroundColor,
@@ -62,30 +65,39 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
         ],
 
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(65),
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Container(
-              height: 45,
-              decoration: BoxDecoration(
-                color: searchBarColor,
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: const TextField(
-                style: TextStyle(color: Colors.white),
-                cursorColor: Colors.green,
-                decoration: InputDecoration(
-                  prefixIcon: Padding(
-                    padding: EdgeInsets.only(left: 26, right: 6),
-                    child: Icon(Icons.search, color: Colors.grey),
+          preferredSize: const Size.fromHeight(115),
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.only(
+                  left: width * 0.02,
+                  right: width * 0.02,
+                  bottom: height * 0.03,
+                ),
+                child: Container(
+                  height: 45,
+                  decoration: BoxDecoration(
+                    color: searchBarColor,
+                    borderRadius: BorderRadius.circular(30),
                   ),
-                  hintText: 'Ask Meta AI or Search',
-                  hintStyle: TextStyle(color: Colors.grey),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(vertical: 11),
+                  child: const TextField(
+                    style: TextStyle(color: Colors.white),
+                    cursorColor: Colors.green,
+                    decoration: InputDecoration(
+                      prefixIcon: Padding(
+                        padding: EdgeInsets.only(left: 26, right: 6),
+                        child: Icon(Icons.search, color: Colors.grey),
+                      ),
+                      hintText: 'Ask Meta AI or Search',
+                      hintStyle: TextStyle(color: Colors.grey),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(vertical: 11),
+                    ),
+                  ),
                 ),
               ),
-            ),
+              const ChatFilterItems(),
+            ],
           ),
         ),
       ),
