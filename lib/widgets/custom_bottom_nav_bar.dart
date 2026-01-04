@@ -12,7 +12,12 @@ class CustomBottomNavBar extends StatelessWidget {
     required this.onTap,
   });
 
-  Widget navSvgIcon(String assetPath, int index) {
+  Widget navSvgIcon(
+    String assetPath,
+    int index, {
+    double width = 24,
+    double height = 24,
+  }) {
     final bool isSelected = currentIndex == index;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
@@ -23,14 +28,14 @@ class CustomBottomNavBar extends StatelessWidget {
       ),
       child: SvgPicture.asset(
         assetPath,
-        width: 17,
-        height: 17,
+        width: width,
+        height: height,
         colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
       ),
     );
   }
 
-  Widget _navIcon(IconData icon, int index) {
+  Widget _navIcon(IconData icon, int index, {double size = 24}) {
     final bool isSelected = currentIndex == index;
 
     return AnimatedContainer(
@@ -40,7 +45,7 @@ class CustomBottomNavBar extends StatelessWidget {
         color: isSelected ? const Color(0xFF1F3D2B) : Colors.transparent,
         borderRadius: BorderRadius.circular(40),
       ),
-      child: Icon(icon, color: Colors.white, size: 24),
+      child: Icon(icon, color: Colors.white, size: size),
     );
   }
 
@@ -65,11 +70,11 @@ class CustomBottomNavBar extends StatelessWidget {
       ),
       items: [
         BottomNavigationBarItem(
-          icon: navSvgIcon('assets/svg/chat.svg', 0),
+          icon: navSvgIcon('assets/svg/chat.svg', 0, width: 16, height: 16),
           label: "Chats",
         ),
         BottomNavigationBarItem(
-          icon: navSvgIcon('assets/svg/update.svg', 1),
+          icon: navSvgIcon('assets/svg/update3.svg', 1, width: 20, height: 20),
           label: "Updates",
         ),
         BottomNavigationBarItem(
