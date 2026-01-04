@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/widgets/contacts_list.dart';
 import 'package:whatsapp_clone/widgets/web_profile_bar.dart';
+import 'package:whatsapp_clone/widgets/web_search_bar.dart';
 
 class WebScreenLayout extends StatelessWidget {
   const WebScreenLayout({super.key});
@@ -46,27 +47,7 @@ class WebScreenLayout extends StatelessWidget {
                 const WebProfileBar(),
 
                 // Search bar
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Container(
-                    height: 40,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xff23282c),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      children: const [
-                        Icon(Icons.search, color: Colors.grey),
-                        SizedBox(width: 10),
-                        Text(
-                          "Ask Meta AI or Search",
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                const WebSearchBar(),
 
                 // Chat list
                 Expanded(child: ContactsList()),

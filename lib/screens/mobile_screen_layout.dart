@@ -32,6 +32,8 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: backgroundColor,
+        scrolledUnderElevation: 0,
+        elevation: 0,
         title: const Text(
           'WhatsApp',
           style: TextStyle(
@@ -71,6 +73,7 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
               ),
               child: const TextField(
                 style: TextStyle(color: Colors.white),
+                cursorColor: Colors.green,
                 decoration: InputDecoration(
                   prefixIcon: Padding(
                     padding: EdgeInsets.only(left: 26, right: 6),
