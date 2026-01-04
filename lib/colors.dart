@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-const backgroundColor = Color(0Xff0A1014);
+const backgroundColor = Color(0Xff000000);
 const textColor = Color.fromRGBO(241, 241, 242, 1);
 const appBarColor = Color.fromRGBO(31, 44, 52, 1);
 const webAppBarColor = Color.fromRGBO(42, 47, 50, 1);

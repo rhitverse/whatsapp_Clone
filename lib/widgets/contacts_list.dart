@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/info.dart';
 
 class ContactsList extends StatelessWidget {
@@ -53,7 +52,6 @@ class ContactsList extends StatelessWidget {
               },
             ),
           ),
-          const Divider(color: dividerColor, indent: 85),
         ],
       ),
     );

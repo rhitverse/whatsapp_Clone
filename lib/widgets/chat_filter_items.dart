@@ -46,8 +46,11 @@ class _ChatFilterItemsState extends State<ChatFilterItems> {
                 decoration: BoxDecoration(
                   color: isSelected
                       ? const Color(0xFF1F3D2B)
-                      : const Color(0xff23282c),
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(30),
+                  border: isSelected
+                      ? null
+                      : Border.all(color: const Color(0xff3a3f41), width: 0.9),
                 ),
                 child: Text(
                   filters[index],
