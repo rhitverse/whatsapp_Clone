@@ -42,8 +42,7 @@ class _ChatFilterItemsState extends State<ChatFilterItems> {
                   selectedIndex = index;
                 });
               },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
+              child: Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: horizontalPadding,
                   vertical: verticalPadding,
@@ -53,9 +52,13 @@ class _ChatFilterItemsState extends State<ChatFilterItems> {
                       ? const Color(0xFF1F3D2B)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(30),
-                  border: isSelected
-                      ? null
-                      : Border.all(color: const Color(0xff3a3f41), width: 0.9),
+
+                  border: Border.all(
+                    color: isSelected
+                        ? const Color.fromARGB(255, 1, 73, 33)
+                        : const Color(0xff3a3f41),
+                    width: 0.9,
+                  ),
                 ),
                 child: Text(
                   filters[index],

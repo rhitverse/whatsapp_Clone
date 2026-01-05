@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/widgets/chat_filter_items.dart';
 import 'package:whatsapp_clone/widgets/contacts_list.dart';
@@ -14,51 +15,86 @@ class WebScreenLayout extends StatelessWidget {
       backgroundColor: webBackgroundColor,
       body: Row(
         children: [
-          // ✅ LEFT ICON BAR
           Container(
             width: 70,
             color: const Color(0xFF1d1f1f),
             child: Column(
-              children: const [
+              children: [
                 SizedBox(height: 20),
-                Icon(Icons.chat, color: Colors.white),
+                SvgPicture.asset(
+                  'assets/svg/chat.svg',
+                  color: Colors.grey,
+                  height: 16,
+                  width: 16,
+                ),
                 SizedBox(height: 25),
-                Icon(Icons.update_outlined, color: Colors.grey),
-                SizedBox(height: 25),
-                Icon(Icons.groups, color: Colors.grey),
-                Spacer(),
+                SvgPicture.asset(
+                  'assets/svg/update.svg',
+                  color: Colors.grey,
+                  height: 20,
+                  width: 20,
+                ),
+                SizedBox(height: 22),
+                SvgPicture.asset(
+                  'assets/svg/tab.svg',
+                  color: Colors.grey,
+                  height: 23,
+                  width: 23,
+                ),
+                SizedBox(height: 16),
+                Icon(Icons.groups_rounded, color: Colors.grey, size: 30),
                 Padding(
-                  padding: EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.only(
+                    bottom: 10,
+                    top: 10,
+                    right: 14,
+                    left: 14,
+                  ),
+                  child: Divider(),
+                ),
+                SvgPicture.asset(
+                  'assets/svg/metaAi.svg',
+                  width: 20,
+                  height: 20,
+                ),
+                Spacer(),
+                SvgPicture.asset(
+                  'assets/svg/image.svg',
+                  color: Colors.grey,
+                  width: 24,
+                  height: 24,
+                ),
+                SizedBox(height: 10),
+                IconButton(
+                  onPressed: () {},
+                  icon: Icon(Icons.settings_outlined, color: Colors.grey),
+                ),
+                SizedBox(height: 10),
+                Padding(
+                  padding: EdgeInsets.only(bottom: 18),
                   child: CircleAvatar(
-                    radius: 18,
-                    backgroundImage: AssetImage('assets/backgroundImage.png'),
+                    radius: 14,
+                    backgroundImage: NetworkImage(
+                      'https://upload.wikimedia.org/wikipedia/commons/2/22/Joe_Keery_by_Gage_Skidmore.jpg',
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-
-          //CHAT LIST PANEL
           Container(
             width: 520,
             color: webBackgroundColor,
             child: Column(
               children: [
-                // Top bar
                 const WebProfileBar(),
-
-                // Search bar
                 const WebSearchBar(),
                 const ChatFilterItems(isWeb: true),
-
-                // Chat list
                 SizedBox(height: 17),
                 Expanded(child: ContactsList()),
               ],
             ),
           ),
-
-          // ✅ RIGHT CHAT / EMPTY SCREEN
           Expanded(
             child: Container(
               decoration: const BoxDecoration(
