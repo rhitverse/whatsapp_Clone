@@ -29,7 +29,10 @@ class WebProfileBar extends StatelessWidget {
               SvgPicture.asset('assets/svg/add2.svg', height: 26, width: 26),
 
               SizedBox(width: 25),
-              Icon(Icons.more_vert, color: Colors.white),
+              IconButton(
+                onPressed: () {},
+                icon: Icon(Icons.more_vert, color: Colors.white),
+              ),
             ],
           ),
         ],

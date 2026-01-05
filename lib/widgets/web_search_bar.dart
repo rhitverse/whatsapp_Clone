@@ -9,7 +9,7 @@ class WebSearchBar extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(left: 16, right: 16),
       child: Container(
-        height: MediaQuery.of(context).size.height * 0.048,
+        height: MediaQuery.of(context).size.height * 0.044,
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
@@ -19,7 +19,7 @@ class WebSearchBar extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Icon(Icons.search, color: Colors.grey),
+            const Icon(Icons.search, color: Colors.grey, size: 20),
             const SizedBox(width: 10),
             Expanded(
               child: TextField(

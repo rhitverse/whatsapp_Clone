@@ -42,7 +42,14 @@ class WebScreenLayout extends StatelessWidget {
                   width: 23,
                 ),
                 SizedBox(height: 16),
-                Icon(Icons.groups_rounded, color: Colors.grey, size: 30),
+                IconButton(
+                  onPressed: () {},
+                  icon: Icon(
+                    Icons.groups_rounded,
+                    color: Colors.grey,
+                    size: 30,
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.only(
                     bottom: 10,

@@ -56,7 +56,7 @@ const info = [
         'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8cmFuZG9tJTIwcGVvcGxlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=900&q=60',
   },
   {
-    'name': 'Sikandar',
+    'name': '+91 89878 897911',
     'message': 'Lets Code!',
     'time': '4:56 am',
     'profilePic':

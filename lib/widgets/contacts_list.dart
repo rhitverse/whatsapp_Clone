@@ -20,21 +20,26 @@ class ContactsList extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: ListTile(
-                      title: Text(
-                        info[index]['name'].toString(),
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
+                      title: Transform.translate(
+                        offset: const Offset(0, 2),
+                        child: Text(
+                          info[index]['name'].toString(),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                       subtitle: Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(
                           info[index]['message'].toString(),
-                          style: const TextStyle(fontSize: 15),
+                          style: const TextStyle(fontSize: 14),
                         ),
                       ),
                       leading: CircleAvatar(
+                        radius: 25,
                         backgroundImage: NetworkImage(
                           info[index]['profilePic'].toString(),
                         ),
