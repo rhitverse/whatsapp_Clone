@@ -26,15 +26,7 @@ class WebProfileBar extends StatelessWidget {
           const Spacer(),
           Row(
             children: [
-              SvgPicture.asset(
-                'assets/svg/add.svg',
-                height: 20,
-                width: 20,
-                colorFilter: const ColorFilter.mode(
-                  Colors.white,
-                  BlendMode.srcIn,
-                ),
-              ),
+              SvgPicture.asset('assets/svg/add2.svg', height: 26, width: 26),
 
               SizedBox(width: 25),
               Icon(Icons.more_vert, color: Colors.white),

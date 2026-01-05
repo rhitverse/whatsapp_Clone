@@ -38,7 +38,7 @@ class WebScreenLayout extends StatelessWidget {
             ),
           ),
 
-          // ✅ CHAT LIST PANEL
+          //CHAT LIST PANEL
           Container(
             width: 520,
             color: webBackgroundColor,
