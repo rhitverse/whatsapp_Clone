@@ -13,7 +13,7 @@ class WebSearchBar extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: searchBarColor,
+          color: websearchBarColor,
           borderRadius: BorderRadius.circular(30),
         ),
         child: Row(

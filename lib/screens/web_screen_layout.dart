@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/widgets/chat_filter_items.dart';
 import 'package:whatsapp_clone/widgets/contacts_list.dart';
 import 'package:whatsapp_clone/widgets/web_profile_bar.dart';
 import 'package:whatsapp_clone/widgets/web_search_bar.dart';
@@ -10,7 +11,7 @@ class WebScreenLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: webBackgroundColor,
       body: Row(
         children: [
           // ✅ LEFT ICON BAR
@@ -40,7 +41,7 @@ class WebScreenLayout extends StatelessWidget {
           // ✅ CHAT LIST PANEL
           Container(
             width: 520,
-            color: backgroundColor,
+            color: webBackgroundColor,
             child: Column(
               children: [
                 // Top bar
@@ -48,8 +49,10 @@ class WebScreenLayout extends StatelessWidget {
 
                 // Search bar
                 const WebSearchBar(),
+                const ChatFilterItems(isWeb: true),
 
                 // Chat list
+                SizedBox(height: 17),
                 Expanded(child: ContactsList()),
               ],
             ),

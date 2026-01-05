@@ -96,7 +96,7 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
                   ),
                 ),
               ),
-              const ChatFilterItems(),
+              const ChatFilterItems(isWeb: false),
             ],
           ),
         ),

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class ChatFilterItems extends StatefulWidget {
-  const ChatFilterItems({super.key});
+  final bool isWeb;
+  const ChatFilterItems({super.key, required this.isWeb});
 
   @override
   State<ChatFilterItems> createState() => _ChatFilterItemsState();
@@ -13,16 +14,20 @@ class _ChatFilterItemsState extends State<ChatFilterItems> {
   final List<String> filters = [
     "All",
     "Unread",
-    "Favorites",
+    "Favourites",
     "Groups",
     "Communities",
   ];
   @override
   Widget build(BuildContext context) {
+    final double chipHeight = widget.isWeb ? 32 : 32;
+    final double horizontalPadding = widget.isWeb ? 14 : 14;
+    final double verticalPadding = widget.isWeb ? 5 : 6;
+    final double fontsize = widget.isWeb ? 14 : 13;
     return Transform.translate(
-      offset: const Offset(0, -4),
+      offset: Offset(0, widget.isWeb ? 11 : -4),
       child: SizedBox(
-        height: 32,
+        height: chipHeight,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -39,9 +44,9 @@ class _ChatFilterItemsState extends State<ChatFilterItems> {
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 6,
+                padding: EdgeInsets.symmetric(
+                  horizontal: horizontalPadding,
+                  vertical: verticalPadding,
                 ),
                 decoration: BoxDecoration(
                   color: isSelected
@@ -58,7 +63,7 @@ class _ChatFilterItemsState extends State<ChatFilterItems> {
                     color: isSelected
                         ? Color.fromARGB(255, 129, 230, 174)
                         : Colors.grey,
-                    fontSize: 13,
+                    fontSize: fontsize,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
