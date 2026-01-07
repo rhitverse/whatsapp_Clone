@@ -22,12 +22,12 @@ class SenderMessageCard extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: senderMessageColor,
-            borderRadius: BorderRadius.circular(7),
+            borderRadius: BorderRadius.circular(9),
           ),
           child: Stack(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(10, 6, 55, 18),
+                padding: const EdgeInsets.fromLTRB(14, 8, 62, 10),
                 child: Text(
                   message,
                   style: const TextStyle(
@@ -43,7 +43,7 @@ class SenderMessageCard extends StatelessWidget {
                 child: Text(
                   date,
                   style: const TextStyle(
-                    fontSize: 11,
+                    fontSize: 12,
                     color: Colors.grey,
                     fontWeight: FontWeight.normal,
                   ),

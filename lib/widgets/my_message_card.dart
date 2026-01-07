@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:whatsapp_clone/colors.dart';
 
 class MyMessageCard extends StatelessWidget {
@@ -10,41 +11,42 @@ class MyMessageCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Align(
       alignment: Alignment.centerRight,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width - 45,
-        ),
-        child: Card(
-          elevation: 1,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 62, vertical: 1),
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.78,
           ),
-          color: messageColor,
-          margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+          decoration: BoxDecoration(
+            color: messageColor,
+            borderRadius: BorderRadius.circular(9),
+          ),
           child: Stack(
             children: [
               Padding(
-                padding: const EdgeInsets.only(
-                  left: 10,
-                  right: 30,
-                  top: 5,
-                  bottom: 20,
+                padding: const EdgeInsets.fromLTRB(14, 8, 81, 10),
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.white,
+                    height: 1.25,
+                  ),
                 ),
-                child: Text(message, style: const TextStyle(fontSize: 16)),
               ),
               Positioned(
                 bottom: 4,
-                right: 10,
+                right: 6,
                 child: Row(
                   children: [
                     Text(
                       date,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Colors.white60,
-                      ),
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
-                    const Icon(Icons.done_all, size: 20, color: Colors.white60),
+                    SvgPicture.asset(
+                      'assets/svg/Check_mark.svg',
+                      color: Color(0xff02C0EB),
+                    ),
                   ],
                 ),
               ),

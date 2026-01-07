@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:whatsapp_clone/colors.dart';
 
 class WebProfileBar extends StatelessWidget {
@@ -24,16 +23,10 @@ class WebProfileBar extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          Row(
-            children: [
-              SvgPicture.asset('assets/svg/add2.svg', height: 26, width: 26),
-
-              SizedBox(width: 25),
-              IconButton(
-                onPressed: () {},
-                icon: Icon(Icons.more_vert, color: Colors.white),
-              ),
-            ],
+          SizedBox(width: 25),
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.more_vert, color: Colors.white),
           ),
         ],
       ),
