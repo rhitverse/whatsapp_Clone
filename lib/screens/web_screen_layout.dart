@@ -129,30 +129,67 @@ class _WebScreenLayoutState extends State<WebScreenLayout> {
                   WebChatAppbar(),
                   SizedBox(height: 26),
                   Expanded(child: ChatList()),
-                  Container(
-                    height: MediaQuery.of(context).size.height * 0.07,
-                    decoration: const BoxDecoration(
-                      border: Border(bottom: BorderSide(color: dividerColor)),
-                      color: chatBarMessage,
-                    ),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          onPressed: () {},
-                          icon: const Icon(
-                            Icons.add,
-                            color: Colors.white,
-                            size: 24,
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Container(
+                      height: MediaQuery.of(context).size.height * 0.062,
+                      width: MediaQuery.of(context).size.width * 0.68,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: chatBarMessage,
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: () {},
+                            icon: const Icon(
+                              Icons.add,
+                              color: Colors.white,
+                              size: 24,
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 12),
-                        SvgPicture.asset(
-                          'assets/svg/Sticker.svg',
-                          color: Colors.white,
-                          width: 26,
-                          height: 26,
-                        ),
-                      ],
+                          SizedBox(width: 12),
+                          SvgPicture.asset(
+                            'assets/svg/Sticker.svg',
+                            color: Colors.white,
+                            width: 26,
+                            height: 26,
+                          ),
+
+                          Expanded(
+                            child: TextField(
+                              cursorColor: Colors.green,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.white,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: 'Type a message',
+                                hintStyle: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  borderSide: const BorderSide(
+                                    width: 0,
+                                    style: BorderStyle.none,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () {},
+                            icon: Icon(
+                              Icons.mic_none_outlined,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

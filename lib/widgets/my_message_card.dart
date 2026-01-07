@@ -29,7 +29,7 @@ class MyMessageCard extends StatelessWidget {
                   message,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: Colors.white,
+                    color: Color(0xffF7F8FA),
                     height: 1.25,
                   ),
                 ),
