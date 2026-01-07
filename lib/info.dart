@@ -21,7 +21,7 @@ const info = [
         'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Mia_Khalifa_in_2019.png/250px-Mia_Khalifa_in_2019.png',
   },
   {
-    'name': 'Dad',
+    'name': 'Daddy',
     'message': 'Call me, have some work',
     'time': '12:06 pm',
     'profilePic':

@@ -20,21 +20,14 @@ class SenderMessageCard extends StatelessWidget {
           constraints: BoxConstraints(
             maxWidth: MediaQuery.of(context).size.width * 0.78,
           ),
-          padding: const EdgeInsets.fromLTRB(10, 6, 8, 6),
           decoration: BoxDecoration(
             color: senderMessageColor,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(6),
-              topRight: Radius.circular(6),
-              bottomLeft: Radius.circular(6),
-              bottomRight: Radius.circular(6),
-            ),
+            borderRadius: BorderRadius.circular(7),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisSize: MainAxisSize.min,
+          child: Stack(
             children: [
-              Flexible(
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 6, 55, 18),
                 child: Text(
                   message,
                   style: const TextStyle(
@@ -44,12 +37,16 @@ class SenderMessageCard extends StatelessWidget {
                   ),
                 ),
               ),
-              Text(
-                date,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                  fontWeight: FontWeight.normal,
+              Positioned(
+                bottom: 4,
+                right: 6,
+                child: Text(
+                  date,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.normal,
+                  ),
                 ),
               ),
             ],
