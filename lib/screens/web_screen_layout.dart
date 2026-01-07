@@ -127,7 +127,34 @@ class _WebScreenLayoutState extends State<WebScreenLayout> {
               child: Column(
                 children: [
                   WebChatAppbar(),
+                  SizedBox(height: 26),
                   Expanded(child: ChatList()),
+                  Container(
+                    height: MediaQuery.of(context).size.height * 0.07,
+                    decoration: const BoxDecoration(
+                      border: Border(bottom: BorderSide(color: dividerColor)),
+                      color: chatBarMessage,
+                    ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {},
+                          icon: const Icon(
+                            Icons.add,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        SvgPicture.asset(
+                          'assets/svg/Sticker.svg',
+                          color: Colors.white,
+                          width: 26,
+                          height: 26,
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
