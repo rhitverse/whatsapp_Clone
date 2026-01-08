@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:whatsapp_clone/colors.dart';
@@ -9,13 +10,14 @@ class MyMessageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isWeb = kIsWeb;
     return Align(
       alignment: Alignment.centerRight,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 62, vertical: 1),
+        padding: EdgeInsets.symmetric(horizontal: isWeb ? 62 : 10, vertical: 1),
         child: Container(
           constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.78,
+            maxWidth: MediaQuery.of(context).size.width * (isWeb ? 0.78 : 0.85),
           ),
           decoration: BoxDecoration(
             color: messageColor,
@@ -24,7 +26,7 @@ class MyMessageCard extends StatelessWidget {
           child: Stack(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(14, 8, 81, 10),
+                padding: EdgeInsets.fromLTRB(14, 8, isWeb ? 81 : 81, 10),
                 child: Text(
                   message,
                   style: const TextStyle(

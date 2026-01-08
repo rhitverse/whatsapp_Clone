@@ -25,8 +25,28 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: appBarColor,
-        title: Text(info[0]['name'].toString()),
+        backgroundColor: backgroundColor,
+        scrolledUnderElevation: 0,
+        titleSpacing: 0,
+        elevation: 0,
+        title: Row(
+          children: [
+            CircleAvatar(
+              radius: 18,
+              backgroundImage: NetworkImage(
+                "https://upload.wikimedia.org/wikipedia/en/8/8b/ST3_Steve_Harrington_portrait.jpg?20191213000350",
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                info[0]['name'].toString(),
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 18, color: Colors.white),
+              ),
+            ),
+          ],
+        ),
         centerTitle: false,
         actions: [
           SvgPicture.asset(
@@ -35,7 +55,7 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
             width: 25,
             height: 25,
           ),
-          SizedBox(width: 18),
+          SizedBox(width: 10),
           IconButton(
             onPressed: () {},
             icon: Icon(Icons.call_outlined, color: Colors.white),
@@ -48,7 +68,18 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
       ),
       body: Column(
         children: [
-          Expanded(child: ChatList()),
+          Expanded(
+            child: Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/backgroundImage.png'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: ChatList(),
+            ),
+          ),
+
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Row(
