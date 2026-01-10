@@ -16,3 +16,4 @@ const dividerColor = Color.fromRGBO(37, 45, 50, 1);
 const chatBarMessage = Color(0xff242626);
 const mobileChatBoxColor = Color(0xff1f272a);
 const leftBarColor = Color(0xFF111B21);
+const whiteColor = Colors.white;

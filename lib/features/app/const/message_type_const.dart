@@ -1,14 +1,9 @@
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:whatsapp_clone/colors.dart';
-
-void toast(String message) {
-  Fluttertoast.showToast(
-    msg: message,
-    toastLength: Toast.LENGTH_SHORT,
-    gravity: ToastGravity.BOTTOM,
-    timeInSecForIosWeb: 2,
-    backgroundColor: backgroundColor,
-    textColor: whiteColor,
-    fontSize: 16.0,
-  );
+class MessageTypeConst {
+  static const String textMessage = "textMessage";
+  static const String fileMessage = "fileMessage";
+  static const String emojiMessage = "emojiMessage";
+  static const String photoMessage = "photoMessage";
+  static const String audioMessage = "audioMessage";
+  static const String videoMessage = "videoMessage";
+  static const String gifMessage = "gifMessage";
 }
