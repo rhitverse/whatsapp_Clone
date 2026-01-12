@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/screens/user/login_screen.dart';
+import 'package:whatsapp_clone/screens/user/registe_screen.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
@@ -56,7 +57,14 @@ class WelcomePage extends StatelessWidget {
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const RegisteScreen(),
+                        ),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
