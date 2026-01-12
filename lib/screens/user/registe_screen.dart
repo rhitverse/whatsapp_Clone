@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:country_codes/country_codes.dart';
 import 'package:whatsapp_clone/colors.dart';
-import 'package:whatsapp_clone/widgets/helpful_widgets/country_select_screen.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/input_field.dart';
 
 class RegisteScreen extends StatefulWidget {
@@ -43,14 +42,42 @@ class _RegisteScreenState extends State<RegisteScreen> {
     });
   }
 
-  Future<void> _openCountryPicker() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const CountrySelectScreen()),
+  void _openCountryPicker() {
+    showCountryPicker(
+      context: context,
+      showPhoneCode: true,
+      showSearch: true,
+      useSafeArea: true,
+
+      countryListTheme: CountryListThemeData(
+        backgroundColor: const Color(0xff040406),
+
+        textStyle: const TextStyle(color: Colors.white),
+        searchTextStyle: const TextStyle(color: Colors.white),
+
+        inputDecoration: InputDecoration(
+          hintText: 'Search country',
+          hintStyle: const TextStyle(color: Colors.white54),
+
+          prefixIcon: const Icon(Icons.search, color: Colors.white54, size: 18),
+
+          isDense: true,
+          filled: true,
+          fillColor: searchBarColor,
+
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(25),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+
+      onSelect: (Country country) {
+        setState(() {
+          selectedCountry = country;
+        });
+      },
     );
-    if (result != null && result is Country) {
-      setState(() => selectedCountry = result);
-    }
   }
 
   @override
@@ -201,6 +228,7 @@ class _RegisteScreenState extends State<RegisteScreen> {
                             controller: phoneController,
                             keyboardType: TextInputType.phone,
                             style: const TextStyle(color: Colors.white),
+                            cursorColor: Colors.green,
                             decoration: const InputDecoration(
                               hintText: "Phone Number",
                               hintStyle: TextStyle(color: Colors.white54),
