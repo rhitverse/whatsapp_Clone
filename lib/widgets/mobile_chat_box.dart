@@ -78,7 +78,7 @@ class _MobileChatBoxState extends State<MobileChatBox> {
         ),
         CircleAvatar(
           radius: 23,
-          backgroundColor: const Color(0xFF00C357),
+          backgroundColor: uiColor,
           child: IconButton(
             icon: Icon(
               isTyping ? Icons.send : Icons.mic,

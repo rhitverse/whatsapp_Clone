@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/screens/user/login_screen.dart';
 import 'package:whatsapp_clone/screens/user/registe_screen.dart';
 
@@ -93,7 +94,7 @@ class WelcomePage extends StatelessWidget {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00C357),
+                      backgroundColor: uiColor,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),

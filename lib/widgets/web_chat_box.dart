@@ -71,7 +71,7 @@ class _WebChatBoxState extends State<WebChatBox> {
           isTyping
               ? CircleAvatar(
                   radius: 20,
-                  backgroundColor: const Color(0xFF00C357),
+                  backgroundColor: uiColor,
                   child: IconButton(
                     icon: const Icon(
                       Icons.send_rounded,
@@ -95,9 +95,7 @@ class _WebChatBoxState extends State<WebChatBox> {
                     width: 46,
                     height: 46,
                     decoration: BoxDecoration(
-                      color: _isMicHover
-                          ? const Color(0xFF00C357)
-                          : Colors.transparent,
+                      color: _isMicHover ? uiColor : Colors.transparent,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(

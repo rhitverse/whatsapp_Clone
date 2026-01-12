@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/screens/user/registe_screen.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/input_field.dart';
 
@@ -9,6 +10,7 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -84,7 +86,7 @@ class LoginScreen extends StatelessWidget {
                           child: ElevatedButton(
                             onPressed: () {},
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF00C357),
+                              backgroundColor: uiColor,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               ),
@@ -114,7 +116,7 @@ class LoginScreen extends StatelessWidget {
                       const TextSpan(text: "Don't have an account?"),
                       TextSpan(
                         text: " Sign Up",
-                        style: const TextStyle(color: Color(0xff00c357)),
+                        style: const TextStyle(color: uiColor),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
                             Navigator.push(

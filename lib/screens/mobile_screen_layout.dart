@@ -132,7 +132,7 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
             child: FloatingActionButton(
               heroTag: "chat",
               onPressed: () {},
-              backgroundColor: const Color(0xFF00C357),
+              backgroundColor: uiColor,
               elevation: 6,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),

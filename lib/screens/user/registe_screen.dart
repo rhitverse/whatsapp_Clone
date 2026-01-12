@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:whatsapp_clone/widgets/helpful_widgets/toggle_button_item.dart';
+import 'package:country_picker/country_picker.dart';
+import 'package:country_codes/country_codes.dart';
+import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/widgets/helpful_widgets/country_select_screen.dart';
+import 'package:whatsapp_clone/widgets/helpful_widgets/input_field.dart';
 
 class RegisteScreen extends StatefulWidget {
   const RegisteScreen({super.key});
@@ -9,7 +13,45 @@ class RegisteScreen extends StatefulWidget {
 }
 
 class _RegisteScreenState extends State<RegisteScreen> {
+  Country? selectedCountry;
   bool isEmailisSelected = true;
+  final TextEditingController phoneController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    detectCountry();
+  }
+
+  Future<void> detectCountry() async {
+    await CountryCodes.init();
+    final details = CountryCodes.detailsForLocale();
+
+    setState(() {
+      selectedCountry = Country(
+        phoneCode: details.dialCode!.replaceAll('+', ''),
+        countryCode: details.alpha2Code!,
+        e164Sc: 0,
+        geographic: true,
+        level: 1,
+        name: details.name ?? '',
+        example: '',
+        displayName: details.name ?? '',
+        displayNameNoCountryCode: details.name ?? '',
+        e164Key: '',
+      );
+    });
+  }
+
+  Future<void> _openCountryPicker() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CountrySelectScreen()),
+    );
+    if (result != null && result is Country) {
+      setState(() => selectedCountry = result);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,33 +86,165 @@ class _RegisteScreenState extends State<RegisteScreen> {
 
                 Container(
                   height: 52,
+                  padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
-                    color: Color(0xff1e2023),
-                    borderRadius: BorderRadius.circular(25),
+                    color: const Color(0xff1e2023),
+                    borderRadius: BorderRadius.circular(30),
                   ),
                   child: Row(
                     children: [
-                      ToggleButtonItem(
-                        text: "Phone",
-                        selected: !isEmailisSelected,
-                        onTap: () {
-                          setState(() {
-                            isEmailisSelected = false;
-                          });
-                        },
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              isEmailisSelected = false;
+                            });
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            decoration: BoxDecoration(
+                              color: !isEmailisSelected
+                                  ? const Color(0xff2b2d31)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              "Phone",
+                              style: TextStyle(
+                                color: !isEmailisSelected
+                                    ? Colors.white
+                                    : Colors.white54,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                      ToggleButtonItem(
-                        text: "Email",
-                        selected: isEmailisSelected,
-                        onTap: () {
-                          setState(() {
-                            isEmailisSelected = true;
-                          });
-                        },
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              isEmailisSelected = true;
+                            });
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            decoration: BoxDecoration(
+                              color: isEmailisSelected
+                                  ? const Color(0xff2b2d31)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              "Email",
+                              style: TextStyle(
+                                color: isEmailisSelected
+                                    ? Colors.white
+                                    : Colors.white54,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(height: 24),
+
+                if (isEmailisSelected) ...[
+                  const Text(
+                    "Email",
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                  const SizedBox(height: 8),
+                  const InputField(hint: "Email"),
+                ] else ...[
+                  const Text(
+                    "Phone Number",
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: const Color(0xff1e2023),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        InkWell(
+                          onTap: _openCountryPicker,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Row(
+                              children: [
+                                Text(
+                                  selectedCountry == null
+                                      ? "..."
+                                      : "${selectedCountry!.countryCode} +${selectedCountry!.phoneCode}",
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                                const Icon(
+                                  Icons.arrow_drop_down,
+                                  color: Colors.white,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const VerticalDivider(color: Colors.white24),
+                        Expanded(
+                          child: TextField(
+                            controller: phoneController,
+                            keyboardType: TextInputType.phone,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: const InputDecoration(
+                              hintText: "Phone Number",
+                              hintStyle: TextStyle(color: Colors.white54),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                const Spacer(),
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (!isEmailisSelected) {
+                        debugPrint(
+                          "+${selectedCountry?.phoneCode}${phoneController.text}",
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: uiColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    child: const Text(
+                      "Next",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
               ],
             ),
           ),
