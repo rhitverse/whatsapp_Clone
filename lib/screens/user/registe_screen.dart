@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:country_codes/country_codes.dart';
+import 'package:flutter/services.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/screens/user/display_name.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/input_field.dart';
 
 class RegisteScreen extends StatefulWidget {
@@ -54,13 +56,11 @@ class _RegisteScreenState extends State<RegisteScreen> {
 
         textStyle: const TextStyle(color: Colors.white),
         searchTextStyle: const TextStyle(color: Colors.white),
-
         inputDecoration: InputDecoration(
           hintText: 'Search country',
           hintStyle: const TextStyle(color: Colors.white54),
 
           prefixIcon: const Icon(Icons.search, color: Colors.white54, size: 18),
-
           isDense: true,
           filled: true,
           fillColor: searchBarColor,
@@ -112,7 +112,7 @@ class _RegisteScreenState extends State<RegisteScreen> {
                 const SizedBox(height: 30),
 
                 Container(
-                  height: 52,
+                  height: 46,
                   padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
                     color: const Color(0xff1e2023),
@@ -161,6 +161,7 @@ class _RegisteScreenState extends State<RegisteScreen> {
                               color: isEmailisSelected
                                   ? const Color(0xff2b2d31)
                                   : Colors.transparent,
+
                               borderRadius: BorderRadius.circular(20),
                             ),
                             alignment: Alignment.center,
@@ -195,7 +196,7 @@ class _RegisteScreenState extends State<RegisteScreen> {
                   ),
                   const SizedBox(height: 8),
                   Container(
-                    height: 52,
+                    height: 55,
                     decoration: BoxDecoration(
                       color: const Color(0xff1e2023),
                       borderRadius: BorderRadius.circular(12),
@@ -226,7 +227,10 @@ class _RegisteScreenState extends State<RegisteScreen> {
                         Expanded(
                           child: TextField(
                             controller: phoneController,
-                            keyboardType: TextInputType.phone,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
                             style: const TextStyle(color: Colors.white),
                             cursorColor: Colors.green,
                             decoration: const InputDecoration(
@@ -243,7 +247,7 @@ class _RegisteScreenState extends State<RegisteScreen> {
                     ),
                   ),
                 ],
-                const Spacer(),
+                const SizedBox(height: 32),
                 SizedBox(
                   width: double.infinity,
                   height: 55,
@@ -254,6 +258,12 @@ class _RegisteScreenState extends State<RegisteScreen> {
                           "+${selectedCountry?.phoneCode}${phoneController.text}",
                         );
                       }
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const DisplayName(),
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: uiColor,
