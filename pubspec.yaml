@@ -50,6 +50,7 @@ dev_dependencies:
   intl: ^0.20.2
   country_picker: ^2.0.27
   country_codes: ^3.3.0
+  flutter_holo_date_picker: ^2.0.0
   
 
 # For information on the generic Dart part of this file, see the

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/screens/user/aga_screen.dart';
 
 class UsernamePassword extends StatefulWidget {
   const UsernamePassword({super.key});
@@ -51,7 +52,7 @@ class _UsernamePasswordState extends State<UsernamePassword> {
   bool get isFormValid {
     return !isUsernameInvalid &&
         usernameController.text.isNotEmpty &&
-        passwordStrength == "Strong";
+        (passwordStrength == "Medium" || passwordStrength == "Strong");
   }
 
   Color get strengthColor {
@@ -251,7 +252,16 @@ class _UsernamePasswordState extends State<UsernamePassword> {
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton(
-                    onPressed: isFormValid ? () {} : null,
+                    onPressed: isFormValid
+                        ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AgaScreen(),
+                              ),
+                            );
+                          }
+                        : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: uiColor,
                       disabledBackgroundColor: uiColor.withOpacity(0.4),

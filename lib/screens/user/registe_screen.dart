@@ -3,6 +3,7 @@ import 'package:country_picker/country_picker.dart';
 import 'package:country_codes/country_codes.dart';
 import 'package:flutter/services.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/features/auth/otp_page.dart';
 import 'package:whatsapp_clone/screens/user/display_name.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/input_field.dart';
 
@@ -17,11 +18,34 @@ class _RegisteScreenState extends State<RegisteScreen> {
   Country? selectedCountry;
   bool isEmailisSelected = true;
   final TextEditingController phoneController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     detectCountry();
+
+    phoneController.addListener(() {
+      setState(() {});
+    });
+    emailController.addListener(() {
+      setState(() {});
+    });
+  }
+
+  bool get isNextEnabled {
+    if (isEmailisSelected) {
+      return emailController.text.isNotEmpty;
+    } else {
+      return phoneController.text.isNotEmpty;
+    }
+  }
+
+  @override
+  void dispose() {
+    phoneController.dispose();
+    emailController.dispose();
+    super.dispose();
   }
 
   Future<void> detectCountry() async {
@@ -183,12 +207,9 @@ class _RegisteScreenState extends State<RegisteScreen> {
                 const SizedBox(height: 24),
 
                 if (isEmailisSelected) ...[
-                  const Text(
-                    "Email",
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
+                  const Text("Email", style: TextStyle(color: Colors.white70)),
                   const SizedBox(height: 8),
-                  const InputField(hint: "Email"),
+                  InputField(hint: "Email", controller: emailController),
                 ] else ...[
                   const Text(
                     "Phone Number",
@@ -252,21 +273,31 @@ class _RegisteScreenState extends State<RegisteScreen> {
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton(
-                    onPressed: () {
-                      if (!isEmailisSelected) {
-                        debugPrint(
-                          "+${selectedCountry?.phoneCode}${phoneController.text}",
-                        );
-                      }
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const DisplayName(),
-                        ),
-                      );
-                    },
+                    onPressed: isNextEnabled
+                        ? () {
+                            if (isEmailisSelected) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const DisplayName(),
+                                ),
+                              );
+                            } else {
+                              final phone =
+                                  "+${selectedCountry?.phoneCode}${phoneController.text}";
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      OtpPage(phoneNumber: phone),
+                                ),
+                              );
+                            }
+                          }
+                        : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: uiColor,
+                      disabledBackgroundColor: uiColor.withOpacity(0.4),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
