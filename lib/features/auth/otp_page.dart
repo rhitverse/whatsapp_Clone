@@ -142,11 +142,8 @@ class _OtpPageState extends State<OtpPage> {
                 child: ElevatedButton(
                   onPressed: isOtpComplete
                       ? () {
-                          // Step 2: Combine OTP digits
                           String otp = controllers.map((c) => c.text).join();
                           debugPrint("OTP entered: $otp");
-
-                          // Step 3: Navigate to DisplayName page
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(

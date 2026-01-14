@@ -6,6 +6,7 @@ import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/features/auth/otp_page.dart';
 import 'package:whatsapp_clone/screens/user/display_name.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/input_field.dart';
+import 'package:whatsapp_clone/widgets/helpful_widgets/password.dart';
 
 class RegisteScreen extends StatefulWidget {
   const RegisteScreen({super.key});
@@ -17,6 +18,7 @@ class RegisteScreen extends StatefulWidget {
 class _RegisteScreenState extends State<RegisteScreen> {
   Country? selectedCountry;
   bool isEmailisSelected = true;
+  bool isPasswordValid = false;
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
 
@@ -35,7 +37,7 @@ class _RegisteScreenState extends State<RegisteScreen> {
 
   bool get isNextEnabled {
     if (isEmailisSelected) {
-      return emailController.text.isNotEmpty;
+      return emailController.text.isNotEmpty && isPasswordValid;
     } else {
       return phoneController.text.isNotEmpty;
     }
@@ -136,69 +138,87 @@ class _RegisteScreenState extends State<RegisteScreen> {
                 const SizedBox(height: 30),
 
                 Container(
-                  height: 46,
-                  padding: const EdgeInsets.all(5),
+                  height: 44,
+                  padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
                     color: const Color(0xff1e2023),
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  child: Row(
+                  child: Stack(
                     children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              isEmailisSelected = false;
-                            });
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            decoration: BoxDecoration(
-                              color: !isEmailisSelected
-                                  ? const Color(0xff2b2d31)
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(25),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              "Phone",
-                              style: TextStyle(
-                                color: !isEmailisSelected
-                                    ? Colors.white
-                                    : Colors.white54,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                      AnimatedAlign(
+                        alignment: isEmailisSelected
+                            ? Alignment.centerRight
+                            : Alignment.bottomLeft,
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeOut,
+                        child: Container(
+                          width: (MediaQuery.of(context).size.width - 28) / 2,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: uiColor,
+                            borderRadius: BorderRadius.circular(25),
                           ),
                         ),
                       ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              isEmailisSelected = true;
-                            });
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            decoration: BoxDecoration(
-                              color: isEmailisSelected
-                                  ? const Color(0xff2b2d31)
-                                  : Colors.transparent,
-
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              "Email",
-                              style: TextStyle(
-                                color: isEmailisSelected
-                                    ? Colors.white
-                                    : Colors.white54,
-                                fontWeight: FontWeight.w600,
-                              ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(25),
+                              onTap: () {
+                                if (isEmailisSelected) {
+                                  setState(() {
+                                    isEmailisSelected = false;
+                                  });
+                                }
+                              },
                             ),
                           ),
+                          Expanded(
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(25),
+                              onTap: () {
+                                if (!isEmailisSelected) {
+                                  setState(() {
+                                    isEmailisSelected = true;
+                                  });
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      IgnorePointer(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Center(
+                                child: Text(
+                                  "Phone",
+                                  style: TextStyle(
+                                    color: !isEmailisSelected
+                                        ? Colors.white
+                                        : Colors.white54,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Center(
+                                child: Text(
+                                  "Email",
+                                  style: TextStyle(
+                                    color: isEmailisSelected
+                                        ? Colors.white
+                                        : Colors.white54,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -210,6 +230,15 @@ class _RegisteScreenState extends State<RegisteScreen> {
                   const Text("Email", style: TextStyle(color: Colors.white70)),
                   const SizedBox(height: 8),
                   InputField(hint: "Email", controller: emailController),
+
+                  const SizedBox(height: 12),
+                  Password(
+                    onChanged: (valid) {
+                      setState(() {
+                        isPasswordValid = valid;
+                      });
+                    },
+                  ),
                 ] else ...[
                   const Text(
                     "Phone Number",
@@ -268,10 +297,10 @@ class _RegisteScreenState extends State<RegisteScreen> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 32),
+                const Spacer(),
                 SizedBox(
                   width: double.infinity,
-                  height: 55,
+                  height: 52,
                   child: ElevatedButton(
                     onPressed: isNextEnabled
                         ? () {

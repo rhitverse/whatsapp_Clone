@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:whatsapp_clone/colors.dart';
-import 'package:whatsapp_clone/screens/user/username_Password.dart';
+import 'package:whatsapp_clone/screens/user/aga_screen.dart';
 
 class DisplayName extends StatefulWidget {
   const DisplayName({super.key});
@@ -47,7 +47,7 @@ class _DisplayNameState extends State<DisplayName> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const UsernamePassword(),
+                            builder: (context) => const AgaScreen(),
                           ),
                         );
                       },
@@ -136,7 +136,7 @@ class _DisplayNameState extends State<DisplayName> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const UsernamePassword(),
+                                builder: (context) => const AgaScreen(),
                               ),
                             );
                           },
