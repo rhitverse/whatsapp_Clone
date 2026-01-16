@@ -69,7 +69,7 @@ class _MobileChatBoxState extends State<MobileChatBox> {
                 onPressed: () {},
                 icon: Icon(Icons.attach_file_rounded),
               ),
-              /* AnimatedSwitcher(
+              AnimatedSwitcher(
                 duration: const Duration(milliseconds: 70),
                 transitionBuilder: (child, animation) {
                   return FadeTransition(
@@ -88,11 +88,11 @@ class _MobileChatBoxState extends State<MobileChatBox> {
                         onPressed: () {},
                         icon: Icon(Icons.camera_alt_outlined),
                       ),
-              ),*/
+              ),
             ],
           ),
         ),
-        /*CircleAvatar(
+        CircleAvatar(
           radius: 23,
           backgroundColor: uiColor,
           child: IconButton(
@@ -115,7 +115,7 @@ class _MobileChatBoxState extends State<MobileChatBox> {
               }
             },
           ),
-        ),*/
+        ),
       ],
     );
   }

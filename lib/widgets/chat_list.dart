@@ -9,6 +9,7 @@ class ChatList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 90, top: 8),
       itemCount: messages.length,
       itemBuilder: (context, index) {
         if (messages[index]['isMe'] == true) {

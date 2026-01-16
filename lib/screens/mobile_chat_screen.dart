@@ -72,7 +72,7 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
             child: Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/backgroundImage.png'),
+                  image: AssetImage("assets/whatsapp_bg_image.png"),
                   fit: BoxFit.cover,
                 ),
               ),
