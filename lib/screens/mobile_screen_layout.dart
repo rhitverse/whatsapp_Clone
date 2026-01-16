@@ -88,7 +88,7 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
                         padding: EdgeInsets.only(left: 26, right: 6),
                         child: Icon(Icons.search, color: Colors.grey),
                       ),
-                      hintText: 'Ask Meta AI or Search',
+                      hintText: 'Ask Gemini AI or Search',
                       hintStyle: TextStyle(color: Colors.grey),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(vertical: 11),
@@ -111,7 +111,7 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
             child: SizedBox(
               width: 42,
               height: 42,
-              child: FloatingActionButton(
+              /*child: FloatingActionButton(
                 heroTag: "meta_ai",
                 onPressed: () {},
                 backgroundColor: const Color.fromARGB(255, 37, 37, 37),
@@ -120,14 +120,14 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: SvgPicture.asset(
-                  'assets/svg/metaAi.svg',
-                  width: 27,
-                  height: 27,
+                  'assets/svg/gemini.svg',
+                  width: 16,
+                  height: 16,
                 ),
-              ),
+              ),*/
             ),
           ),
-          Padding(
+          /*Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: FloatingActionButton(
               heroTag: "chat",
@@ -143,7 +143,7 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
                 height: 26,
               ),
             ),
-          ),
+          ),*/
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,

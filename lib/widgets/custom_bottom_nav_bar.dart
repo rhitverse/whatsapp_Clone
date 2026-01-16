@@ -70,7 +70,7 @@ class CustomBottomNavBar extends StatelessWidget {
       ),
       items: [
         BottomNavigationBarItem(
-          icon: navSvgIcon('assets/svg/chat.svg', 0, width: 16, height: 16),
+          icon: navSvgIcon('assets/svg/chat2.svg', 0, width: 24, height: 24),
           label: "Chats",
         ),
         BottomNavigationBarItem(
@@ -79,7 +79,7 @@ class CustomBottomNavBar extends StatelessWidget {
         ),
         BottomNavigationBarItem(
           icon: _navIcon(Icons.groups_3_outlined, 2),
-          label: "Communities",
+          label: "Groups",
         ),
         BottomNavigationBarItem(
           icon: _navIcon(Icons.call_outlined, 3),

@@ -11,13 +11,7 @@ class ChatFilterItems extends StatefulWidget {
 class _ChatFilterItemsState extends State<ChatFilterItems> {
   int selectedIndex = 0;
 
-  final List<String> filters = [
-    "All",
-    "Unread",
-    "Favourites",
-    "Groups",
-    "Communities",
-  ];
+  final List<String> filters = ["All", "Unread", "Favourites", "Groups"];
   @override
   Widget build(BuildContext context) {
     final double chipHeight = widget.isWeb ? 32 : 32;
