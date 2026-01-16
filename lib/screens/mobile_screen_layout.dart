@@ -21,10 +21,13 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
       child: Text("Updates", style: TextStyle(color: Colors.white)),
     ),
     const Center(
-      child: Text("Communities", style: TextStyle(color: Colors.white)),
+      child: Text("Groups", style: TextStyle(color: Colors.white)),
     ),
     const Center(
       child: Text("Calls", style: TextStyle(color: Colors.white)),
+    ),
+    const Center(
+      child: Text("Setting", style: TextStyle(color: Colors.white)),
     ),
   ];
 
@@ -34,6 +37,7 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
     final height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: backgroundColor,
         scrolledUnderElevation: 0,
         elevation: 0,
@@ -47,56 +51,64 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
         ),
         centerTitle: false,
         actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.qr_code_scanner_outlined,
-              color: Colors.white,
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: IconButton(
+              onPressed: () {},
+              icon: const Icon(
+                Icons.camera_alt_outlined,
+                color: Colors.white,
+                size: 29,
+              ),
             ),
           ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.camera_alt_outlined, color: Colors.white),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: SvgPicture.asset("assets/svg/circular.svg"),
           ),
-          IconButton(
+
+          /* IconButton(
             onPressed: () {},
             icon: const Icon(Icons.more_vert, color: Colors.white),
-          ),
+          ),*/
         ],
 
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(115),
+          preferredSize: const Size.fromHeight(105),
           child: Column(
             children: [
               Padding(
                 padding: EdgeInsets.only(
-                  left: width * 0.02,
-                  right: width * 0.02,
+                  left: width * 0.03,
+                  right: width * 0.03,
                   bottom: height * 0.03,
                 ),
                 child: Container(
-                  height: 45,
+                  height: 42,
                   decoration: BoxDecoration(
                     color: searchBarColor,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const TextField(
+                  child: TextField(
                     style: TextStyle(color: Colors.white),
                     cursorColor: Colors.green,
                     decoration: InputDecoration(
                       prefixIcon: Padding(
-                        padding: EdgeInsets.only(left: 26, right: 6),
-                        child: Icon(Icons.search, color: Colors.grey),
+                        padding: EdgeInsets.only(left: 20, right: 6),
+                        child: SvgPicture.asset("assets/svg/search_icon.svg"),
                       ),
                       hintText: 'Ask Gemini AI or Search',
                       hintStyle: TextStyle(color: Colors.grey),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(vertical: 11),
+                      contentPadding: EdgeInsets.symmetric(vertical: 10),
                     ),
                   ),
                 ),
               ),
-              const ChatFilterItems(isWeb: false),
+              Transform.translate(
+                offset: const Offset(0, -6),
+                child: const ChatFilterItems(isWeb: false),
+              ),
             ],
           ),
         ),

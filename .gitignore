@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+/web_chat_appbar.dart
+/web_chat_box.dart
+/web_profile_bar.dart
+/web_search_bar.dart
+/web_screen_layout.dart
