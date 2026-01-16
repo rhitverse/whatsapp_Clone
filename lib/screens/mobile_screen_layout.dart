@@ -52,19 +52,31 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
         centerTitle: false,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.only(right: 4),
             child: IconButton(
               onPressed: () {},
               icon: const Icon(
                 Icons.camera_alt_outlined,
                 color: Colors.white,
-                size: 29,
+                size: 32,
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.only(right: 12),
-            child: SvgPicture.asset("assets/svg/circular.svg"),
+            child: GestureDetector(
+              onTap: () {
+                debugPrint("Circular icon tapped");
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: SvgPicture.asset(
+                  "assets/svg/circular.svg",
+                  width: 32,
+                  height: 32,
+                ),
+              ),
+            ),
           ),
 
           /* IconButton(

@@ -69,21 +69,43 @@ class _MobileChatBoxState extends State<MobileChatBox> {
                 onPressed: () {},
                 icon: Icon(Icons.attach_file_rounded),
               ),
-              IconButton(
-                onPressed: () {},
-                icon: Icon(Icons.camera_alt_outlined),
-              ),
+              /* AnimatedSwitcher(
+                duration: const Duration(milliseconds: 70),
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SizeTransition(
+                      sizeFactor: animation,
+                      axis: Axis.horizontal,
+                      child: child,
+                    ),
+                  );
+                },
+
+                child: isTyping
+                    ? const SizedBox.shrink()
+                    : IconButton(
+                        onPressed: () {},
+                        icon: Icon(Icons.camera_alt_outlined),
+                      ),
+              ),*/
             ],
           ),
         ),
-        CircleAvatar(
+        /*CircleAvatar(
           radius: 23,
           backgroundColor: uiColor,
           child: IconButton(
-            icon: Icon(
-              isTyping ? Icons.send : Icons.mic,
+            key: ValueKey(isTyping),
+            icon: SvgPicture.asset(
+              isTyping ? "assets/svg/forward.svg" : "assets/svg/mic2.svg",
               color: Colors.black,
-              size: 23,
+              width: 18,
+              height: 18,
+              colorFilter: const ColorFilter.mode(
+                Colors.black,
+                BlendMode.srcIn,
+              ),
             ),
             onPressed: () {
               if (isTyping) {
@@ -93,7 +115,7 @@ class _MobileChatBoxState extends State<MobileChatBox> {
               }
             },
           ),
-        ),
+        ),*/
       ],
     );
   }

@@ -13,6 +13,14 @@ class MobileChatScreen extends StatefulWidget {
 }
 
 class _MobileChatScreenState extends State<MobileChatScreen> {
+  final TextEditingController _chatController = TextEditingController();
+
+  @override
+  void dispose() {
+    _chatController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
