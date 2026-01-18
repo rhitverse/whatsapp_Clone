@@ -228,10 +228,10 @@ class _RegisteScreenState extends State<RegisteScreen> {
 
                 if (isEmailisSelected) ...[
                   const Text("Email", style: TextStyle(color: Colors.white70)),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   InputField(hint: "Email", controller: emailController),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   Password(
                     onChanged: (valid) {
                       setState(() {

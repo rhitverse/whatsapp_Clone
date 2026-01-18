@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/info.dart';
+import 'package:whatsapp_clone/screens/settings/calls/info_screen.dart';
 
 class CallsScreen extends StatelessWidget {
   const CallsScreen({super.key});
@@ -66,6 +67,7 @@ class CallsScreen extends StatelessWidget {
             ListTile(
               contentPadding: const EdgeInsets.only(left: 16, right: 6),
               leading: CircleAvatar(
+                radius: 25,
                 backgroundImage: NetworkImage(favUser['profilePic']!),
               ),
               title: Text(
@@ -122,7 +124,7 @@ class CallsScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final user = info[index];
                   final bool isMissed = index % 3 == 1;
-                  final bool isVideo = index % 3 == 0;
+                  // final bool isVideo = index % 3 == 0;
 
                   return ListTile(
                     contentPadding: const EdgeInsets.only(left: 16, right: 6),
@@ -166,9 +168,19 @@ class CallsScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        SvgPicture.asset(
-                          "assets/svg/info.svg",
-                          color: Colors.white,
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const InfoScreen(),
+                              ),
+                            );
+                          },
+                          child: SvgPicture.asset(
+                            "assets/svg/info.svg",
+                            color: Colors.white,
+                          ),
                         ),
                       ],
                     ),

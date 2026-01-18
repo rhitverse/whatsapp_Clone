@@ -190,7 +190,7 @@ class _PasswordState extends State<Password> {
                 SizedBox(width: 6),
                 Text(
                   "Wrong password, try again",
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+                  style: TextStyle(color: Colors.red, fontSize: 11),
                 ),
               ],
             ),
