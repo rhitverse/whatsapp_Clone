@@ -29,8 +29,8 @@ class WelcomePage extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Image.asset(
-                          "assets/whats_app_logo.png",
-                          height: 100,
+                          "assets/app.png",
+                          height: 90,
                           color: Colors.white,
                         ),
                         const SizedBox(height: 30),

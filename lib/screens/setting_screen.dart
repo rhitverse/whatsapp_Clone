@@ -1,6 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/screens/settings/account_screen.dart';
+import 'package:whatsapp_clone/screens/settings/avatar_screen.dart';
+import 'package:whatsapp_clone/screens/settings/chats_screen.dart';
+import 'package:whatsapp_clone/screens/settings/help_screen.dart';
+import 'package:whatsapp_clone/screens/settings/invite_screen.dart';
+import 'package:whatsapp_clone/screens/settings/linked_devices.dart';
+import 'package:whatsapp_clone/screens/settings/list_screen.dart';
+import 'package:whatsapp_clone/screens/settings/notifications_screen.dart';
+import 'package:whatsapp_clone/screens/settings/privacy_screen.dart';
+import 'package:whatsapp_clone/screens/settings/profile_screen.dart';
+import 'package:whatsapp_clone/screens/settings/starrted_message_screen.dart';
+import 'package:whatsapp_clone/screens/settings/storage_screen.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
@@ -11,67 +23,79 @@ class SettingScreen extends StatelessWidget {
       backgroundColor: backgroundColor,
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            automaticallyImplyLeading: false,
-            scrolledUnderElevation: 0,
-            titleSpacing: 0,
-            backgroundColor: backgroundColor,
-            pinned: true,
-            floating: false,
-            elevation: 0,
-            expandedHeight: 160,
-            title: const Text(
-              "Settings",
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            flexibleSpace: FlexibleSpaceBar(
-              collapseMode: CollapseMode.pin,
-              background: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 60, 16, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Settings",
-                        style: TextStyle(
-                          fontSize: 34,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        height: 38,
-                        decoration: BoxDecoration(
-                          color: searchBarColor,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: "Search",
-                            hintStyle: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 18,
-                            ),
+          SliverLayoutBuilder(
+            builder: (context, constraints) {
+              final scrolled = constraints.scrollOffset > 80;
 
-                            prefixIcon: Icon(
-                              Icons.search_rounded,
-                              color: Colors.grey,
-                              size: 25,
-                            ),
-                            border: InputBorder.none,
-                          ),
-                        ),
-                      ),
-                    ],
+              return SliverAppBar(
+                automaticallyImplyLeading: false,
+                scrolledUnderElevation: 0,
+                titleSpacing: 0,
+                backgroundColor: backgroundColor,
+                pinned: true,
+                floating: false,
+                elevation: 0,
+                expandedHeight: 160,
+                centerTitle: true,
+
+                title: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity: scrolled ? 1.0 : 0.0,
+                  child: const Text(
+                    "Settings",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
-            ),
+                flexibleSpace: FlexibleSpaceBar(
+                  collapseMode: CollapseMode.pin,
+                  background: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 60, 16, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Settings",
+                            style: TextStyle(
+                              fontSize: 34,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: searchBarColor,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: TextField(
+                              decoration: InputDecoration(
+                                hintText: "Search",
+                                hintStyle: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 18,
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.search_rounded,
+                                  color: Colors.grey,
+                                  size: 25,
+                                ),
+                                border: InputBorder.none,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
           SliverList(
             delegate: SliverChildListDelegate([
@@ -82,6 +106,10 @@ class SettingScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                   onTap: () {
                     print("Profile clicked");
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                    );
                   },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -131,60 +159,138 @@ class SettingScreen extends StatelessWidget {
                 SizedBox(height: 5),
                 Transform.translate(
                   offset: Offset(0, 6),
-                  child: _divider(indent: 1),
+                  child: _divider(indent: 0.1),
                 ),
                 _svgTile(
                   "assets/svg/avtar.svg",
                   "Avatar",
                   onTap: () {
                     print("Avtar clicked");
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const AvatarScreen()),
+                    );
                   },
                 ),
               ]),
               SizedBox(height: 18),
               _section([
-                _svgTile("assets/svg/list.svg", "List", onTap: () {}),
+                _svgTile(
+                  "assets/svg/list.svg",
+                  "List",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ListScreen()),
+                    );
+                  },
+                ),
                 _divider(indent: 50),
                 _svgTile(
                   "assets/svg/star.svg",
                   "Starred messages",
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const StarrtedMessageScreen(),
+                      ),
+                    );
+                  },
                 ),
                 _divider(indent: 50),
                 _svgTile(
                   "assets/svg/linked.svg",
                   "Linked devices",
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LinkedDevices()),
+                    );
+                  },
                 ),
               ]),
               SizedBox(height: 18),
               _section([
-                _svgTile("assets/svg/account.svg", "Account", onTap: () {}),
+                _svgTile(
+                  "assets/svg/account.svg",
+                  "Account",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const AccountScreen()),
+                    );
+                  },
+                ),
                 _divider(indent: 50),
-                _svgTile("assets/svg/privacy1.svg", "Privacy", onTap: () {}),
+                _svgTile(
+                  "assets/svg/privacy1.svg",
+                  "Privacy",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const PrivacyScreen()),
+                    );
+                  },
+                ),
                 _divider(indent: 50),
-                _svgTile("assets/svg/chat_icon.svg", "Chats", onTap: () {}),
+                _svgTile(
+                  "assets/svg/chat_icon.svg",
+                  "Chats",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ChatsScreen()),
+                    );
+                  },
+                ),
                 _divider(indent: 50),
                 _svgTile(
                   "assets/svg/notification.svg",
                   "Notifications",
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const NotificationsScreen(),
+                      ),
+                    );
+                  },
                 ),
                 _divider(indent: 50),
                 _svgTile(
                   "assets/svg/storage.svg",
                   "Storage and data",
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const StorageScreen()),
+                    );
+                  },
                 ),
               ]),
               SizedBox(height: 18),
               _section([
-                _svgTile("assets/svg/help.svg", "Help", onTap: () {}),
+                _svgTile(
+                  "assets/svg/help.svg",
+                  "Help",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const HelpScreen()),
+                    );
+                  },
+                ),
                 _divider(indent: 50),
                 _svgTile(
                   "assets/svg/invite.svg",
                   "Invite a friend",
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const InviteScreen()),
+                    );
+                  },
                 ),
               ]),
             ]),
@@ -200,7 +306,7 @@ class SettingScreen extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(14),
         child: Material(
-          color: searchBarColor,
+          color: container,
           child: Column(children: children),
         ),
       ),
@@ -235,7 +341,7 @@ class SettingScreen extends StatelessWidget {
   Widget _divider({
     double indent = 56,
     double endIndent = 0,
-    double thickness = 0.8,
+    double thickness = 1.0,
     Color color = backgroundColor,
   }) {
     return Divider(

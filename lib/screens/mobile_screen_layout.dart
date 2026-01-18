@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/screens/setting_screen.dart';
+import 'package:whatsapp_clone/screens/settings/calls/calls_screen.dart';
 import 'package:whatsapp_clone/widgets/chat_filter_items.dart';
 import 'package:whatsapp_clone/widgets/contacts_list.dart';
 import 'package:whatsapp_clone/widgets/custom_bottom_nav_bar.dart';
@@ -24,9 +25,7 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
     Center(
       child: Text("Groups", style: TextStyle(color: Colors.white)),
     ),
-    Center(
-      child: Text("Calls", style: TextStyle(color: Colors.white)),
-    ),
+    CallsScreen(),
     SettingScreen(),
   ];
 

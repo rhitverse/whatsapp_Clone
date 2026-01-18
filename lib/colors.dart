@@ -16,3 +16,4 @@ const mobileChatBoxColor = Color(0xff1f272a);
 const leftBarColor = Color(0xFF111B21);
 const whiteColor = Colors.white;
 const uiColor = Color(0xFF00C357);
+const container = Color(0xff1c1e24);

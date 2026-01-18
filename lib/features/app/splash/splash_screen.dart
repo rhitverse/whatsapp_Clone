@@ -29,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: uiColor,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -37,10 +37,10 @@ class _SplashScreenState extends State<SplashScreen> {
 
           // Center Logo
           Image.asset(
-            "assets/whats_app_logo.png",
+            "assets/app.png",
             color: Colors.white,
-            width: 100,
-            height: 100,
+            width: 130,
+            height: 130,
           ),
 
           // Bottom Meta Section

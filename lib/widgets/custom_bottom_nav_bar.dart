@@ -78,8 +78,8 @@ class CustomBottomNavBar extends StatelessWidget {
           label: "Updates",
         ),
         BottomNavigationBarItem(
-          icon: _navIcon(Icons.groups_3_outlined, 2, size: 28),
-          label: "Groups",
+          icon: navSvgIcon('assets/svg/meet.svg', 2, width: 26, height: 26),
+          label: "Meet",
         ),
         BottomNavigationBarItem(
           icon: _navIcon(Icons.call_outlined, 3),
