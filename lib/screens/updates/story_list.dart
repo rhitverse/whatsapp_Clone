@@ -14,7 +14,7 @@ class StoryList extends StatelessWidget {
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: storyUsers.length + 1,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 2),
         itemBuilder: (context, index) {
           if (index == 0) {
             return _yourStory();
@@ -31,7 +31,7 @@ class StoryList extends StatelessWidget {
 
   Widget _yourStory() {
     return Padding(
-      padding: const EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.only(right: 8),
       child: Column(
         children: [
           Stack(
@@ -40,7 +40,7 @@ class StoryList extends StatelessWidget {
                 child: CircleAvatar(
                   radius: 30,
                   backgroundImage: const NetworkImage(
-                    "https://i.imgur.com/QCNbOAo.png",
+                    "https://upload.wikimedia.org/wikipedia/commons/2/22/Joe_Keery_by_Gage_Skidmore.jpg",
                   ),
                 ),
               ),
@@ -71,7 +71,7 @@ class StoryList extends StatelessWidget {
 
   Widget _storyItem({required String name, required String image}) {
     return Padding(
-      padding: const EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.only(right: 8),
       child: Column(
         children: [
           _gradientBorder(
