@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/painting.dart';
+import 'package:flutter/widgets.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/screens/setting_screen.dart';
 import 'package:whatsapp_clone/screens/settings/calls/calls_screen.dart';
@@ -127,7 +129,7 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
               ),
             )
           : null,
-      body: _pages[_currentIndex],
+      body: IndexedStack(index: _currentIndex, children: _pages),
 
       bottomNavigationBar: CustomBottomNavBar(
         currentIndex: _currentIndex,

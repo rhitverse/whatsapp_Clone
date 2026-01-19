@@ -12,84 +12,89 @@ class CustomBottomNavBar extends StatelessWidget {
     required this.onTap,
   });
 
-  Widget navSvgIcon(
-    String assetPath,
-    int index, {
-    double width = 24,
-    double height = 24,
+  Widget navIcon({
+    required String unselectedAsset,
+    required String selectedAsset,
+    required int index,
+    double size = 24,
   }) {
     final bool isSelected = currentIndex == index;
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 6),
-      decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFF1F3D2B) : Colors.transparent,
-        borderRadius: BorderRadius.circular(40),
-      ),
-      child: SvgPicture.asset(
-        assetPath,
-        width: width,
-        height: height,
-        colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-      ),
-    );
-  }
 
-  Widget _navIcon(IconData icon, int index, {double size = 24}) {
-    final bool isSelected = currentIndex == index;
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 4),
-      decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFF1F3D2B) : Colors.transparent,
-        borderRadius: BorderRadius.circular(40),
-      ),
-      child: Icon(icon, color: Colors.white, size: size),
+    return SvgPicture.asset(
+      isSelected ? selectedAsset : unselectedAsset,
+      width: size,
+      height: size,
+      colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: currentIndex,
-      onTap: onTap,
-      type: BottomNavigationBarType.fixed,
-      backgroundColor: backgroundColor,
-      selectedItemColor: Colors.white,
-      unselectedItemColor: Colors.white,
-      selectedFontSize: 12,
-      unselectedFontSize: 12,
-      selectedLabelStyle: const TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.bold,
+    return Theme(
+      data: Theme.of(context).copyWith(
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        splashFactory: NoSplash.splashFactory,
       ),
-      unselectedLabelStyle: const TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.bold,
+      child: BottomNavigationBar(
+        currentIndex: currentIndex,
+        onTap: onTap,
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: backgroundColor,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white,
+        selectedFontSize: 12,
+        unselectedFontSize: 12,
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+        items: [
+          BottomNavigationBarItem(
+            icon: navIcon(
+              unselectedAsset: 'assets/svg/chat2.svg',
+              selectedAsset: 'assets/svg/chats2.svg',
+              index: 0,
+              size: 25,
+            ),
+            label: "Chats",
+          ),
+          BottomNavigationBarItem(
+            icon: navIcon(
+              unselectedAsset: 'assets/svg/update3.svg',
+              selectedAsset: 'assets/svg/update2.svg',
+              index: 1,
+              size: 26,
+            ),
+            label: "Updates",
+          ),
+          BottomNavigationBarItem(
+            icon: navIcon(
+              unselectedAsset: 'assets/svg/meet.svg',
+              selectedAsset: 'assets/svg/groups2.svg',
+              index: 2,
+              size: 26,
+            ),
+            label: "Meet",
+          ),
+          BottomNavigationBarItem(
+            icon: navIcon(
+              unselectedAsset: 'assets/svg/call.svg',
+              selectedAsset: 'assets/svg/call1.svg',
+              index: 3,
+              size: 26,
+            ),
+            label: "Calls",
+          ),
+          BottomNavigationBarItem(
+            icon: navIcon(
+              unselectedAsset: 'assets/svg/setting.svg',
+              selectedAsset: 'assets/svg/settings2.svg',
+              index: 4,
+              size: 25,
+            ),
+            label: "Settings",
+          ),
+        ],
       ),
-      items: [
-        BottomNavigationBarItem(
-          icon: navSvgIcon('assets/svg/chat2.svg', 0, width: 25, height: 25),
-          label: "Chats",
-        ),
-        BottomNavigationBarItem(
-          icon: navSvgIcon('assets/svg/update3.svg', 1, width: 20, height: 20),
-          label: "Updates",
-        ),
-        BottomNavigationBarItem(
-          icon: navSvgIcon('assets/svg/meet.svg', 2, width: 26, height: 26),
-          label: "Meet",
-        ),
-        BottomNavigationBarItem(
-          icon: _navIcon(Icons.call_outlined, 3),
-          label: "Calls",
-        ),
-        BottomNavigationBarItem(
-          icon: navSvgIcon("assets/svg/setting.svg", 4, width: 25, height: 25),
-          label: "Settings",
-        ),
-      ],
     );
   }
 }

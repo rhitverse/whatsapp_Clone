@@ -34,13 +34,13 @@ const info = [
     'profilePic':
         'https://uploads.dailydot.com/2018/10/olli-the-polite-cat.jpg?auto=compress%2Cformat&ixlib=php-3.3.0',
   },
-  {
+  /*{
     'name': 'Max',
     'message': 'Yo!!!!! Long time, no see!?',
     'time': '9:53 am',
     'profilePic':
         'https://upload.wikimedia.org/wikipedia/en/thumb/e/ec/Max_Season_5.png/250px-Max_Season_5.png',
-  },
+  },*/
   {
     'name': 'Albert Dera',
     'message': 'Am I fat?',
