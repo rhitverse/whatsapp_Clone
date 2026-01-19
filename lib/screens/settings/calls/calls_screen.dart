@@ -68,10 +68,12 @@ class CallsScreen extends StatelessWidget {
               contentPadding: const EdgeInsets.only(left: 16, right: 6),
               leading: CircleAvatar(
                 radius: 25,
-                backgroundImage: NetworkImage(favUser['profilePic']!),
+                backgroundImage: NetworkImage(
+                  favUser['profilePic']?.toString() ?? '',
+                ),
               ),
               title: Text(
-                favUser['name']!,
+                favUser['name']?.toString() ?? '',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 14.5,
@@ -94,7 +96,7 @@ class CallsScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    favUser['time']!,
+                    favUser['time']?.toString() ?? '',
                     style: const TextStyle(color: Colors.grey, fontSize: 13),
                   ),
                   const SizedBox(width: 12),
@@ -130,10 +132,12 @@ class CallsScreen extends StatelessWidget {
                     contentPadding: const EdgeInsets.only(left: 16, right: 6),
                     leading: CircleAvatar(
                       radius: 25,
-                      backgroundImage: NetworkImage(user['profilePic']!),
+                      backgroundImage: NetworkImage(
+                        user['profilePic']?.toString() ?? '',
+                      ),
                     ),
                     title: Text(
-                      user['name']!,
+                      user['name']?.toString() ?? '',
                       style: TextStyle(
                         fontWeight: FontWeight.w400,
                         fontSize: 14.5,
@@ -161,7 +165,7 @@ class CallsScreen extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          user['time']!,
+                          user['time']?.toString() ?? '',
                           style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 13,

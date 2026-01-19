@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter/painting.dart';
-import 'package:flutter/widgets.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/screens/setting_screen.dart';
 import 'package:whatsapp_clone/screens/settings/calls/calls_screen.dart';
+import 'package:whatsapp_clone/screens/updates/update_screen.dart';
 import 'package:whatsapp_clone/widgets/chat_filter_items.dart';
 import 'package:whatsapp_clone/widgets/contacts_list.dart';
 import 'package:whatsapp_clone/widgets/custom_bottom_nav_bar.dart';
@@ -21,9 +20,7 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
 
   final List<Widget> _pages = const [
     ContactsList(),
-    Center(
-      child: Text("Updates", style: TextStyle(color: Colors.white)),
-    ),
+    UpdateScreen(),
     Center(
       child: Text("Groups", style: TextStyle(color: Colors.white)),
     ),

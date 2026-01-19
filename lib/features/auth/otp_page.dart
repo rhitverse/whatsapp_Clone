@@ -153,7 +153,7 @@ class _OtpPageState extends State<OtpPage> {
                         }
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: uiColor,
                     disabledBackgroundColor: uiColor.withOpacity(0.4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
