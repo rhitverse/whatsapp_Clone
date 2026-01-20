@@ -1,11 +1,90 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/features/auth/repository/auth_repository.dart';
 import 'package:whatsapp_clone/screens/user/registe_screen.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/input_field.dart';
+import 'package:whatsapp_clone/common/utils/utils.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController emailOrPhoneController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  late final AuthRepository authRepo;
+  bool isLoading = false;
+  @override
+  void initState() {
+    super.initState();
+    authRepo = AuthRepository(
+      auth: FirebaseAuth.instance,
+      firestore: FirebaseFirestore.instance,
+    );
+
+    emailOrPhoneController.addListener(() => setState(() {}));
+    passwordController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    emailOrPhoneController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  bool get isLoginEnabled {
+    return emailOrPhoneController.text.isNotEmpty &&
+        passwordController.text.isNotEmpty;
+  }
+
+  bool isEmail(String input) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(input);
+  }
+
+  Future<void> handleLogin() async {
+    if (!isLoginEnabled) return;
+    setState(() => isLoading = true);
+    final input = emailOrPhoneController.text.trim();
+    final password = passwordController.text.trim();
+
+    try {
+      if (isEmail(input)) {
+        // Login with email
+        await authRepo.signInWithEmail(
+          context: context,
+          email: input,
+          password: password,
+        );
+      } else {
+        // Assume it's a phone number - show error or handle accordingly
+        if (mounted) {
+          showSnackBar(
+            context: context,
+            content:
+                'Phone login requires verification. Please use Register screen.',
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        showSnackBar(
+          context: context,
+          content: 'Login failed. Please check your credentials.',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +126,7 @@ class LoginScreen extends StatelessWidget {
                               ),
                               SizedBox(height: 6),
                               Text(
-                                "We'r so excited to see you again!",
+                                "We're so excited to see you again!",
                                 style: TextStyle(
                                   color: Colors.white60,
                                   fontSize: 15,
@@ -63,19 +142,32 @@ class LoginScreen extends StatelessWidget {
                           style: TextStyle(color: Colors.white70, fontSize: 14),
                         ),
                         const SizedBox(height: 8),
-                        InputField(hint: "Enter email or phone"),
+                        InputField(
+                          hint: "Enter email or phone",
+                          controller: emailOrPhoneController,
+                        ),
                         const SizedBox(height: 22),
                         const Text(
                           "Password",
                           style: TextStyle(color: Colors.white70, fontSize: 14),
                         ),
                         const SizedBox(height: 8),
-                        InputField(hint: "Enter password", obscure: true),
+                        InputField(
+                          hint: "Enter password",
+                          obscure: true,
+                          controller: passwordController,
+                        ),
                         const SizedBox(height: 12),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            // TODO: Implement password reset
+                            showSnackBar(
+                              context: context,
+                              content: 'Password reset feature coming soon!',
+                            );
+                          },
                           child: const Text(
-                            "Forget your password?",
+                            "Forgot your password?",
                             style: TextStyle(color: Colors.white),
                           ),
                         ),
@@ -84,21 +176,33 @@ class LoginScreen extends StatelessWidget {
                           width: double.infinity,
                           height: 55,
                           child: ElevatedButton(
-                            onPressed: () {},
+                            onPressed: isLoginEnabled && !isLoading
+                                ? handleLogin
+                                : null,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: uiColor,
+                              disabledBackgroundColor: uiColor.withOpacity(0.4),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               ),
                             ),
-                            child: const Text(
-                              "Log In",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
+                            child: isLoading
+                                ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  )
+                                : const Text(
+                                    "Log In",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                           ),
                         ),
                       ],
@@ -107,7 +211,7 @@ class LoginScreen extends StatelessWidget {
                 ),
                 RichText(
                   text: TextSpan(
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.grey,
@@ -119,10 +223,10 @@ class LoginScreen extends StatelessWidget {
                         style: const TextStyle(color: uiColor),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            Navigator.push(
+                            Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => RegisteScreen(),
+                                builder: (_) => const RegisteScreen(),
                               ),
                             );
                           },

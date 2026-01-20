@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:whatsapp_clone/colors.dart';
-import 'package:whatsapp_clone/screens/user/display_name.dart';
+import 'package:whatsapp_clone/features/auth/repository/auth_repository.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class OtpPage extends StatefulWidget {
   final String phoneNumber;
-  const OtpPage({super.key, required this.phoneNumber});
+  final String verificationId;
+  const OtpPage({
+    super.key,
+    required this.phoneNumber,
+    required this.verificationId,
+  });
 
   @override
   State<OtpPage> createState() => _OtpPageState();
@@ -15,10 +22,17 @@ class _OtpPageState extends State<OtpPage> {
   final int otpLength = 6;
   late List<TextEditingController> controllers;
   late List<FocusNode> focusNodes;
+  late AuthRepository authRepository;
 
   @override
   void initState() {
     super.initState();
+
+    authRepository = AuthRepository(
+      auth: FirebaseAuth.instance,
+      firestore: FirebaseFirestore.instance,
+    );
+    ;
     controllers = List.generate(otpLength, (_) => TextEditingController());
     focusNodes = List.generate(otpLength, (_) => FocusNode());
 
@@ -142,13 +156,11 @@ class _OtpPageState extends State<OtpPage> {
                 child: ElevatedButton(
                   onPressed: isOtpComplete
                       ? () {
-                          String otp = controllers.map((c) => c.text).join();
-                          debugPrint("OTP entered: $otp");
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const DisplayName(),
-                            ),
+                          final otp = controllers.map((c) => c.text).join();
+                          authRepository.verifyOtp(
+                            context: context,
+                            verificationId: widget.verificationId,
+                            otp: otp,
                           );
                         }
                       : null,

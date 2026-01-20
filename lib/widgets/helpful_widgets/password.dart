@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/colors.dart';
 
 class Password extends StatefulWidget {
+  final TextEditingController? controller;
   final void Function(bool isValid)? onChanged;
-  const Password({super.key, this.onChanged});
+  const Password({super.key, this.controller, this.onChanged});
 
   @override
   State<Password> createState() => _PasswordState();
 }
 
 class _PasswordState extends State<Password> {
-  final TextEditingController passwordController = TextEditingController();
+  late final TextEditingController passwordController;
   final TextEditingController confirmPasswordController =
       TextEditingController();
 
@@ -22,12 +23,14 @@ class _PasswordState extends State<Password> {
   bool isConfirmPasswordVisible = false;
   bool isPasswordFocused = false;
   bool showConfirmPassword = false;
+  bool _isDisposed = false;
 
   String passwordStrength = "";
   final RegExp lowerCase = RegExp(r'[a-z]');
   final RegExp symbol = RegExp(r'[!@#$%^&*(),.?":{}|<>]');
 
   void checkPasswordStrength(String value) {
+    if (_isDisposed) return;
     if (value.isEmpty) {
       passwordStrength = "";
     } else if (value.length < 8) {
@@ -40,10 +43,14 @@ class _PasswordState extends State<Password> {
 
     validateConfirmPassword();
     notifyParent();
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void validateConfirmPassword() {
+    if (_isDisposed) return;
+
     if (confirmPasswordController.text.isEmpty) {
       isConfirmPasswordWrong = false;
     } else {
@@ -54,6 +61,7 @@ class _PasswordState extends State<Password> {
   }
 
   void notifyParent() {
+    if (_isDisposed) return;
     final isValid =
         (passwordStrength == "Medium" || passwordStrength == "Strong") &&
         !isConfirmPasswordWrong &&
@@ -75,22 +83,43 @@ class _PasswordState extends State<Password> {
     }
   }
 
+  void _onPasswordFocusChange() {
+    if (_isDisposed) return;
+
+    if (passwordFocus.hasFocus && mounted) {
+      setState(() {
+        isPasswordFocused = true;
+        showConfirmPassword = true;
+      });
+    }
+  }
+
+  void _onPasswordChange() {
+    if (_isDisposed) return;
+    checkPasswordStrength(passwordController.text);
+  }
+
   @override
   void initState() {
     super.initState();
-    passwordFocus.addListener(() {
-      if (passwordFocus.hasFocus) {
-        setState(() {
-          isPasswordFocused = true;
-          showConfirmPassword = true;
-        });
-      }
-    });
+    if (widget.controller != null) {
+      passwordController = widget.controller!;
+    } else {
+      passwordController = TextEditingController();
+    }
+
+    passwordFocus.addListener(_onPasswordFocusChange);
+    passwordController.addListener(_onPasswordChange);
   }
 
   @override
   void dispose() {
-    passwordController.dispose();
+    _isDisposed = true;
+    passwordFocus.removeListener(_onPasswordFocusChange);
+    passwordController.removeListener(_onPasswordChange);
+    if (widget.controller == null) {
+      passwordController.dispose();
+    }
     confirmPasswordController.dispose();
     passwordFocus.dispose();
     confirmPasswordFocus.dispose();
@@ -113,7 +142,9 @@ class _PasswordState extends State<Password> {
           isVisible: isPasswordVisible,
           hint: "New Password",
           onToggle: () {
-            setState(() => isPasswordVisible = !isPasswordVisible);
+            if (mounted) {
+              setState(() => isPasswordVisible = !isPasswordVisible);
+            }
           },
           onChanged: checkPasswordStrength,
         ),
@@ -167,9 +198,11 @@ class _PasswordState extends State<Password> {
                   contentPadding: const EdgeInsets.symmetric(vertical: 16),
                   suffixIcon: GestureDetector(
                     onTap: () {
-                      setState(() {
-                        isConfirmPasswordVisible = !isConfirmPasswordVisible;
-                      });
+                      if (mounted) {
+                        setState(() {
+                          isConfirmPasswordVisible = !isConfirmPasswordVisible;
+                        });
+                      }
                     },
                     child: Icon(
                       isConfirmPasswordVisible

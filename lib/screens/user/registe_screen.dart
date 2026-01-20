@@ -3,10 +3,12 @@ import 'package:country_picker/country_picker.dart';
 import 'package:country_codes/country_codes.dart';
 import 'package:flutter/services.dart';
 import 'package:whatsapp_clone/colors.dart';
-import 'package:whatsapp_clone/features/auth/otp_page.dart';
+import 'package:whatsapp_clone/features/auth/repository/auth_repository.dart';
 import 'package:whatsapp_clone/screens/user/display_name.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/input_field.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/password.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegisteScreen extends StatefulWidget {
   const RegisteScreen({super.key});
@@ -19,25 +21,31 @@ class _RegisteScreenState extends State<RegisteScreen> {
   Country? selectedCountry;
   bool isEmailisSelected = true;
   bool isPasswordValid = false;
+  late final AuthRepository authRepo;
+
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    authRepo = AuthRepository(
+      auth: FirebaseAuth.instance,
+      firestore: FirebaseFirestore.instance,
+    );
+
     detectCountry();
 
-    phoneController.addListener(() {
-      setState(() {});
-    });
-    emailController.addListener(() {
-      setState(() {});
-    });
+    phoneController.addListener(() => setState(() {}));
+    emailController.addListener(() => setState(() {}));
+    passwordController.addListener(() => setState(() {}));
   }
 
   bool get isNextEnabled {
     if (isEmailisSelected) {
-      return emailController.text.isNotEmpty && isPasswordValid;
+      return emailController.text.isNotEmpty &&
+          passwordController.text.isNotEmpty;
     } else {
       return phoneController.text.isNotEmpty;
     }
@@ -47,6 +55,7 @@ class _RegisteScreenState extends State<RegisteScreen> {
   void dispose() {
     phoneController.dispose();
     emailController.dispose();
+    passwordController.dispose();
     super.dispose();
   }
 
@@ -234,11 +243,9 @@ class _RegisteScreenState extends State<RegisteScreen> {
 
                   const SizedBox(height: 8),
                   Password(
-                    onChanged: (valid) {
-                      setState(() {
-                        isPasswordValid = valid;
-                      });
-                    },
+                    controller: passwordController,
+                    onChanged: (valid) =>
+                        setState(() => isPasswordValid = valid),
                   ),
                 ] else ...[
                   const Text(
@@ -304,23 +311,34 @@ class _RegisteScreenState extends State<RegisteScreen> {
                   height: 52,
                   child: ElevatedButton(
                     onPressed: isNextEnabled
-                        ? () {
+                        ? () async {
                             if (isEmailisSelected) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const DisplayName(),
-                                ),
-                              );
+                              final email = emailController.text.trim();
+                              final password = passwordController.text.trim();
+
+                              // Try to sign in first
+                              try {
+                                await authRepo.signInWithEmail(
+                                  context: context,
+                                  email: email,
+                                  password: password,
+                                );
+                              } on FirebaseAuthException catch (e) {
+                                if (e.code == 'user-not-found' ||
+                                    e.code == 'invalid-credential') {
+                                  authRepo.signUpWithEmail(
+                                    context: context,
+                                    email: email,
+                                    password: password,
+                                  );
+                                }
+                              }
                             } else {
                               final phone =
-                                  "+${selectedCountry?.phoneCode}${phoneController.text}";
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      OtpPage(phoneNumber: phone),
-                                ),
+                                  "+${selectedCountry!.phoneCode}${phoneController.text.trim()}";
+                              authRepo.signInWithPhone(
+                                context: context,
+                                phoneNumber: phone,
                               );
                             }
                           }

@@ -51,6 +51,10 @@ dev_dependencies:
   country_picker: ^2.0.27
   country_codes: ^3.3.0
   flutter_holo_date_picker: ^2.0.0
+  firebase_core: ^4.4.0
+  firebase_auth: ^6.1.4
+  cloud_firestore: ^6.1.2
+  firebase_storage: ^13.0.6
   
 
 # For information on the generic Dart part of this file, see the
