@@ -4,7 +4,6 @@ import 'package:country_codes/country_codes.dart';
 import 'package:flutter/services.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/features/auth/repository/auth_repository.dart';
-import 'package:whatsapp_clone/screens/user/display_name.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/input_field.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/password.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -315,8 +314,6 @@ class _RegisteScreenState extends State<RegisteScreen> {
                             if (isEmailisSelected) {
                               final email = emailController.text.trim();
                               final password = passwordController.text.trim();
-
-                              // Try to sign in first
                               try {
                                 await authRepo.signInWithEmail(
                                   context: context,

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
 import 'package:whatsapp_clone/features/auth/otp_page.dart';
 import 'package:whatsapp_clone/screens/user/display_name.dart';
@@ -8,7 +9,7 @@ import 'package:whatsapp_clone/screens/user/display_name.dart';
 class AuthRepository {
   final FirebaseAuth auth;
   final FirebaseFirestore firestore;
-
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
   AuthRepository({required this.auth, required this.firestore});
 
   Future<void> signInWithPhone({
@@ -117,8 +118,61 @@ class AuthRepository {
       if (context.mounted) {
         showSnackBar(context: context, content: e.message ?? "Login failed");
       }
-      // Re-throw the exception so it can be caught in the calling code
       rethrow;
+    }
+  }
+
+  Future<UserCredential?> signInWithGoogle({
+    required BuildContext context,
+  }) async {
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) {
+        return null;
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+        accessToken: googleAuth.accessToken,
+      );
+
+      final userCredential = await auth.signInWithCredential(credential);
+
+      if (userCredential.additionalUserInfo?.isNewUser ?? false) {
+        await saveUserToFirestore(
+          uid: userCredential.user!.uid,
+          email: userCredential.user!.email,
+        );
+      }
+      if (context.mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const DisplayName()),
+          (route) => false,
+        );
+      }
+
+      return userCredential;
+    } on FirebaseAuthException catch (e) {
+      if (context.mounted) {
+        showSnackBar(
+          context: context,
+          content: e.message ?? "Google sign-in failed",
+        );
+      }
+      return null;
+    } catch (e) {
+      if (context.mounted) {
+        showSnackBar(
+          context: context,
+          content: "An error occurred during Google sign-in",
+        );
+      }
+      return null;
     }
   }
 

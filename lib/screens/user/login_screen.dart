@@ -20,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
   late final AuthRepository authRepo;
   bool isLoading = false;
+  bool isGoogleLoading = false;
   @override
   void initState() {
     super.initState();
@@ -56,14 +57,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       if (isEmail(input)) {
-        // Login with email
         await authRepo.signInWithEmail(
           context: context,
           email: input,
           password: password,
         );
       } else {
-        // Assume it's a phone number - show error or handle accordingly
         if (mounted) {
           showSnackBar(
             context: context,
@@ -82,6 +81,25 @@ class _LoginScreenState extends State<LoginScreen> {
     } finally {
       if (mounted) {
         setState(() => isLoading = false);
+      }
+    }
+  }
+
+  Future<void> handleGoogleSignIn() async {
+    setState(() => isGoogleLoading = true);
+
+    try {
+      await authRepo.signInWithGoogle(context: context);
+    } catch (e) {
+      if (mounted) {
+        showSnackBar(
+          context: context,
+          content: 'Google sign-in failed. Please try again.',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isGoogleLoading = false);
       }
     }
   }
@@ -112,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 70),
                         const Center(
                           child: Column(
                             children: [
@@ -135,7 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 50),
 
                         const Text(
                           "Email or Phone Number",
@@ -146,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           hint: "Enter email or phone",
                           controller: emailOrPhoneController,
                         ),
-                        const SizedBox(height: 22),
+                        const SizedBox(height: 15),
                         const Text(
                           "Password",
                           style: TextStyle(color: Colors.white70, fontSize: 14),
@@ -157,10 +175,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           obscure: true,
                           controller: passwordController,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 6),
                         TextButton(
                           onPressed: () {
-                            // TODO: Implement password reset
                             showSnackBar(
                               context: context,
                               content: 'Password reset feature coming soon!',
@@ -171,10 +188,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: TextStyle(color: Colors.white),
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 10),
                         SizedBox(
                           width: double.infinity,
-                          height: 55,
+                          height: 52,
                           child: ElevatedButton(
                             onPressed: isLoginEnabled && !isLoading
                                 ? handleLogin
@@ -202,6 +219,83 @@ class _LoginScreenState extends State<LoginScreen> {
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Divider(
+                                color: Colors.white30,
+                                thickness: 1,
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsetsGeometry.symmetric(
+                                horizontal: 12,
+                              ),
+                              child: Text(
+                                "OR",
+                                style: TextStyle(
+                                  color: Colors.white60,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Divider(
+                                color: Colors.white30,
+                                thickness: 1,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 25),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: ElevatedButton(
+                            onPressed: isGoogleLoading
+                                ? null
+                                : handleGoogleSignIn,
+
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+
+                            child: isGoogleLoading
+                                ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+
+                                    child: CircularProgressIndicator(
+                                      color: Colors.black,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Image.asset(
+                                        'assets/google.png',
+                                        height: 32,
+                                        width: 32,
+                                      ),
+                                      const SizedBox(width: 10),
+                                      const Text(
+                                        'Sign In with Google',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                           ),
                         ),
