@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/features/app/welcome/welcome_page.dart';
+import 'package:whatsapp_clone/features/auth/repository/auth_providers.dart';
 import 'package:whatsapp_clone/screens/setting_screen.dart';
 import 'package:whatsapp_clone/screens/settings/calls/calls_screen.dart';
 import 'package:whatsapp_clone/screens/updates/update_screen.dart';
 import 'package:whatsapp_clone/widgets/chat_filter_items.dart';
 import 'package:whatsapp_clone/widgets/contacts_list.dart';
 import 'package:whatsapp_clone/widgets/custom_bottom_nav_bar.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MobileScreenLayout extends StatefulWidget {
+class MobileScreenLayout extends ConsumerStatefulWidget {
   const MobileScreenLayout({super.key});
 
   @override
-  State<MobileScreenLayout> createState() => _MobileScreenLayoutState();
+  ConsumerState<MobileScreenLayout> createState() => _MobileScreenLayoutState();
 }
 
-class _MobileScreenLayoutState extends State<MobileScreenLayout> {
+class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = const [
@@ -27,6 +30,42 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
     CallsScreen(),
     SettingScreen(),
   ];
+
+  Future<void> _handleLogout() async {
+    final shouldLogout = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xff1e2023),
+        title: const Text('Logout', style: TextStyle(color: Colors.white)),
+        content: const Text(
+          'Are you sure you want to logout?',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white70),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Logout', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (shouldLogout == true) {
+      await ref.read(firebaseAuthProvider).signOut();
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const WelcomePage()),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,11 +115,26 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
                     ),
                   ),
                 ),
-
-                /* IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.more_vert, color: Colors.white),
-          ),*/
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, color: Colors.white),
+                  color: const Color(0xff1e2023),
+                  onSelected: (value) {
+                    if (value == 'logout') {
+                      _handleLogout();
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      child: Row(
+                        children: [
+                          Icon(Icons.logout, color: Colors.red, size: 20),
+                          SizedBox(width: 12),
+                          Text('Logout', style: TextStyle(color: Colors.white)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ],
 
               bottom: PreferredSize(
@@ -100,11 +154,14 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: TextField(
-                          style: TextStyle(color: Colors.white),
+                          style: const TextStyle(color: Colors.white),
                           cursorColor: Colors.green,
                           decoration: InputDecoration(
                             prefixIcon: Padding(
-                              padding: EdgeInsets.only(left: 20, right: 6),
+                              padding: const EdgeInsets.only(
+                                left: 20,
+                                right: 6,
+                              ),
                               child: SvgPicture.asset(
                                 "assets/svg/search_icon.svg",
                               ),

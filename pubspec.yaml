@@ -56,6 +56,8 @@ dev_dependencies:
   cloud_firestore: ^6.1.2
   firebase_storage: ^13.0.6
   google_sign_in: ^6.2.1
+  flutter_riverpod: ^2.4.9
+  shared_preferences: ^2.2.2
   
 
 # For information on the generic Dart part of this file, see the

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:whatsapp_clone/colors.dart';
-import 'package:whatsapp_clone/features/auth/repository/auth_repository.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:whatsapp_clone/features/auth/repository/auth_providers.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class OtpPage extends StatefulWidget {
+class OtpPage extends ConsumerStatefulWidget {
   final String phoneNumber;
   final String verificationId;
   const OtpPage({
@@ -15,24 +14,18 @@ class OtpPage extends StatefulWidget {
   });
 
   @override
-  State<OtpPage> createState() => _OtpPageState();
+  ConsumerState<OtpPage> createState() => _OtpPageState();
 }
 
-class _OtpPageState extends State<OtpPage> {
+class _OtpPageState extends ConsumerState<OtpPage> {
   final int otpLength = 6;
   late List<TextEditingController> controllers;
   late List<FocusNode> focusNodes;
-  late AuthRepository authRepository;
 
   @override
   void initState() {
     super.initState();
 
-    authRepository = AuthRepository(
-      auth: FirebaseAuth.instance,
-      firestore: FirebaseFirestore.instance,
-    );
-    ;
     controllers = List.generate(otpLength, (_) => TextEditingController());
     focusNodes = List.generate(otpLength, (_) => FocusNode());
 
@@ -157,7 +150,8 @@ class _OtpPageState extends State<OtpPage> {
                   onPressed: isOtpComplete
                       ? () {
                           final otp = controllers.map((c) => c.text).join();
-                          authRepository.verifyOtp(
+                          final authRepo = ref.read(authRepositoryProvider);
+                          authRepo.verifyOtp(
                             context: context,
                             verificationId: widget.verificationId,
                             otp: otp,

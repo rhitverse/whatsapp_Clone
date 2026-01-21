@@ -1,33 +1,28 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:whatsapp_clone/colors.dart';
-import 'package:whatsapp_clone/features/auth/repository/auth_repository.dart';
+import 'package:whatsapp_clone/features/auth/repository/auth_providers.dart';
 import 'package:whatsapp_clone/screens/user/registe_screen.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/input_field.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController emailOrPhoneController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  late final AuthRepository authRepo;
   bool isLoading = false;
   bool isGoogleLoading = false;
+
   @override
   void initState() {
     super.initState();
-    authRepo = AuthRepository(
-      auth: FirebaseAuth.instance,
-      firestore: FirebaseFirestore.instance,
-    );
 
     emailOrPhoneController.addListener(() => setState(() {}));
     passwordController.addListener(() => setState(() {}));
@@ -56,6 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = passwordController.text.trim();
 
     try {
+      final authRepo = ref.read(authRepositoryProvider);
       if (isEmail(input)) {
         await authRepo.signInWithEmail(
           context: context,
@@ -89,6 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => isGoogleLoading = true);
 
     try {
+      final authRepo = ref.read(authRepositoryProvider);
       await authRepo.signInWithGoogle(context: context);
     } catch (e) {
       if (mounted) {

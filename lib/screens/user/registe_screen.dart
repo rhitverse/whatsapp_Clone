@@ -3,24 +3,23 @@ import 'package:country_picker/country_picker.dart';
 import 'package:country_codes/country_codes.dart';
 import 'package:flutter/services.dart';
 import 'package:whatsapp_clone/colors.dart';
-import 'package:whatsapp_clone/features/auth/repository/auth_repository.dart';
+import 'package:whatsapp_clone/features/auth/repository/auth_providers.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/input_field.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/password.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class RegisteScreen extends StatefulWidget {
+class RegisteScreen extends ConsumerStatefulWidget {
   const RegisteScreen({super.key});
 
   @override
-  State<RegisteScreen> createState() => _RegisteScreenState();
+  ConsumerState<RegisteScreen> createState() => _RegisteScreenState();
 }
 
-class _RegisteScreenState extends State<RegisteScreen> {
+class _RegisteScreenState extends ConsumerState<RegisteScreen> {
   Country? selectedCountry;
   bool isEmailisSelected = true;
   bool isPasswordValid = false;
-  late final AuthRepository authRepo;
 
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -29,11 +28,6 @@ class _RegisteScreenState extends State<RegisteScreen> {
   @override
   void initState() {
     super.initState();
-    authRepo = AuthRepository(
-      auth: FirebaseAuth.instance,
-      firestore: FirebaseFirestore.instance,
-    );
-
     detectCountry();
 
     phoneController.addListener(() => setState(() {}));
@@ -311,6 +305,7 @@ class _RegisteScreenState extends State<RegisteScreen> {
                   child: ElevatedButton(
                     onPressed: isNextEnabled
                         ? () async {
+                            final authRepo = ref.read(authRepositoryProvider);
                             if (isEmailisSelected) {
                               final email = emailController.text.trim();
                               final password = passwordController.text.trim();

@@ -1,29 +1,57 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/features/app/welcome/welcome_page.dart';
+import 'package:whatsapp_clone/features/auth/repository/auth_providers.dart';
+import 'package:whatsapp_clone/screens/mobile_screen_layout.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    _navigate();
+  }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Timer(const Duration(seconds: 2), () {
-        if (!mounted) return;
+  void _navigate() async {
+    await Future.delayed(const Duration(milliseconds: 800));
+
+    if (!mounted) return;
+
+    final authState = ref.read(authStateChangesProvider);
+
+    authState.when(
+      data: (user) {
+        if (user != null) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const MobileScreenLayout()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const WelcomePage()),
+          );
+        }
+      },
+      loading: () {
+        Future.delayed(const Duration(milliseconds: 100), _navigate);
+      },
+
+      error: (_, __) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const WelcomePage()),
         );
-      });
-    });
+      },
+    );
   }
 
   @override
@@ -35,7 +63,6 @@ class _SplashScreenState extends State<SplashScreen> {
         children: [
           const SizedBox(height: 80),
 
-          // Center Logo
           Image.asset(
             "assets/app.png",
             color: Colors.white,
@@ -43,7 +70,6 @@ class _SplashScreenState extends State<SplashScreen> {
             height: 130,
           ),
 
-          // Bottom Meta Section
           Padding(
             padding: const EdgeInsets.only(bottom: 30),
             child: Column(
