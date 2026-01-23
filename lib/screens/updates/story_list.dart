@@ -40,7 +40,7 @@ class StoryList extends StatelessWidget {
                 child: CircleAvatar(
                   radius: 30,
                   backgroundImage: const NetworkImage(
-                    "https://upload.wikimedia.org/wikipedia/commons/2/22/Joe_Keery_by_Gage_Skidmore.jpg",
+                    "https://upload.wikimedia.org/wikipedia/en/thumb/9/91/Mike_Wheeler.png/250px-Mike_Wheeler.png",
                   ),
                 ),
               ),

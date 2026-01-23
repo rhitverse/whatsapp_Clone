@@ -126,7 +126,6 @@ class CallsScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final user = info[index];
                   final bool isMissed = index % 3 == 1;
-                  // final bool isVideo = index % 3 == 0;
 
                   return ListTile(
                     contentPadding: const EdgeInsets.only(left: 16, right: 6),
@@ -193,25 +192,6 @@ class CallsScreen extends StatelessWidget {
                 },
               ),
             ),
-            const SizedBox(height: 20),
-            Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.lock, size: 14, color: Colors.grey),
-                  SizedBox(width: 6),
-                  Text(
-                    "Your personal calls are",
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
-                  ),
-                  Text(
-                    " end-to-end encrypted",
-                    style: TextStyle(color: uiColor, fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 30),
           ],
         ),
       ),
