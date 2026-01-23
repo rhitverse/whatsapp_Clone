@@ -20,6 +20,7 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
   Country? selectedCountry;
   bool isEmailisSelected = true;
   bool isPasswordValid = false;
+  bool isLoading = false;
 
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -106,6 +107,49 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
         });
       },
     );
+  }
+
+  Future<void> handleNext() async {
+    if (!isNextEnabled || isLoading) return;
+
+    setState(() => isLoading = true);
+
+    try {
+      final authRepo = ref.read(authRepositoryProvider);
+
+      if (isEmailisSelected) {
+        final email = emailController.text.trim();
+        final password = passwordController.text.trim();
+
+        try {
+          await authRepo.signInWithEmail(
+            context: context,
+            email: email,
+            password: password,
+          );
+        } on FirebaseAuthException catch (e) {
+          if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
+            await authRepo.signInWithEmail(
+              context: context,
+              email: email,
+              password: password,
+            );
+          } else {
+            rethrow;
+          }
+        }
+      } else {
+        final phone =
+            "+${selectedCountry!.phoneCode}${phoneController.text.trim()}";
+        await authRepo.signInWithPhone(context: context, phoneNumber: phone);
+      }
+    } catch (e) {
+      // Error handling is done in repository
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   @override
@@ -303,38 +347,7 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton(
-                    onPressed: isNextEnabled
-                        ? () async {
-                            final authRepo = ref.read(authRepositoryProvider);
-                            if (isEmailisSelected) {
-                              final email = emailController.text.trim();
-                              final password = passwordController.text.trim();
-                              try {
-                                await authRepo.signInWithEmail(
-                                  context: context,
-                                  email: email,
-                                  password: password,
-                                );
-                              } on FirebaseAuthException catch (e) {
-                                if (e.code == 'user-not-found' ||
-                                    e.code == 'invalid-credential') {
-                                  authRepo.signUpWithEmail(
-                                    context: context,
-                                    email: email,
-                                    password: password,
-                                  );
-                                }
-                              }
-                            } else {
-                              final phone =
-                                  "+${selectedCountry!.phoneCode}${phoneController.text.trim()}";
-                              authRepo.signInWithPhone(
-                                context: context,
-                                phoneNumber: phone,
-                              );
-                            }
-                          }
-                        : null,
+                    onPressed: isNextEnabled && !isLoading ? handleNext : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: uiColor,
                       disabledBackgroundColor: uiColor.withOpacity(0.4),
@@ -342,17 +355,25 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    child: const Text(
-                      "Next",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.5,
+                            ),
+                          )
+                        : const Text(
+                            "Next",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
               ],
             ),

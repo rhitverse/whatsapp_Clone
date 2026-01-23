@@ -13,12 +13,54 @@ import 'package:whatsapp_clone/screens/settings/privacy_screen.dart';
 import 'package:whatsapp_clone/screens/settings/profile_screen.dart';
 import 'package:whatsapp_clone/screens/settings/starrted_message_screen.dart';
 import 'package:whatsapp_clone/screens/settings/storage_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:whatsapp_clone/features/app/welcome/welcome_page.dart';
+import 'package:whatsapp_clone/features/auth/repository/auth_providers.dart';
 
-class SettingScreen extends StatelessWidget {
+class SettingScreen extends ConsumerWidget {
   const SettingScreen({super.key});
 
+  Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xff1e2023),
+        title: const Text('Logout', style: TextStyle(color: Colors.white)),
+        content: const Text(
+          'Are you sure you want to logout?',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white70),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Logout', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true) {
+      await ref.read(firebaseAuthProvider).signOut();
+
+      if (context.mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const WelcomePage()),
+          (route) => false,
+        );
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: backgroundColor,
       body: CustomScrollView(
@@ -290,6 +332,14 @@ class SettingScreen extends StatelessWidget {
                       context,
                       MaterialPageRoute(builder: (_) => const InviteScreen()),
                     );
+                  },
+                ),
+                _divider(indent: 50),
+                _svgTile(
+                  "assets/svg/logout.svg",
+                  "Logout",
+                  onTap: () {
+                    _handleLogout(context, ref);
                   },
                 ),
               ]),

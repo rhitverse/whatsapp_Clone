@@ -42,7 +42,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         }
       },
       loading: () {
-        Future.delayed(const Duration(milliseconds: 100), _navigate);
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) _navigate();
+        });
       },
 
       error: (_, __) {

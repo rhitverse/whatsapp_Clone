@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whatsapp_clone/colors.dart';
-import 'package:whatsapp_clone/features/app/welcome/welcome_page.dart';
-import 'package:whatsapp_clone/features/auth/repository/auth_providers.dart';
 import 'package:whatsapp_clone/screens/setting_screen.dart';
 import 'package:whatsapp_clone/screens/settings/calls/calls_screen.dart';
 import 'package:whatsapp_clone/screens/updates/update_screen.dart';
-import 'package:whatsapp_clone/widgets/chat_filter_items.dart';
 import 'package:whatsapp_clone/widgets/contacts_list.dart';
 import 'package:whatsapp_clone/widgets/custom_bottom_nav_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,46 +28,9 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
     SettingScreen(),
   ];
 
-  Future<void> _handleLogout() async {
-    final shouldLogout = await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xff1e2023),
-        title: const Text('Logout', style: TextStyle(color: Colors.white)),
-        content: const Text(
-          'Are you sure you want to logout?',
-          style: TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white70),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Logout', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-    if (shouldLogout == true) {
-      await ref.read(firebaseAuthProvider).signOut();
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const WelcomePage()),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    final height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: _currentIndex == 0
           ? AppBar(
@@ -79,11 +39,11 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
               scrolledUnderElevation: 0,
               elevation: 0,
               title: const Text(
-                'WhatsApp',
+                'Chats',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 25,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               centerTitle: false,
@@ -115,70 +75,37 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
                     ),
                   ),
                 ),
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, color: Colors.white),
-                  color: const Color(0xff1e2023),
-                  onSelected: (value) {
-                    if (value == 'logout') {
-                      _handleLogout();
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      child: Row(
-                        children: [
-                          Icon(Icons.logout, color: Colors.red, size: 20),
-                          SizedBox(width: 12),
-                          Text('Logout', style: TextStyle(color: Colors.white)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
               ],
-
               bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(105),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(
-                        left: width * 0.03,
-                        right: width * 0.03,
-                        bottom: height * 0.03,
-                      ),
-                      child: Container(
-                        height: 42,
-                        decoration: BoxDecoration(
-                          color: searchBarColor,
-                          borderRadius: BorderRadius.circular(14),
+                preferredSize: const Size.fromHeight(56),
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    width * 0.03,
+                    0,
+                    width * 0.03,
+                    8,
+                  ),
+                  child: Container(
+                    height: 45,
+                    decoration: BoxDecoration(
+                      color: searchBarColor,
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: TextField(
+                      style: const TextStyle(color: Colors.white),
+                      cursorColor: Colors.green,
+                      decoration: InputDecoration(
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.only(left: 20, right: 6),
+                          child: SvgPicture.asset("assets/svg/search_icon.svg"),
                         ),
-                        child: TextField(
-                          style: const TextStyle(color: Colors.white),
-                          cursorColor: Colors.green,
-                          decoration: InputDecoration(
-                            prefixIcon: Padding(
-                              padding: const EdgeInsets.only(
-                                left: 20,
-                                right: 6,
-                              ),
-                              child: SvgPicture.asset(
-                                "assets/svg/search_icon.svg",
-                              ),
-                            ),
-                            hintText: 'Ask Gemini AI or Search',
-                            hintStyle: TextStyle(color: Colors.grey),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(vertical: 10),
-                          ),
-                        ),
+                        hintText: 'Ask Gemini AI or Search',
+                        hintStyle: TextStyle(color: Colors.grey),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(vertical: 9.6),
                       ),
                     ),
-                    Transform.translate(
-                      offset: const Offset(0, -6),
-                      child: const ChatFilterItems(isWeb: false),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             )
