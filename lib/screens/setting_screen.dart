@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/features/app/welcome/welcome_page.dart';
 import 'package:whatsapp_clone/features/auth/repository/auth_providers.dart';
-
 import 'package:whatsapp_clone/screens/settings/account_screen.dart';
 import 'package:whatsapp_clone/screens/settings/chats_screen.dart';
 import 'package:whatsapp_clone/screens/settings/help_screen.dart';
 import 'package:whatsapp_clone/screens/settings/invite_screen.dart';
-import 'package:whatsapp_clone/screens/settings/linked_devices.dart';
 import 'package:whatsapp_clone/screens/settings/notifications_screen.dart';
 import 'package:whatsapp_clone/screens/settings/privacy_screen.dart';
 import 'package:whatsapp_clone/screens/settings/profile_screen.dart';

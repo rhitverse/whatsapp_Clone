@@ -36,12 +36,8 @@ class _DisplayNameState extends State<DisplayName> {
               children: [
                 const SizedBox(height: 10),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    ),
                     TextButton(
                       onPressed: () {
                         Navigator.push(

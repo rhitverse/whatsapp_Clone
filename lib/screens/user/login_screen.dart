@@ -6,9 +6,11 @@ import 'package:whatsapp_clone/screens/user/registe_screen.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/input_field.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:whatsapp_clone/widgets/helpful_widgets/info_popup.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+  final VoidCallback onClose;
+  const LoginScreen({super.key, required this.onClose});
 
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
@@ -103,232 +105,198 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        color: const Color(0xff040406),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            Text(
+              "Welcome Back!",
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 10),
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(
-                            Icons.arrow_back,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 70),
-                        const Center(
-                          child: Column(
-                            children: [
-                              Text(
-                                "Welcome Back!",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 6),
-                              Text(
-                                "We're so excited to see you again!",
-                                style: TextStyle(
-                                  color: Colors.white60,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 50),
-
-                        const Text(
-                          "Email or Phone Number",
-                          style: TextStyle(color: Colors.white70, fontSize: 14),
-                        ),
-                        const SizedBox(height: 8),
-                        InputField(
-                          hint: "Enter email or phone",
-                          controller: emailOrPhoneController,
-                        ),
-                        const SizedBox(height: 15),
-                        const Text(
-                          "Password",
-                          style: TextStyle(color: Colors.white70, fontSize: 14),
-                        ),
-                        const SizedBox(height: 8),
-                        InputField(
-                          hint: "Enter password",
-                          obscure: true,
-                          controller: passwordController,
-                        ),
-                        const SizedBox(height: 6),
-                        TextButton(
-                          onPressed: () {
-                            showSnackBar(
-                              context: context,
-                              content: 'Password reset feature coming soon!',
-                            );
-                          },
-                          child: const Text(
-                            "Forgot your password?",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 52,
-                          child: ElevatedButton(
-                            onPressed: isLoginEnabled && !isLoading
-                                ? handleLogin
-                                : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: uiColor,
-                              disabledBackgroundColor: uiColor.withOpacity(0.4),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                            ),
-                            child: isLoading
-                                ? const SizedBox(
-                                    height: 24,
-                                    width: 24,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2.5,
-                                    ),
-                                  )
-                                : const Text(
-                                    "Log In",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Divider(
-                                color: Colors.white30,
-                                thickness: 1,
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsetsGeometry.symmetric(
-                                horizontal: 12,
-                              ),
-                              child: Text(
-                                "OR",
-                                style: TextStyle(
-                                  color: Colors.white60,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Divider(
-                                color: Colors.white30,
-                                thickness: 1,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 25),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 52,
-                          child: ElevatedButton(
-                            onPressed: isGoogleLoading
-                                ? null
-                                : handleGoogleSignIn,
-
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                            ),
-
-                            child: isGoogleLoading
-                                ? const SizedBox(
-                                    height: 24,
-                                    width: 24,
-
-                                    child: CircularProgressIndicator(
-                                      color: Colors.black,
-                                      strokeWidth: 2.5,
-                                    ),
-                                  )
-                                : Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Image.asset(
-                                        'assets/google.png',
-                                        height: 32,
-                                        width: 32,
-                                      ),
-                                      const SizedBox(width: 10),
-                                      const Text(
-                                        'Sign In with Google',
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                const Text(
+                  "Email",
+                  style: TextStyle(color: Colors.black, fontSize: 14),
                 ),
-                RichText(
-                  text: TextSpan(
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
-                    ),
-                    children: [
-                      const TextSpan(text: "Don't have an account?"),
-                      TextSpan(
-                        text: " Sign Up",
-                        style: const TextStyle(color: uiColor),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const RegisteScreen(),
-                              ),
-                            );
-                          },
-                      ),
-                    ],
-                  ),
+
+                const SizedBox(height: 8),
+                InputField(
+                  hint: "Enter email",
+                  controller: emailOrPhoneController,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 15),
+                const Text(
+                  "Password",
+                  style: TextStyle(color: Colors.black, fontSize: 14),
+                ),
+                const SizedBox(height: 8),
+                InputField(
+                  hint: "Enter password",
+                  obscure: true,
+                  controller: passwordController,
+                ),
               ],
             ),
-          ),
+            const SizedBox(height: 6),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () {
+                  showSnackBar(
+                    context: context,
+                    content: 'Password reset feature coming soon!',
+                  );
+                },
+                child: Text(
+                  "Forgot your password?",
+                  style: TextStyle(color: Colors.black),
+                ),
+              ),
+            ),
+            const SizedBox(height: 5),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (emailOrPhoneController.text.isEmpty) {
+                    InfoPopup.show(
+                      context,
+                      'Please enter your email and password',
+                    );
+                    return;
+                  }
+                  handleLogin();
+                },
+
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: uiColor,
+
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: isLoading
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                    : const Text(
+                        "Log In",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(height: 25),
+            Row(
+              children: [
+                Expanded(child: Divider(color: Colors.grey, thickness: 0.5)),
+                Padding(
+                  padding: EdgeInsetsGeometry.symmetric(horizontal: 12),
+                  child: Text(
+                    "or",
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                Expanded(child: Divider(color: Colors.grey, thickness: 0.5)),
+              ],
+            ),
+            SizedBox(height: 18),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: isGoogleLoading ? null : handleGoogleSignIn,
+
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+
+                child: isGoogleLoading
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+
+                        child: CircularProgressIndicator(
+                          color: Colors.black,
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/google.png',
+                            height: 32,
+                            width: 32,
+                          ),
+                          const SizedBox(width: 10),
+                          const Text(
+                            'Sign In with Google',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+            const SizedBox(height: 50),
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
+                children: [
+                  const TextSpan(text: "Don't have an account?"),
+                  TextSpan(
+                    text: " Sign Up",
+                    style: const TextStyle(color: uiColor),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const RegisteScreen(),
+                          ),
+                        );
+                      },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
         ),
       ),
     );

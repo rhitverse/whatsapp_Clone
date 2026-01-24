@@ -27,27 +27,30 @@ class _InputFieldState extends State<InputField> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      height: 58,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
       decoration: BoxDecoration(
-        color: const Color(0xFF1e2023),
-        borderRadius: BorderRadius.circular(14),
+        color: Color(0xfff8f8ff),
+        borderRadius: BorderRadius.circular(17),
+        border: Border.all(color: Color(0xffc0c0c0), width: 2),
       ),
       child: Center(
         child: TextField(
           controller: widget.controller,
           obscureText: _isObscure,
           cursorColor: Colors.green,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.black),
           decoration: InputDecoration(
             border: InputBorder.none,
             hintText: widget.hint,
-            hintStyle: const TextStyle(color: Colors.white38),
+            hintStyle: TextStyle(color: Colors.grey.shade500),
             suffixIcon: widget.obscure
                 ? IconButton(
                     icon: Icon(
-                      _isObscure ? Icons.visibility_off : Icons.visibility,
-                      color: Colors.white54,
+                      _isObscure
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      color: Colors.grey,
                     ),
                     onPressed: () {
                       setState(() {
