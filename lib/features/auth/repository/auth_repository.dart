@@ -23,9 +23,11 @@ class AuthRepository {
 
   Future<void> signInWithGoogle({required BuildContext context}) async {
     try {
+      await _googleSignIn.signOut();
+
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
-      if (googleUser == null) return; // User cancelled
+      if (googleUser == null) return;
 
       final googleAuth = await googleUser.authentication;
 
@@ -34,31 +36,34 @@ class AuthRepository {
         idToken: googleAuth.idToken,
       );
 
-      UserCredential userCredential = await _auth.signInWithCredential(
-        credential,
-      );
+      final userCredential = await _auth.signInWithCredential(credential);
 
-      // Save user to Firestore if new user
-      if (userCredential.additionalUserInfo?.isNewUser ?? false) {
-        await saveUserToFirestore(
-          uid: userCredential.user!.uid,
-          email: userCredential.user!.email,
-        );
-      }
+      final user = userCredential.user;
+      if (user == null) return;
 
-      if (context.mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const DisplayName()),
-          (route) => false,
-        );
+      final isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
+      if (isNewUser) {
+        await saveUserToFirestore(uid: user.uid, email: user.email);
+
+        if (context.mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const DisplayName()),
+            (_) => false,
+          );
+        }
+      } else {
+        if (context.mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const MobileScreenLayout()),
+            (_) => false,
+          );
+        }
       }
     } catch (e) {
       if (context.mounted) {
-        showSnackBar(
-          context: context,
-          content: 'Google sign-in failed: ${e.toString()}',
-        );
+        InfoPopup.show(context, "Google sign-in failed");
       }
     }
   }

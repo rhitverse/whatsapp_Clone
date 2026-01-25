@@ -39,12 +39,12 @@ class AuthController {
     );
   }
 
-  Future<void> SignUpWithEmail({
+  Future<void> signUpWithEmail({
     required BuildContext context,
     required String email,
     required String password,
   }) async {
-    await _authRepository.signInWithEmail(
+    await _authRepository.signUpWithEmail(
       context: context,
       email: email,
       password: password,
