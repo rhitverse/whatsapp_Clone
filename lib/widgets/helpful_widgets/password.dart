@@ -50,12 +50,17 @@ class _PasswordState extends State<Password> {
   void validateConfirmPassword() {
     if (_isDisposed) return;
 
-    if (confirmPasswordController.text.isEmpty) {
-      isConfirmPasswordWrong = false;
-    } else {
-      isConfirmPasswordWrong =
-          confirmPasswordController.text != passwordController.text;
+    final password = passwordController.text;
+    final confirm = confirmPasswordController.text;
+
+    final bool wrong = confirm.isNotEmpty && !password.startsWith(confirm);
+
+    if (mounted) {
+      setState(() {
+        isConfirmPasswordWrong = wrong;
+      });
     }
+
     notifyParent();
   }
 
@@ -130,8 +135,8 @@ class _PasswordState extends State<Password> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          "Create Password",
-          style: TextStyle(color: Colors.grey, fontSize: 14),
+          "Password",
+          style: TextStyle(color: Colors.black, fontSize: 14),
         ),
         const SizedBox(height: 6),
         _passwordField(
@@ -143,6 +148,7 @@ class _PasswordState extends State<Password> {
             if (mounted) {
               setState(() => isPasswordVisible = !isPasswordVisible);
             }
+            validateConfirmPassword();
           },
           onChanged: checkPasswordStrength,
         ),
@@ -158,7 +164,13 @@ class _PasswordState extends State<Password> {
               ),
             ),
           ),
+
         const SizedBox(height: 10),
+        Text(
+          "Confirm Password",
+          style: TextStyle(color: Colors.black, fontSize: 15),
+        ),
+        const SizedBox(height: 6),
         Transform.translate(
           offset: Offset(
             0,
@@ -176,6 +188,7 @@ class _PasswordState extends State<Password> {
               ),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 12),
+
             child: TextField(
               controller: confirmPasswordController,
               focusNode: confirmPasswordFocus,
@@ -194,6 +207,7 @@ class _PasswordState extends State<Password> {
                       setState(() {
                         isConfirmPasswordVisible = !isConfirmPasswordVisible;
                       });
+                      validateConfirmPassword();
                     }
                   },
                   child: Icon(

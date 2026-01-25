@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
 import 'package:whatsapp_clone/features/auth/otp_page.dart';
+import 'package:whatsapp_clone/screens/mobile_screen_layout.dart';
 import 'package:whatsapp_clone/screens/user/display_name.dart';
+import 'package:whatsapp_clone/widgets/helpful_widgets/info_popup.dart';
 
 class AuthRepository {
   final FirebaseAuth _auth;
@@ -131,17 +133,39 @@ class AuthRepository {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
 
-      if (context.mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const DisplayName()),
-        );
-      }
+      if (!context.mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MobileScreenLayout()),
+      );
     } on FirebaseAuthException catch (e) {
-      if (context.mounted) {
-        showSnackBar(context: context, content: e.message ?? "Login failed");
+      if (!context.mounted) return;
+
+      String message;
+
+      switch (e.code) {
+        case 'user-not-found':
+          message = "Account doesn't exists";
+          break;
+
+        case 'wrong-password':
+          message = "Incorrect password";
+          break;
+
+        case 'invalid-email':
+          message = "Invalid email address";
+          break;
+
+        case 'user-disabled':
+          message = "This account has been disabled";
+          break;
+
+        default:
+          message = "Login failed. Please try again";
       }
-      rethrow;
+
+      InfoPopup.show(context, message);
     }
   }
 
@@ -162,5 +186,28 @@ class AuthRepository {
   Future<void> signOut() async {
     await _googleSignIn.signOut();
     await _auth.signOut();
+  }
+
+  Future<void> signUpWithEmail({
+    required BuildContext context,
+    required String email,
+    required String password,
+  }) async {
+    try {
+      await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      Navigator.pop(context); // loader remove
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const DisplayName()),
+      );
+    } on FirebaseAuthException catch (e) {
+      Navigator.pop(context); // loader remove
+      showSnackBar(context: context, content: e.message ?? "Signup failed");
+    }
   }
 }

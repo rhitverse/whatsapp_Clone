@@ -15,7 +15,8 @@ class InfoPopup extends StatefulWidget {
     String message, {
     Duration duration = const Duration(seconds: 3),
   }) {
-    final overlay = Overlay.of(context);
+    final overlay = Overlay.of(context, rootOverlay: true);
+
     final overlayEntry = OverlayEntry(
       builder: (_) => InfoPopup(message: message, duration: duration),
     );
