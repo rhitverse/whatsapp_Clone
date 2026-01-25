@@ -182,7 +182,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                 style: ElevatedButton.styleFrom(
                   backgroundColor: uiColor,
-
+                  side: BorderSide(color: Colors.grey, width: 1),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -213,7 +213,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Padding(
                   padding: EdgeInsetsGeometry.symmetric(horizontal: 12),
                   child: Text(
-                    "or",
+                    "or sign with",
                     style: TextStyle(
                       color: Colors.grey,
                       fontSize: 14,
@@ -228,11 +228,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             SizedBox(
               width: double.infinity,
               height: 52,
-              child: ElevatedButton(
+              child: OutlinedButton(
                 onPressed: isGoogleLoading ? null : handleGoogleSignIn,
 
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: Colors.grey, width: 0.9),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -258,7 +258,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                           const SizedBox(width: 10),
                           const Text(
-                            'Sign In with Google',
+                            'Continue with Google',
                             style: TextStyle(
                               color: Colors.black,
                               fontSize: 16,

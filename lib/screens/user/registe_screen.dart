@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:country_picker/country_picker.dart';
-import 'package:country_codes/country_codes.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/colors.dart';
-import 'package:whatsapp_clone/features/auth/repository/auth_providers.dart';
+import 'package:whatsapp_clone/screens/mobile_screen_layout.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/input_field.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/password.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_holo_date_picker/flutter_holo_date_picker.dart';
+import 'package:intl/intl.dart';
 
 class RegisteScreen extends ConsumerStatefulWidget {
   const RegisteScreen({super.key});
@@ -17,138 +15,55 @@ class RegisteScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisteScreenState extends ConsumerState<RegisteScreen> {
-  Country? selectedCountry;
-  bool isEmailisSelected = true;
-  bool isPasswordValid = false;
-  bool isLoading = false;
+  final nameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
 
-  final TextEditingController phoneController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  DateTime? selectedDate;
+  bool receiveEmails = true;
+  String? errorText;
 
-  @override
-  void initState() {
-    super.initState();
-    detectCountry();
-
-    phoneController.addListener(() => setState(() {}));
-    emailController.addListener(() => setState(() {}));
-    passwordController.addListener(() => setState(() {}));
+  String get formattedDate {
+    if (selectedDate == null) return "";
+    return DateFormat("MM/dd/yyyy").format(selectedDate!);
   }
 
-  bool get isNextEnabled {
-    if (isEmailisSelected) {
-      return emailController.text.isNotEmpty &&
-          passwordController.text.isNotEmpty;
-    } else {
-      return phoneController.text.isNotEmpty;
+  bool get isDobValid {
+    if (selectedDate == null) return false;
+    final now = DateTime.now();
+    int age = now.year - selectedDate!.year;
+
+    if (now.month < selectedDate!.month ||
+        (now.month == selectedDate!.month && now.day < selectedDate!.day)) {
+      age--;
     }
+    return age >= 13;
   }
 
-  @override
-  void dispose() {
-    phoneController.dispose();
-    emailController.dispose();
-    passwordController.dispose();
-    super.dispose();
-  }
-
-  Future<void> detectCountry() async {
-    await CountryCodes.init();
-    final details = CountryCodes.detailsForLocale();
-
-    setState(() {
-      selectedCountry = Country(
-        phoneCode: details.dialCode!.replaceAll('+', ''),
-        countryCode: details.alpha2Code!,
-        e164Sc: 0,
-        geographic: true,
-        level: 1,
-        name: details.name ?? '',
-        example: '',
-        displayName: details.name ?? '',
-        displayNameNoCountryCode: details.name ?? '',
-        e164Key: '',
-      );
-    });
-  }
-
-  void _openCountryPicker() {
-    showCountryPicker(
-      context: context,
-      showPhoneCode: true,
-      showSearch: true,
-      useSafeArea: true,
-
-      countryListTheme: CountryListThemeData(
-        backgroundColor: const Color(0xff040406),
-
-        textStyle: const TextStyle(color: Colors.white),
-        searchTextStyle: const TextStyle(color: Colors.white),
-        inputDecoration: InputDecoration(
-          hintText: 'Search country',
-          hintStyle: const TextStyle(color: Colors.white54),
-
-          prefixIcon: const Icon(Icons.search, color: Colors.white54, size: 18),
-          isDense: true,
-          filled: true,
-          fillColor: searchBarColor,
-
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(25),
-            borderSide: BorderSide.none,
-          ),
-        ),
-      ),
-
-      onSelect: (Country country) {
-        setState(() {
-          selectedCountry = country;
-        });
-      },
+  void openDatePicker() async {
+    final date = await DatePicker.showSimpleDatePicker(
+      context,
+      initialDate: DateTime(2004),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      dateFormat: "dd-MMMM_yyyy",
+      locale: DateTimePickerLocale.en_us,
+      titleText: "Date of Birth",
+      textColor: Colors.white,
+      backgroundColor: const Color(0xff2b2d31),
+      itemTextStyle: const TextStyle(color: Colors.white, fontSize: 18),
+      looping: false,
+      confirmText: "CONFIRM",
+      cancelText: "CANCEL",
     );
-  }
 
-  Future<void> handleNext() async {
-    if (!isNextEnabled || isLoading) return;
-
-    setState(() => isLoading = true);
-
-    try {
-      final authRepo = ref.read(authRepositoryProvider);
-
-      if (isEmailisSelected) {
-        final email = emailController.text.trim();
-        final password = passwordController.text.trim();
-
-        try {
-          await authRepo.signInWithEmail(
-            context: context,
-            email: email,
-            password: password,
-          );
-        } on FirebaseAuthException catch (e) {
-          if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
-            await authRepo.signInWithEmail(
-              context: context,
-              email: email,
-              password: password,
-            );
-          } else {
-            rethrow;
-          }
-        }
-      } else {
-        final phone =
-            "+${selectedCountry!.phoneCode}${phoneController.text.trim()}";
-        await authRepo.signInWithPhone(context: context, phoneNumber: phone);
-      }
-    } catch (e) {
-      // Error handling is done in repository
-    } finally {
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
+    if (date != null) {
+      final age = DateTime.now().year - date.year;
+      setState(() {
+        errorText = age < 13 ? "Please enter a valid date of birth" : null;
+        selectedDate = date;
+      });
     }
   }
 
@@ -156,229 +71,160 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        color: Color(0xff040406),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
+      body: Stack(
+        children: [
+          Container(
+            height: MediaQuery.of(context).size.height * 0.45,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xff0f7b2f), Color(0xff12b13d)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
+          SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 10),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                ),
-                const SizedBox(height: 20),
-                const Center(
+                const Padding(
+                  padding: EdgeInsets.all(20),
                   child: Text(
-                    "Enter phone or email",
+                    "Create Your\nAccount",
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 26,
+                      fontSize: 30,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                const SizedBox(height: 30),
-
-                Container(
-                  height: 44,
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xff1e2023),
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: Stack(
-                    children: [
-                      AnimatedAlign(
-                        alignment: isEmailisSelected
-                            ? Alignment.centerRight
-                            : Alignment.bottomLeft,
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeOut,
-                        child: Container(
-                          width: (MediaQuery.of(context).size.width - 28) / 2,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: uiColor,
-                            borderRadius: BorderRadius.circular(25),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          "Email",
+                          style: TextStyle(color: Colors.black, fontSize: 15),
+                        ),
+                        const SizedBox(height: 8),
+                        InputField(hint: "Email", controller: emailController),
+                        const SizedBox(height: 12),
+                        Password(controller: passwordController),
+                        SizedBox(height: 8),
+                        Text(
+                          "Date of Birth",
+                          style: TextStyle(color: Colors.black, fontSize: 14),
+                        ),
+                        const SizedBox(height: 8),
+                        GestureDetector(
+                          onTap: openDatePicker,
+                          child: Container(
+                            height: 58,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: const Color(0xffffffff),
+                              borderRadius: BorderRadius.circular(17),
+                              border: Border.all(
+                                color: Colors.grey,
+                                width: 1.5,
+                              ),
+                            ),
+                            alignment: Alignment.centerLeft,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Text(
+                              selectedDate == null
+                                  ? "DD / MM / YYYY"
+                                  : formattedDate,
+                              style: TextStyle(
+                                color: selectedDate == null
+                                    ? Colors.white38
+                                    : Colors.grey,
+                                fontSize: 16,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(25),
-                              onTap: () {
-                                if (isEmailisSelected) {
-                                  setState(() {
-                                    isEmailisSelected = false;
-                                  });
-                                }
-                              },
-                            ),
-                          ),
-                          Expanded(
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(25),
-                              onTap: () {
-                                if (!isEmailisSelected) {
-                                  setState(() {
-                                    isEmailisSelected = true;
-                                  });
-                                }
-                              },
-                            ),
+                        if (errorText != null) ...[
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.error,
+                                color: Colors.red,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                errorText!,
+                                style: const TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
-                      ),
-                      IgnorePointer(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Center(
-                                child: Text(
-                                  "Phone",
-                                  style: TextStyle(
-                                    color: !isEmailisSelected
-                                        ? Colors.white
-                                        : Colors.white54,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Center(
-                                child: Text(
-                                  "Email",
-                                  style: TextStyle(
-                                    color: isEmailisSelected
-                                        ? Colors.white
-                                        : Colors.white54,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
 
-                if (isEmailisSelected) ...[
-                  const Text("Email", style: TextStyle(color: Colors.white70)),
-                  const SizedBox(height: 6),
-                  InputField(hint: "Email", controller: emailController),
+                        const SizedBox(height: 30),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: uiColor,
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: ElevatedButton(
+                              onPressed: () {},
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                              ),
 
-                  const SizedBox(height: 8),
-                  Password(
-                    controller: passwordController,
-                    onChanged: (valid) =>
-                        setState(() => isPasswordValid = valid),
-                  ),
-                ] else ...[
-                  const Text(
-                    "Phone Number",
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    height: 55,
-                    decoration: BoxDecoration(
-                      color: const Color(0xff1e2023),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        InkWell(
-                          onTap: _openCountryPicker,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: Row(
-                              children: [
-                                Text(
-                                  selectedCountry == null
-                                      ? "..."
-                                      : "${selectedCountry!.countryCode} +${selectedCountry!.phoneCode}",
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                                const Icon(
-                                  Icons.arrow_drop_down,
+                              child: const Text(
+                                "Sign Up",
+                                style: TextStyle(
+                                  fontSize: 16,
                                   color: Colors.white,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              ],
+                              ),
                             ),
                           ),
                         ),
-                        const VerticalDivider(color: Colors.white24),
-                        Expanded(
-                          child: TextField(
-                            controller: phoneController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                            style: const TextStyle(color: Colors.white),
-                            cursorColor: Colors.green,
-                            decoration: const InputDecoration(
-                              hintText: "Phone Number",
-                              hintStyle: TextStyle(color: Colors.white54),
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12,
+
+                        const SizedBox(height: 16),
+                        RichText(
+                          text: const TextSpan(
+                            text: "Don’t have account? ",
+                            style: TextStyle(color: Colors.black54),
+                            children: [
+                              TextSpan(
+                                text: "Sign in",
+                                style: TextStyle(
+                                  color: uiColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
-                const Spacer(),
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton(
-                    onPressed: isNextEnabled && !isLoading ? handleNext : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: uiColor,
-                      disabledBackgroundColor: uiColor.withOpacity(0.4),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    child: isLoading
-                        ? const SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2.5,
-                            ),
-                          )
-                        : const Text(
-                            "Next",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                  ),
                 ),
-                const SizedBox(height: 20),
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }

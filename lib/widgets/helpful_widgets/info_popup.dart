@@ -5,10 +5,10 @@ class InfoPopup extends StatefulWidget {
   final Duration duration;
 
   const InfoPopup({
-    Key? key,
+    super.key,
     required this.message,
     this.duration = const Duration(seconds: 3),
-  }) : super(key: key);
+  });
 
   static void show(
     BuildContext context,

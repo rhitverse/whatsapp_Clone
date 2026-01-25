@@ -30,9 +30,9 @@ class _InputFieldState extends State<InputField> {
       height: 58,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
       decoration: BoxDecoration(
-        color: Color(0xfff8f8ff),
+        color: Color(0xffffffff),
         borderRadius: BorderRadius.circular(17),
-        border: Border.all(color: Color(0xffc0c0c0), width: 2),
+        border: Border.all(color: Colors.grey, width: 1.5),
       ),
       child: Center(
         child: TextField(
@@ -50,7 +50,7 @@ class _InputFieldState extends State<InputField> {
                       _isObscure
                           ? Icons.visibility_off_outlined
                           : Icons.visibility_outlined,
-                      color: Colors.grey,
+                      color: Colors.black,
                     ),
                     onPressed: () {
                       setState(() {

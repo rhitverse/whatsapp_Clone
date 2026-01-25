@@ -22,7 +22,6 @@ class _PasswordState extends State<Password> {
   bool isConfirmPasswordWrong = false;
   bool isConfirmPasswordVisible = false;
   bool isPasswordFocused = false;
-  bool showConfirmPassword = false;
   bool _isDisposed = false;
 
   String passwordStrength = "";
@@ -30,7 +29,6 @@ class _PasswordState extends State<Password> {
   final RegExp symbol = RegExp(r'[!@#$%^&*(),.?":{}|<>]');
 
   void checkPasswordStrength(String value) {
-    if (_isDisposed) return;
     if (value.isEmpty) {
       passwordStrength = "";
     } else if (value.length < 8) {
@@ -43,6 +41,7 @@ class _PasswordState extends State<Password> {
 
     validateConfirmPassword();
     notifyParent();
+
     if (mounted) {
       setState(() {});
     }
@@ -89,7 +88,6 @@ class _PasswordState extends State<Password> {
     if (passwordFocus.hasFocus && mounted) {
       setState(() {
         isPasswordFocused = true;
-        showConfirmPassword = true;
       });
     }
   }
@@ -133,7 +131,7 @@ class _PasswordState extends State<Password> {
       children: [
         const Text(
           "Create Password",
-          style: TextStyle(color: Colors.white70, fontSize: 14),
+          style: TextStyle(color: Colors.grey, fontSize: 14),
         ),
         const SizedBox(height: 6),
         _passwordField(
@@ -160,74 +158,66 @@ class _PasswordState extends State<Password> {
               ),
             ),
           ),
-        if (showConfirmPassword) ...[
-          const SizedBox(height: 10),
+        const SizedBox(height: 10),
+        Transform.translate(
+          offset: Offset(
+            0,
+            (isPasswordFocused && passwordStrength.isNotEmpty) ? -4 : 0,
+          ),
+          child: Container(
+            height: 58,
+            decoration: BoxDecoration(
+              color: Color(0xffffffff),
+              borderRadius: BorderRadius.circular(17),
 
-          Transform.translate(
-            offset: Offset(
-              0,
-              (isPasswordFocused && passwordStrength.isNotEmpty) ? -4 : 0,
-            ),
-            child: Container(
-              height: 54,
-              decoration: BoxDecoration(
-                color: const Color(0xff1e2023),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: isConfirmPasswordWrong
-                      ? Colors.red
-                      : Colors.transparent,
-                  width: 1.3,
-                ),
+              border: Border.all(
+                color: isConfirmPasswordWrong ? Colors.red : Colors.grey,
+                width: 1.5,
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: TextField(
-                controller: confirmPasswordController,
-                focusNode: confirmPasswordFocus,
-                obscureText: !isConfirmPasswordVisible,
-                cursorColor: uiColor,
-                onChanged: (_) => validateConfirmPassword(),
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: "Confirm Password",
-                  hintStyle: const TextStyle(
-                    color: Colors.white38,
-                    fontSize: 15,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                  suffixIcon: GestureDetector(
-                    onTap: () {
-                      if (mounted) {
-                        setState(() {
-                          isConfirmPasswordVisible = !isConfirmPasswordVisible;
-                        });
-                      }
-                    },
-                    child: Icon(
-                      isConfirmPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                      color: Colors.white54,
-                    ),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: TextField(
+              controller: confirmPasswordController,
+              focusNode: confirmPasswordFocus,
+              obscureText: !isConfirmPasswordVisible,
+              cursorColor: uiColor,
+              onChanged: (_) => validateConfirmPassword(),
+              style: const TextStyle(color: Colors.black),
+              decoration: InputDecoration(
+                hintText: "Confirm Password",
+                hintStyle: const TextStyle(color: Colors.grey, fontSize: 15),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                suffixIcon: GestureDetector(
+                  onTap: () {
+                    if (mounted) {
+                      setState(() {
+                        isConfirmPasswordVisible = !isConfirmPasswordVisible;
+                      });
+                    }
+                  },
+                  child: Icon(
+                    isConfirmPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                    color: Colors.grey,
                   ),
                 ),
               ),
             ),
           ),
-
-          if (isConfirmPasswordWrong)
-            Row(
-              children: [
-                Icon(Icons.error_outline, color: Colors.red, size: 14),
-                SizedBox(width: 6),
-                Text(
-                  "Wrong password, try again",
-                  style: TextStyle(color: Colors.red, fontSize: 11),
-                ),
-              ],
-            ),
-        ],
+        ),
+        if (isConfirmPasswordWrong)
+          Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.red, size: 14),
+              SizedBox(width: 6),
+              Text(
+                "Wrong password, try again",
+                style: TextStyle(color: Colors.red, fontSize: 11),
+              ),
+            ],
+          ),
       ],
     );
   }
@@ -241,10 +231,11 @@ class _PasswordState extends State<Password> {
     required Function(String) onChanged,
   }) {
     return Container(
-      height: 52,
+      height: 58,
       decoration: BoxDecoration(
-        color: const Color(0xff1e2023),
-        borderRadius: BorderRadius.circular(14),
+        color: const Color(0xffffffff),
+        borderRadius: BorderRadius.circular(17),
+        border: Border.all(color: Colors.grey, width: 1.5),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 14),
       child: TextField(
@@ -253,17 +244,17 @@ class _PasswordState extends State<Password> {
         obscureText: !isVisible,
         onChanged: onChanged,
         cursorColor: uiColor,
-        style: const TextStyle(color: Colors.white),
+        style: const TextStyle(color: Colors.black),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(color: Colors.white38, fontSize: 15),
+          hintStyle: const TextStyle(color: Colors.grey, fontSize: 15),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 16),
           suffixIcon: GestureDetector(
             onTap: onToggle,
             child: Icon(
               isVisible ? Icons.visibility : Icons.visibility_off,
-              color: Colors.white54,
+              color: Colors.grey,
             ),
           ),
         ),

@@ -171,7 +171,7 @@ class _WelcomePageState extends State<WelcomePage>
                 child: Container(
                   height: MediaQuery.of(context).size.height * 0.76,
                   decoration: const BoxDecoration(
-                    color: Color(0xfff8f8ff),
+                    color: Color(0xffffffff),
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(30),
                     ),
