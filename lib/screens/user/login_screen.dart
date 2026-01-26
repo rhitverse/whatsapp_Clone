@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
 import 'package:whatsapp_clone/features/auth/repository/auth_providers.dart';
 import 'package:whatsapp_clone/screens/user/registe_screen.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/input_field.dart';
@@ -48,38 +49,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> handleLogin() async {
     if (!isLoginEnabled) return;
+
     setState(() => isLoading = true);
-    final input = emailOrPhoneController.text.trim();
+
+    final email = emailOrPhoneController.text.trim();
     final password = passwordController.text.trim();
 
     try {
-      final authRepo = ref.read(authRepositoryProvider);
-      if (isEmail(input)) {
-        await authRepo.signInWithEmail(
-          context: context,
-          email: input,
-          password: password,
-        );
+      if (isEmail(email)) {
+        await ref
+            .read(authControllerProvider)
+            .signInWithEmail(
+              context: context,
+              email: email,
+              password: password,
+            );
       } else {
-        if (mounted) {
-          showSnackBar(
-            context: context,
-            content:
-                'Phone login requires verification. Please use Register screen.',
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        showSnackBar(
-          context: context,
-          content: 'Login failed. Please check your credentials.',
+        InfoPopup.show(
+          context,
+          "Phone login requires verification. Please use Register screen.",
         );
       }
+    } catch (_) {
     } finally {
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
+      if (mounted) setState(() => isLoading = false);
     }
   }
 

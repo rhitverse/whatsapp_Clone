@@ -6,7 +6,7 @@ import 'package:flutter_holo_date_picker/flutter_holo_date_picker.dart';
 
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/features/app/welcome/welcome_page.dart';
-import 'package:whatsapp_clone/features/auth/repository/auth_providers.dart';
+import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/app_loader.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/info_popup.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/input_field.dart';
@@ -79,53 +79,100 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
     final password = passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      InfoPopup.show(context, "Email and Password required");
+      InfoPopup.show(context, "Fill up your Details");
       return;
     }
+
+    if (selectedDate == null) {
+      InfoPopup.show(context, "Please select your Date of Birth");
+      return;
+    }
+
+    if (!isDobValid) {
+      InfoPopup.show(context, "You must be 13 years or older to sign up.");
+      return;
+    }
+
     setState(() => isLoading = true);
-    final loader = AppLoader.show(context, message: "Loading...");
+    final loader = AppLoader.show(context, message: "Creating your account...");
     try {
       await ref
-          .read(authRepositoryProvider)
-          .signInWithEmail(context: context, email: email, password: password);
-    } catch (e) {
-      // ❌ error already handled inside repository with InfoPopup
+          .read(authControllerProvider)
+          .signUpWithEmail(context: context, email: email, password: password);
+
+      showEmailVerificationDialog(context);
+    } catch (_) {
+      InfoPopup.show(context, "Signup failed. Try again");
     } finally {
       loader.remove();
       if (mounted) {
         setState(() => isLoading = false);
       }
     }
+  }
+
+  void showEmailVerificationDialog(BuildContext context) {
+    final codeController = TextEditingController();
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(
-        child: SizedBox(
-          height: 90,
-          width: 90,
-          child: Card(
-            elevation: 10,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadiusGeometry.all(Radius.circular(18)),
-            ),
-            child: Padding(
-              padding: EdgeInsets.all(22),
-              child: CircularProgressIndicator(),
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Verify your email",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: codeController,
+                  keyboardType: TextInputType.number,
+                  maxLength: 6,
+                  decoration: InputDecoration(
+                    hintText: "Enter 6-digit code",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          "Cancel",
+                          style: TextStyle(color: Colors.black),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                        ),
+                        onPressed: () {},
+                        child: const Text("Verify"),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
-    try {
-      await ref
-          .read(authRepositoryProvider)
-          .signUpWithEmail(context: context, email: email, password: password);
-    } catch (_) {
-    } finally {
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
-    }
   }
 
   @override
@@ -135,10 +182,10 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
       body: Stack(
         children: [
           Container(
-            height: MediaQuery.of(context).size.height * 0.45,
+            height: 110,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xff0f7b2f), Color(0xff12b13d)],
+                colors: [Color(0xff73c088), Color(0xff12b13d)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -148,14 +195,30 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Text(
-                    "Create Your\nAccount",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.111,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "Create Your\nAccount",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 40,
+                              fontWeight: FontWeight.bold,
+                              height: 1.1,
+                            ),
+                          ),
+                        ),
+                        Image.asset(
+                          "assets/app.png",
+                          height: 90,
+                          fit: BoxFit.contain,
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -175,7 +238,6 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
                           topRight: Radius.circular(30),
                         ),
                       ),
-
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -247,7 +309,6 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
                               ],
                             ),
                           ],
-
                           const SizedBox(height: 45),
                           SizedBox(
                             width: double.infinity,
@@ -256,6 +317,10 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
                               decoration: BoxDecoration(
                                 color: uiColor,
                                 borderRadius: BorderRadius.circular(30),
+                                border: Border.all(
+                                  color: Colors.grey,
+                                  width: 0.5,
+                                ),
                               ),
                               child: ElevatedButton(
                                 onPressed: isLoading ? null : handleSignUp,
@@ -274,7 +339,6 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
                               ),
                             ),
                           ),
-
                           const SizedBox(height: 40),
                           Center(
                             child: RichText(

@@ -144,33 +144,8 @@ class AuthRepository {
         context,
         MaterialPageRoute(builder: (_) => const MobileScreenLayout()),
       );
-    } on FirebaseAuthException catch (e) {
-      if (!context.mounted) return;
-
-      String message;
-
-      switch (e.code) {
-        case 'user-not-found':
-          message = "Account doesn't exists";
-          break;
-
-        case 'wrong-password':
-          message = "Incorrect password";
-          break;
-
-        case 'invalid-email':
-          message = "Invalid email address";
-          break;
-
-        case 'user-disabled':
-          message = "This account has been disabled";
-          break;
-
-        default:
-          message = "Login failed. Please try again";
-      }
-
-      InfoPopup.show(context, message);
+    } on FirebaseAuthException {
+      rethrow;
     }
   }
 
@@ -187,32 +162,42 @@ class AuthRepository {
     }, SetOptions(merge: true));
   }
 
-  // Sign Out
   Future<void> signOut() async {
     await _googleSignIn.signOut();
     await _auth.signOut();
   }
 
   Future<void> signUpWithEmail({
-    required BuildContext context,
     required String email,
     required String password,
   }) async {
-    try {
-      await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+    final userCredential = await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
 
-      Navigator.pop(context); // loader remove
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const DisplayName()),
+    final user = userCredential.user;
+    if (user == null) {
+      throw FirebaseAuthException(
+        code: 'user-null',
+        message: 'User creation failed',
       );
-    } on FirebaseAuthException catch (e) {
-      Navigator.pop(context); // loader remove
-      showSnackBar(context: context, content: e.message ?? "Signup failed");
+    }
+
+    await user.sendEmailVerification();
+
+    await saveUserToFirestore(uid: user.uid, email: user.email);
+  }
+
+  Future<bool> isEmailVerified() async {
+    await _auth.currentUser?.reload();
+    return _auth.currentUser?.emailVerified ?? false;
+  }
+
+  Future<void> resendVerificationEmail() async {
+    final user = _auth.currentUser;
+    if (user != null && !user.emailVerified) {
+      await user.sendEmailVerification();
     }
   }
 }
