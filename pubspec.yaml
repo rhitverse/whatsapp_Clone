@@ -58,6 +58,7 @@ dev_dependencies:
   google_sign_in: ^6.2.1
   flutter_riverpod: ^2.4.9
   shared_preferences: ^2.2.2
+  cloud_functions: ^6.0.6
   
 
 # For information on the generic Dart part of this file, see the

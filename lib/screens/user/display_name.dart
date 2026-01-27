@@ -5,6 +5,8 @@ import 'package:whatsapp_clone/screens/mobile_screen_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/app_loader.dart';
+import 'package:whatsapp_clone/widgets/helpful_widgets/info_popup.dart';
+import 'package:whatsapp_clone/widgets/helpful_widgets/input_field.dart';
 
 class DisplayName extends StatefulWidget {
   const DisplayName({super.key});
@@ -27,148 +29,131 @@ class _DisplayNameState extends State<DisplayName> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        color: Color(0xff040406),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: whiteColor,
+        title: Text(
+          "Create a new account",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 28,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        elevation: 0,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Other people on MINE can see your display name and \n profile media.",
+              style: TextStyle(fontSize: 14, color: Colors.black54),
+            ),
+            const SizedBox(height: 32),
+
+            Row(
               children: [
-                const SizedBox(height: 20),
-                const Center(
-                  child: Text(
-                    "What's your name?",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 30),
-                const Text(
-                  "Display Name",
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-                SizedBox(height: 8),
                 Container(
-                  height: 52,
+                  height: 90,
+                  width: 90,
                   decoration: BoxDecoration(
-                    color: const Color(0xff1e2023),
-                    borderRadius: BorderRadius.circular(14),
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey.shade300),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: nameController,
-                          style: const TextStyle(color: Colors.white),
-                          cursorColor: Colors.green,
-                          decoration: const InputDecoration(
-                            hintText: "Enter your name",
-                            hintStyle: TextStyle(color: Colors.white54),
-                            border: InputBorder.none,
-                          ),
-                        ),
-                      ),
-                      if (nameController.text.isNotEmpty)
-                        GestureDetector(
-                          onTap: () {
-                            nameController.clear();
-                            HapticFeedback.lightImpact();
-                          },
-                          child: Container(
-                            height: 20,
-                            width: 20,
-                            decoration: const BoxDecoration(
-                              color: Colors.white24,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.close,
-                              size: 12,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
+                  child: const Icon(Icons.camera_alt, color: Colors.black45),
                 ),
-                const SizedBox(height: 12),
-                const Text(
-                  "You can use emoji and special characters.",
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
-                ),
-                const SizedBox(height: 26),
-                SizedBox(
-                  width: double.infinity,
-                  height: 55,
-                  child: ElevatedButton(
-                    onPressed: nameController.text.isEmpty
-                        ? null
-                        : () async {
-                            final loader = AppLoader.show(
-                              context,
-                              message: "Creating your account...",
-                            );
-
-                            try {
-                              final uid =
-                                  FirebaseAuth.instance.currentUser?.uid;
-
-                              if (uid == null) {
-                                loader.remove();
-                                return;
-                              }
-
-                              await FirebaseFirestore.instance
-                                  .collection('users')
-                                  .doc(uid)
-                                  .set({
-                                    'displayName': nameController.text.trim(),
-                                  }, SetOptions(merge: true));
-
-                              loader.remove();
-
-                              if (!mounted) return;
-
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const MobileScreenLayout(),
-                                ),
-                              );
-                            } catch (e) {
-                              loader.remove();
-                              debugPrint("Display name save error: $e");
-                            }
-                          },
-
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: uiColor,
-                      disabledBackgroundColor: uiColor.withOpacity(0.4),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    child: const Text(
-                      "Next",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 25),
               ],
             ),
-          ),
+
+            const SizedBox(height: 20),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Display Name",
+                  style: TextStyle(color: Colors.black, fontSize: 14),
+                ),
+
+                const SizedBox(height: 8),
+                InputField(
+                  hint: "What's your name?",
+                  controller: nameController,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+            const Text(
+              "You can use emoji and special characters.",
+              style: TextStyle(color: Colors.white70, fontSize: 12),
+            ),
+            const SizedBox(height: 26),
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton(
+                onPressed: () async {
+                  if (nameController.text.trim().isEmpty) {
+                    InfoPopup.show(context, "Please enter a display name");
+                    return;
+                  }
+                  final loader = AppLoader.show(
+                    context,
+                    message: "Creating your account...",
+                  );
+
+                  try {
+                    final uid = FirebaseAuth.instance.currentUser?.uid;
+
+                    if (uid == null) {
+                      loader.remove();
+                      return;
+                    }
+
+                    await FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(uid)
+                        .set({
+                          'displayName': nameController.text.trim(),
+                        }, SetOptions(merge: true));
+
+                    loader.remove();
+
+                    if (!mounted) return;
+
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const MobileScreenLayout(),
+                      ),
+                    );
+                  } catch (e) {
+                    loader.remove();
+                    debugPrint("Display name save error: $e");
+                  }
+                },
+
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: uiColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: const Text(
+                  "Next",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 25),
+          ],
         ),
       ),
     );

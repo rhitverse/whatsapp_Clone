@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/info_popup.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 class EmailVerificationDialog extends StatefulWidget {
-  final String generatedCode;
+  final String email;
+
   final Future<void> Function() onVerified;
 
   const EmailVerificationDialog({
     super.key,
-    required this.generatedCode,
+    required this.email,
     required this.onVerified,
   });
 
@@ -130,6 +132,7 @@ class _EmailVerificationDialogState extends State<EmailVerificationDialog> {
                     child: ElevatedButton(
                       onPressed: () async {
                         final code = _codeController.text.trim();
+
                         if (code.isEmpty) {
                           InfoPopup.show(
                             context,
@@ -137,23 +140,43 @@ class _EmailVerificationDialogState extends State<EmailVerificationDialog> {
                           );
                           return;
                         }
-                        if (code == widget.generatedCode) {
-                          _attempts = 0;
-                          Navigator.pop(context);
-                          await widget.onVerified();
-                        } else {
+
+                        if (_attempts >= _maxAttempts) {
+                          InfoPopup.show(
+                            context,
+                            "Too many requests. Please try again in a bit",
+                          );
+                          return;
+                        }
+
+                        try {
+                          final functions = FirebaseFunctions.instanceFor(
+                            region: 'us-central1',
+                          );
+
+                          final result = await functions
+                              .httpsCallable('verifyEmailOtp')
+                              .call({"email": widget.email, "otp": code});
+
+                          if (result.data["verified"] == true) {
+                            _attempts = 0;
+                            Navigator.pop(context);
+                            await widget.onVerified();
+                          }
+                        } catch (e) {
                           _attempts++;
 
                           if (_attempts >= _maxAttempts) {
                             InfoPopup.show(
                               context,
-                              "Too many incorrect attempts. Please try again later.",
+                              "Too many requests. Please try again in a bit",
                             );
                           } else {
-                            InfoPopup.show(context, "Invalid Code");
+                            InfoPopup.show(context, "Incorrect code");
                           }
                         }
                       },
+
                       style: ElevatedButton.styleFrom(
                         backgroundColor: uiColor,
                         foregroundColor: Colors.white,

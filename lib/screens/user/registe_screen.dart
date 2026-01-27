@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_holo_date_picker/flutter_holo_date_picker.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/features/app/welcome/welcome_page.dart';
@@ -27,18 +28,11 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
-  String generatedCode = "";
-
   DateTime? selectedDate;
   bool receiveEmails = true;
   bool isLoading = false;
 
   String? errorText;
-
-  String generateVerificationCode() {
-    return (100000 + (DateTime.now().millisecondsSinceEpoch % 900000))
-        .toString();
-  }
 
   String get formattedDate {
     if (selectedDate == null) return "";
@@ -126,21 +120,27 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
       return;
     }
 
-    generatedCode = generateVerificationCode();
+    try {
+      final functions = FirebaseFunctions.instanceFor(region: 'us-central1');
 
-    debugPrint("Generated code: $generatedCode");
-    showEmailVerificationDialog(context);
+      await functions.httpsCallable('sendEmailOtp').call({"email": email});
+
+      showEmailVerificationDialog(context);
+    } catch (e) {
+      InfoPopup.show(
+        context,
+        "Failed to send verification email. Please try again.",
+      );
+    }
   }
 
   void showEmailVerificationDialog(BuildContext context) {
-    final codeController = TextEditingController();
-
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
         return EmailVerificationDialog(
-          generatedCode: generatedCode,
+          email: emailController.text.trim(),
           onVerified: () async {
             await createAccountAfterVerification();
           },
