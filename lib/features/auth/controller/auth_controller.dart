@@ -94,7 +94,6 @@ class AuthController {
         context,
         "Account created! Please check your email to verify your account",
       );
-      await _authRepository.signOut();
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const DisplayName()),

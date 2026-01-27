@@ -7,7 +7,9 @@ import 'package:flutter_holo_date_picker/flutter_holo_date_picker.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/features/app/welcome/welcome_page.dart';
 import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
+import 'package:whatsapp_clone/screens/user/display_name.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/app_loader.dart';
+import 'package:whatsapp_clone/widgets/helpful_widgets/email_verfication_dialog.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/info_popup.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/input_field.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/password.dart';
@@ -25,11 +27,18 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
+  String generatedCode = "";
+
   DateTime? selectedDate;
   bool receiveEmails = true;
   bool isLoading = false;
 
   String? errorText;
+
+  String generateVerificationCode() {
+    return (100000 + (DateTime.now().millisecondsSinceEpoch % 900000))
+        .toString();
+  }
 
   String get formattedDate {
     if (selectedDate == null) return "";
@@ -74,6 +83,30 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
     }
   }
 
+  Future<void> createAccountAfterVerification() async {
+    setState(() => isLoading = true);
+    final loader = AppLoader.show(context, message: "Creating your account...");
+
+    try {
+      await ref
+          .read(authControllerProvider)
+          .signUpWithEmail(
+            context: context,
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const DisplayName()),
+      );
+    } catch (e) {
+      InfoPopup.show(context, "Failed to create account. Please try again.");
+    } finally {
+      loader.remove();
+      setState(() => isLoading = false);
+    }
+  }
+
   Future<void> handleSignUp() async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
@@ -93,22 +126,10 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
       return;
     }
 
-    setState(() => isLoading = true);
-    final loader = AppLoader.show(context, message: "Creating your account...");
-    try {
-      await ref
-          .read(authControllerProvider)
-          .signUpWithEmail(context: context, email: email, password: password);
+    generatedCode = generateVerificationCode();
 
-      showEmailVerificationDialog(context);
-    } catch (_) {
-      InfoPopup.show(context, "Signup failed. Try again");
-    } finally {
-      loader.remove();
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
-    }
+    debugPrint("Generated code: $generatedCode");
+    showEmailVerificationDialog(context);
   }
 
   void showEmailVerificationDialog(BuildContext context) {
@@ -118,58 +139,11 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  "Verify your email",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: codeController,
-                  keyboardType: TextInputType.number,
-                  maxLength: 6,
-                  decoration: InputDecoration(
-                    hintText: "Enter 6-digit code",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(
-                          "Cancel",
-                          style: TextStyle(color: Colors.black),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                        ),
-                        onPressed: () {},
-                        child: const Text("Verify"),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+        return EmailVerificationDialog(
+          generatedCode: generatedCode,
+          onVerified: () async {
+            await createAccountAfterVerification();
+          },
         );
       },
     );
@@ -182,7 +156,6 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
       body: Stack(
         children: [
           Container(
-            height: 110,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [Color(0xff73c088), Color(0xff12b13d)],

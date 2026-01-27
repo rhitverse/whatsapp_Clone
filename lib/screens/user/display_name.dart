@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/screens/mobile_screen_layout.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:whatsapp_clone/widgets/helpful_widgets/app_loader.dart';
 
 class DisplayName extends StatefulWidget {
   const DisplayName({super.key});
@@ -34,27 +37,6 @@ class _DisplayNameState extends State<DisplayName> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const MobileScreenLayout(),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        "Skip",
-                        style: TextStyle(color: uiColor, fontSize: 16),
-                      ),
-                    ),
-                  ],
-                ),
-
                 const SizedBox(height: 20),
                 const Center(
                   child: Text(
@@ -128,15 +110,44 @@ class _DisplayNameState extends State<DisplayName> {
                   child: ElevatedButton(
                     onPressed: nameController.text.isEmpty
                         ? null
-                        : () {
-                            Navigator.push(
+                        : () async {
+                            final loader = AppLoader.show(
                               context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const MobileScreenLayout(),
-                              ),
+                              message: "Creating your account...",
                             );
+
+                            try {
+                              final uid =
+                                  FirebaseAuth.instance.currentUser?.uid;
+
+                              if (uid == null) {
+                                loader.remove();
+                                return;
+                              }
+
+                              await FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(uid)
+                                  .set({
+                                    'displayName': nameController.text.trim(),
+                                  }, SetOptions(merge: true));
+
+                              loader.remove();
+
+                              if (!mounted) return;
+
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const MobileScreenLayout(),
+                                ),
+                              );
+                            } catch (e) {
+                              loader.remove();
+                              debugPrint("Display name save error: $e");
+                            }
                           },
+
                     style: ElevatedButton.styleFrom(
                       backgroundColor: uiColor,
                       disabledBackgroundColor: uiColor.withOpacity(0.4),
