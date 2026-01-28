@@ -100,65 +100,111 @@ class SettingScreen extends ConsumerWidget {
           ),
           SizedBox(height: 2),
           _svgTile(
-            "assets/svg/account.svg",
+            svgPath: "assets/svg/account.svg",
             "Account",
+            iconSize: 24,
             onTap: () => _go(context, const AccountScreen()),
           ),
 
           _svgTile(
-            "assets/svg/privacy1.svg",
+            svgPath: "assets/svg/privacy1.svg",
             "Privacy",
+            iconSize: 28,
             onTap: () => _go(context, const PrivacyScreen()),
           ),
 
-          SizedBox(height: 16),
+          SizedBox(height: 10),
           Text('General', style: TextStyle(color: Colors.grey, fontSize: 13)),
+          SizedBox(height: 5),
           _svgTile(
-            "assets/svg/notification.svg",
+            svgPath: "assets/svg/notifications.svg",
             "Notifications",
             onTap: () => _go(context, const NotificationsScreen()),
           ),
 
           _svgTile(
-            "assets/svg/storage.svg",
-            "Storage and data",
+            svgPath: "assets/svg/photo.svg",
+            "Photos & videos",
             onTap: () => _go(context, const StorageScreen()),
           ),
           _svgTile(
-            "assets/svg/chat_icon.svg",
+            svgPath: "assets/svg/chat_icon.svg",
             "Chats",
+            iconSize: 27,
             onTap: () => _go(context, const ChatsScreen()),
           ),
           _svgTile(
-            "assets/svg/call.svg",
+            icon: Icons.format_paint_outlined,
+            "Themes",
+            onTap: () => _go(context, const StarrtedMessageScreen()),
+          ),
+          _svgTile(
+            svgPath: "assets/svg/call.svg",
             "Call",
+            iconSize: 39,
             onTap: () => _go(context, const HelpScreen()),
           ),
           _svgTile(
-            "assets/svg/friends.svg",
+            svgPath: "assets/svg/friends.svg",
             "Friends",
+            iconSize: 32,
             onTap: () => _go(context, const StarrtedMessageScreen()),
           ),
           _svgTile(
-            "assets/svg/star.svg",
-            "Starred messages",
+            svgPath: "assets/svg/language.svg",
+            "Language",
+            iconSize: 22,
             onTap: () => _go(context, const StarrtedMessageScreen()),
           ),
           _svgTile(
-            "assets/svg/help.svg",
-            "Help",
+            svgPath: "assets/svg/folders.svg",
+            "Back up and restore",
+            iconSize: 23,
+            onTap: () => _go(context, const StarrtedMessageScreen()),
+          ),
+          SizedBox(height: 10),
+          Text(
+            "Help and feedback",
+            style: TextStyle(color: Colors.grey, fontSize: 13),
+          ),
+          SizedBox(height: 5),
+          _svgTile(
+            icon: Icons.help_outline,
+            "Help center",
+            iconSize: 23,
             onTap: () => _go(context, const HelpScreen()),
           ),
 
           _svgTile(
-            "assets/svg/invite.svg",
+            icon: Icons.feedback_outlined,
+            "Send feedback",
+            iconSize: 23,
+            onTap: () => _go(context, const HelpScreen()),
+          ),
+          _svgTile(
+            icon: Icons.description_outlined,
+            "Terms and privacy policy",
+            iconSize: 23,
+            onTap: () => _go(context, const StorageScreen()),
+          ),
+          _svgTile(
+            icon: Icons.info_outline,
+            "App info",
+            iconSize: 23,
+            onTap: () => _go(context, const StorageScreen()),
+          ),
+
+          _svgTile(
+            svgPath: "assets/svg/invite.svg",
             "Invite a friend",
+            iconSize: 24,
             onTap: () => _go(context, const InviteScreen()),
           ),
 
           _svgTile(
-            "assets/svg/logout.svg",
+            svgPath: "assets/svg/logout.svg",
             "Logout",
+            color: Colors.redAccent,
             onTap: () => _handleLogout(context, ref),
           ),
         ],
@@ -199,12 +245,44 @@ class SettingScreen extends ConsumerWidget {
     );
   }
 
-  Widget _svgTile(String icon, String title, {VoidCallback? onTap}) {
+  Widget _svgTile(
+    String title, {
+    String? svgPath,
+    IconData? icon,
+    VoidCallback? onTap,
+    double iconSize = 22,
+    Color? color,
+
+    VoidCallback? onIconPressed,
+  }) {
     return ListTile(
       onTap: onTap,
       contentPadding: EdgeInsets.zero,
-      leading: SvgPicture.asset(icon, width: 22, color: Colors.white),
-      title: Text(title, style: const TextStyle(color: Colors.white)),
+      leading: SizedBox(
+        width: 28,
+        height: 30,
+        child: Center(
+          child: icon != null
+              ? IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onPressed: onIconPressed ?? onTap,
+                  icon: Icon(
+                    icon,
+                    size: iconSize,
+                    color: color ?? Colors.white,
+                  ),
+                )
+              : SvgPicture.asset(
+                  svgPath!,
+                  width: iconSize,
+                  height: iconSize,
+                  color: color ?? Colors.white,
+                  fit: BoxFit.contain,
+                ),
+        ),
+      ),
+      title: Text(title),
       trailing: const Icon(Icons.chevron_right, color: Colors.white54),
     );
   }

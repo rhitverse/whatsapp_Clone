@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-labelledby="title"
+aria-describedby="desc" role="img" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>Folder Sync</title>
+  <desc>A line styled icon from Orion Icon Library.</desc>
+  <path data-name="layer2"
+  d="M2 55a2 2 0 0 0 2 2h56a2 2 0 0 0 2-2V15H24V9H2z" fill="none" stroke="#202020"
+  stroke-miterlimit="10" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
+  <path data-name="layer1" fill="none" stroke="#202020" stroke-miterlimit="10"
+  stroke-width="2" d="M39.2 35l4.8 4.8 4.8-4.8m-24 0L20 30.2 15.2 35" stroke-linejoin="round"
+  stroke-linecap="round"></path>
+  <path data-name="layer1" d="M37.7 45.6a11.8 11.8 0 0 1-14.1-2.1A12.1 12.1 0 0 1 20.8 31m5.5-6.6a11.8 11.8 0 0 1 14 2.1A12.1 12.1 0 0 1 43.2 39"
+  fill="none" stroke="#202020" stroke-miterlimit="10" stroke-width="2" stroke-linejoin="round"
+  stroke-linecap="round"></path>
+</svg>

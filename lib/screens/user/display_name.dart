@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/screens/mobile_screen_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
