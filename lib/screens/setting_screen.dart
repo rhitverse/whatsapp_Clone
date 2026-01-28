@@ -162,6 +162,13 @@ class SettingScreen extends ConsumerWidget {
             iconSize: 23,
             onTap: () => _go(context, const StarrtedMessageScreen()),
           ),
+
+          _svgTile(
+            svgPath: "assets/svg/invite.svg",
+            "Invite a friend",
+            iconSize: 24,
+            onTap: () => _go(context, const InviteScreen()),
+          ),
           SizedBox(height: 10),
           Text(
             "Help and feedback",
@@ -192,13 +199,6 @@ class SettingScreen extends ConsumerWidget {
             "App info",
             iconSize: 23,
             onTap: () => _go(context, const StorageScreen()),
-          ),
-
-          _svgTile(
-            svgPath: "assets/svg/invite.svg",
-            "Invite a friend",
-            iconSize: 24,
-            onTap: () => _go(context, const InviteScreen()),
           ),
 
           _svgTile(
