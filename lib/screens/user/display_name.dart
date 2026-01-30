@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/common/utils/utils.dart';
+import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
 import 'package:whatsapp_clone/screens/mobile_screen_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,17 +20,23 @@ class DisplayName extends StatefulWidget {
 
 class _DisplayNameState extends State<DisplayName> {
   final TextEditingController nameController = TextEditingController();
+  File? image;
 
   @override
-  void initState() {
-    super.initState();
-    nameController.addListener(() {
-      setState(() {});
-    });
+  void dispose() {
+    super.dispose();
+    nameController.dispose();
+  }
+
+  void selectImage() async {
+    image = await pickImageFromGallery(context);
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -51,18 +61,35 @@ class _DisplayNameState extends State<DisplayName> {
               style: TextStyle(fontSize: 14, color: Colors.black54),
             ),
             const SizedBox(height: 32),
-
             Row(
               children: [
-                Container(
-                  height: 90,
-                  width: 90,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: const Icon(Icons.camera_alt, color: Colors.black45),
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    image == null
+                        ? const CircleAvatar(
+                            radius: 34,
+                            backgroundImage: NetworkImage(
+                              'https://png.pngitem.com/pimgs/s/649-6490124_katie-notopoulos-katienotopoulos-i-write-about-tech-round.png',
+                            ),
+                          )
+                        : CircleAvatar(
+                            backgroundImage: FileImage(image!),
+                            radius: 34,
+                          ),
+                    InkWell(
+                      onTap: () {},
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(shape: BoxShape.circle),
+                        child: const Icon(
+                          Icons.add_a_photo_outlined,
+                          size: 20,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

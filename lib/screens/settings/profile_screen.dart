@@ -1,10 +1,6 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/colors.dart';
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:whatsapp_clone/screens/Profile/bio_screen.dart';
-import 'package:whatsapp_clone/screens/Profile/birthday_screen.dart';
 import 'package:whatsapp_clone/screens/Profile/display_edit_screen.dart';
 import 'package:whatsapp_clone/screens/Profile/qr_screen.dart';
 import 'package:whatsapp_clone/screens/Profile/username_screen.dart';
@@ -17,19 +13,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  File? _coverImage;
-
-  Future<void> _pickCoverImage() async {
-    final picker = ImagePicker();
-    final XFile? picked = await picker.pickImage(source: ImageSource.gallery);
-
-    if (picked != null) {
-      setState(() {
-        _coverImage = File(picked.path);
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -124,7 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 trailing: Switch(
                   value: false,
                   onChanged: (_) {},
-                  activeColor: uiColor,
+                  activeThumbColor: uiColor,
                 ),
               ),
               SizedBox(height: 10),
