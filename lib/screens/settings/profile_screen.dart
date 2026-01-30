@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/common/utils/utils.dart';
 import 'package:whatsapp_clone/screens/Profile/bio_screen.dart';
 import 'package:whatsapp_clone/screens/Profile/display_edit_screen.dart';
 import 'package:whatsapp_clone/screens/Profile/qr_screen.dart';
@@ -13,6 +16,20 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final TextEditingController nameController = TextEditingController();
+  File? image;
+
+  @override
+  void dispose() {
+    super.dispose();
+    nameController.dispose();
+  }
+
+  void selectImage() async {
+    image = await pickImageFromGallery(context);
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,26 +54,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(
-                child: Stack(
-                  children: [
-                    CircleAvatar(
-                      radius: 66,
-                      backgroundColor: Colors.black,
-                      child: CircleAvatar(
-                        radius: 62,
-                        backgroundImage: AssetImage("assets/profile.jpg"),
+                child: GestureDetector(
+                  onTap: () {
+                    selectImage();
+                  },
+                  onLongPress: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => Dialog(
+                        child: image == null
+                            ? Image.network(
+                                'https://png.pngitem.com/pimgs/s/649-6490124_katie-notopoulos-katienotopoulos-i-write-about-tech-round.png',
+                              )
+                            : Image.file(image!),
                       ),
-                    ),
-                    Positioned(
-                      bottom: 10,
-                      right: 12,
-                      child: const Icon(
-                        Icons.camera_alt,
-                        size: 24,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
+                    );
+                  },
+                  child: image == null
+                      ? const CircleAvatar(
+                          radius: 66,
+                          backgroundImage: NetworkImage(
+                            'https://png.pngitem.com/pimgs/s/649-6490124_katie-notopoulos-katienotopoulos-i-write-about-tech-round.png',
+                          ),
+                        )
+                      : CircleAvatar(
+                          backgroundImage: FileImage(image!),
+                          radius: 66,
+                        ),
                 ),
               ),
               _tile(

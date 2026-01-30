@@ -4,7 +4,6 @@ import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:whatsapp_clone/features/app/splash/splash_screen.dart';
-import 'package:whatsapp_clone/screens/user/display_name.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,7 +22,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: backgroundColor,
       ),
-      home: DisplayName(),
+      home: SplashScreen(),
     );
   }
 }

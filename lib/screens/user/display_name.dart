@@ -1,9 +1,7 @@
 import 'dart:io';
-
+import 'package:whatsapp_clone/common/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/colors.dart';
-import 'package:whatsapp_clone/common/utils/utils.dart';
-import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
 import 'package:whatsapp_clone/screens/mobile_screen_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -35,8 +33,6 @@ class _DisplayNameState extends State<DisplayName> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -78,7 +74,9 @@ class _DisplayNameState extends State<DisplayName> {
                             radius: 34,
                           ),
                     InkWell(
-                      onTap: () {},
+                      onTap: () {
+                        selectImage();
+                      },
                       child: Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(shape: BoxShape.circle),

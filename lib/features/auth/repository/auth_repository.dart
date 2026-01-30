@@ -1,9 +1,13 @@
+import 'dart:io';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:whatsapp_clone/common/utils/common_cloudinary_repository.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
 import 'package:whatsapp_clone/features/auth/otp_page.dart';
+import 'package:whatsapp_clone/features/auth/repository/auth_providers.dart';
 import 'package:whatsapp_clone/screens/mobile_screen_layout.dart';
 import 'package:whatsapp_clone/screens/user/display_name.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/info_popup.dart';
@@ -198,6 +202,38 @@ class AuthRepository {
     final user = _auth.currentUser;
     if (user != null && !user.emailVerified) {
       await user.sendEmailVerification();
+    }
+  }
+
+  void saveUserDataToFirebase({
+    required String name,
+    required File? profilePic,
+    required ProviderRef ref,
+    required BuildContext context,
+  }) async {
+    try {
+      final auth = ref.read(firebaseAuthProvider);
+      String uid = auth.currentUser!.uid;
+      String photoUrl =
+          'https://png.pngitem.com/pimgs/s/649-6490124_katie-notopoulos-katienotopoulos-i-write-about-tech-round.png';
+
+      if (profilePic != null) {
+        final cloudRepo = ref.read(commonCloudinaryRepositoryProvider);
+        String? uploadedUrl = await cloudRepo.storeFileToCloudinary(profilePic);
+
+        if (uploadedUrl != null) {
+          photoUrl = uploadedUrl;
+        }
+      }
+      final firestore = ref.read(firebaseFirestoreProvider);
+      await firestore.collection('users').doc(uid).set({
+        'name': name,
+        'uid': uid,
+        'profilePic': photoUrl,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      showSnackBar(context: context, content: e.toString());
     }
   }
 }
