@@ -49,4 +49,4 @@ app.*.map.json
 /web_profile_bar.dart
 /web_search_bar.dart
 /web_screen_layout.dart
-/secret
+lib/secret/secret.dart

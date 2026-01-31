@@ -2,7 +2,6 @@ class UserModel {
   final String name;
   final String uid;
   final String profilePic;
-  final bool isOnline;
   final String username;
   final List<String> groupId;
 
@@ -10,7 +9,6 @@ class UserModel {
     required this.name,
     required this.uid,
     required this.profilePic,
-    required this.isOnline,
     required this.username,
     required this.groupId,
   });
@@ -20,7 +18,6 @@ class UserModel {
       'name': name,
       'uid': uid,
       'profilePic': profilePic,
-      'isOnline': isOnline,
       'username': username,
       'group': groupId,
     };
@@ -31,7 +28,6 @@ class UserModel {
       name: map['name'] ?? '',
       uid: map['uid'] ?? '',
       profilePic: map['profilePic'] ?? '',
-      isOnline: map['isOnline'] ?? '',
       username: map['username'] ?? '',
       groupId: map['groupId'] != null ? List<String>.from(map['groupId']) : [],
     );

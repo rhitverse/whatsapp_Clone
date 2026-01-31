@@ -243,7 +243,6 @@ class AuthRepository {
         name: name,
         uid: uid,
         profilePic: photoUrl,
-        isOnline: true,
         username: uid,
         groupId: [],
       );
