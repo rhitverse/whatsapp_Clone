@@ -114,14 +114,67 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         selectImage();
                       },
                       onLongPress: () {
-                        showDialog(
+                        if (image == null &&
+                            (user.profilePic.isEmpty ||
+                                user.profilePic ==
+                                    'https://png.pngitem.com/pimgs/s/649-6490124_katie-notopoulos-katienotopoulos-i-write-about-tech-round.png')) {
+                          return;
+                        }
+
+                        showModalBottomSheet(
                           context: context,
-                          builder: (_) => Dialog(
-                            child: image == null
-                                ? Image.network(
-                                    'https://png.pngitem.com/pimgs/s/649-6490124_katie-notopoulos-katienotopoulos-i-write-about-tech-round.png',
-                                  )
-                                : Image.file(image!),
+                          backgroundColor: backgroundColor,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(20),
+                            ),
+                          ),
+                          builder: (_) => SafeArea(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ListTile(
+                                  leading: const Icon(
+                                    Icons.remove_red_eye,
+                                    color: Colors.white,
+                                  ),
+                                  title: const Text(
+                                    'View',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) => Dialog(
+                                        child: image != null
+                                            ? Image.file(
+                                                image!,
+                                                fit: BoxFit.cover,
+                                              )
+                                            : Image.network(
+                                                user.profilePic,
+                                                fit: BoxFit.cover,
+                                              ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                ListTile(
+                                  leading: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                  title: const Text(
+                                    "Delete",
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                  onTap: () async {
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },
