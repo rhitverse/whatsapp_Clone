@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/features/auth/repository/auth_repository.dart';
 import 'package:whatsapp_clone/features/auth/repository/auth_providers.dart';
@@ -155,5 +154,9 @@ class AuthController {
       profilePic: profilePic,
       context: context,
     );
+  }
+
+  Future<void> deleteProfilePicture({required BuildContext context}) async {
+    await _authRepository.deleteProfilePicture(context: context);
   }
 }

@@ -216,6 +216,21 @@ class AuthRepository {
           'https://png.pngitem.com/pimgs/s/649-6490124_katie-notopoulos-katienotopoulos-i-write-about-tech-round.png';
 
       if (profilePic != null) {
+        final userDoc = await _firestore.collection('users').doc(uid).get();
+        final userData = userDoc.data();
+        final oldProfilePic = userData?['profilePic'] as String?;
+
+        if (oldProfilePic != null &&
+            !oldProfilePic.contains('katie-notopoulos') &&
+            oldProfilePic.contains('cloudinary')) {
+          final cloudRepo = CommonCloudinaryRepository();
+          try {
+            await cloudRepo.deleteFileFromCloudinary(oldProfilePic);
+          } catch (e) {
+            debugPrint('Failed to delete old image: $e');
+          }
+        }
+
         final cloudRepo = CommonCloudinaryRepository();
         final uploaderUrl = await cloudRepo.storeFileToCloudinary(profilePic);
 
@@ -237,14 +252,56 @@ class AuthRepository {
           .collection('users')
           .doc(uid)
           .set(user.toMap(), SetOptions(merge: true));
-      Navigator.pop(context);
+
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
     } catch (e) {
-      showSnackBar(context: context, content: e.toString());
+      if (context.mounted) {
+        showSnackBar(context: context, content: e.toString());
+      }
+    }
+  }
+
+  Future<void> deleteProfilePicture({required BuildContext context}) async {
+    try {
+      final uid = _auth.currentUser!.uid;
+
+      final userDoc = await _firestore.collection('users').doc(uid).get();
+      final userData = userDoc.data();
+
+      if (userData == null) return;
+
+      final oldProfilePic = userData['profilePic'] as String?;
+
+      if (oldProfilePic != null &&
+          !oldProfilePic.contains('katie-notopoulos') &&
+          oldProfilePic.contains('cloudinary')) {
+        final cloudRepo = CommonCloudinaryRepository();
+        await cloudRepo.deleteFileFromCloudinary(oldProfilePic);
+      }
+      const defaultPhotoUrl =
+          'https://png.pngitem.com/pimgs/s/649-6490124_katie-notopoulos-katienotopoulos-i-write-about-tech-round.png';
+      await _firestore.collection('users').doc(uid).update({
+        'profilePic': defaultPhotoUrl,
+      });
+
+      if (context.mounted) {
+        showSnackBar(context: context, content: 'Profile picture removed');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        showSnackBar(
+          context: context,
+          content: 'Failed to delete profile picture: ${e.toString()}',
+        );
+      }
     }
   }
 
   Stream<UserModel> getUserData() {
     final uid = _auth.currentUser!.uid;
+
     return _firestore.collection('users').doc(uid).snapshots().map((snapshot) {
       return UserModel.fromMap(snapshot.data()!);
     });

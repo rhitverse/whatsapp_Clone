@@ -171,6 +171,57 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   ),
                                   onTap: () async {
                                     Navigator.pop(context);
+
+                                    final confirm = await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        backgroundColor: backgroundColor,
+                                        title: const Text(
+                                          'Delete Profile Picture?',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                        content: const Text(
+                                          'Are you sure you want to delete your profile picture?',
+                                          style: TextStyle(color: Colors.grey),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, false),
+                                            child: const Text(
+                                              'Cancel',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, true),
+                                            child: const Text(
+                                              'Delete',
+                                              style: TextStyle(
+                                                color: Colors.red,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                    if (confirm == true) {
+                                      setState(() {
+                                        isSaving = true;
+                                        image = null;
+                                      });
+                                      await ref
+                                          .read(authControllerProvider)
+                                          .deleteProfilePicture(
+                                            context: context,
+                                          );
+                                      setState(() {
+                                        isSaving = false;
+                                      });
+                                    }
                                   },
                                 ),
                               ],
@@ -178,13 +229,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ),
                         );
                       },
-                      child: profileAvatar(
-                        radius: 66,
-                        image: image,
-                        photoUrl: user.profilePic,
+                      child: Stack(
+                        children: [
+                          profileAvatar(
+                            radius: 66,
+                            image: image,
+                            photoUrl: user.profilePic,
+                          ),
+                          if (isSaving)
+                            Positioned.fill(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black54,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Center(
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ),
+                  SizedBox(height: 20),
                   _tile(
                     "Display name",
                     onTap: () => _go(context, const DisplayEditScreen()),
