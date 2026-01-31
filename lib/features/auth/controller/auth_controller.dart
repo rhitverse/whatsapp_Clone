@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/features/auth/repository/auth_repository.dart';
 import 'package:whatsapp_clone/features/auth/repository/auth_providers.dart';
@@ -7,13 +9,16 @@ import 'package:whatsapp_clone/widgets/helpful_widgets/info_popup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 final authControllerProvider = Provider(
-  (ref) => AuthController(authRepository: ref.read(authRepositoryProvider)),
+  (ref) => AuthController(
+    authRepository: ref.read(authRepositoryProvider),
+    ref: ref,
+  ),
 );
 
 class AuthController {
   final AuthRepository _authRepository;
-
-  AuthController({required AuthRepository authRepository})
+  final ProviderRef ref;
+  AuthController({required AuthRepository authRepository, required this.ref})
     : _authRepository = authRepository;
 
   Future<void> signInWithGoogle({required BuildContext context}) async {
@@ -138,5 +143,17 @@ class AuthController {
 
   Future<void> signOut() async {
     await _authRepository.signOut();
+  }
+
+  Future<void> saveUserDataToFirebase(
+    BuildContext context,
+    String name,
+    File? profilePic,
+  ) async {
+    _authRepository.saveUserDataToFirebase(
+      name: name,
+      profilePic: profilePic,
+      context: context,
+    );
   }
 }

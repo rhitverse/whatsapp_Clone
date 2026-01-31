@@ -3,8 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:whatsapp_clone/features/auth/repository/auth_repository.dart';
+import 'package:whatsapp_clone/models/user_model.dart';
 
-// Firebase Providers
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;
 });
@@ -17,7 +17,6 @@ final googleSignInProvider = Provider<GoogleSignIn>((ref) {
   return GoogleSignIn();
 });
 
-// Auth Repository Provider
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(
     auth: ref.watch(firebaseAuthProvider),
@@ -26,12 +25,14 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   );
 });
 
-// Auth State Provider
 final authStateChangesProvider = StreamProvider<User?>((ref) {
   return ref.watch(firebaseAuthProvider).authStateChanges();
 });
 
-// Current User Provider
 final currentUserProvider = Provider<User?>((ref) {
   return ref.watch(firebaseAuthProvider).currentUser;
+});
+
+final userProvider = StreamProvider<UserModel>((ref) {
+  return ref.read(authRepositoryProvider).getUserData();
 });
