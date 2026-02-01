@@ -44,7 +44,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             backgroundColor: backgroundColor,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.chevron_left, color: Colors.white),
+              icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -63,11 +63,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 TextButton(
                   onPressed: (image == null || isSaving)
                       ? null
-                      : () async {
-                          setState(() {
-                            isSaving = true;
-                          });
-                          await ref
+                      : () {
+                          Navigator.pop(context);
+                          ref
                               .read(authControllerProvider)
                               .saveUserDataToFirebase(
                                 context,

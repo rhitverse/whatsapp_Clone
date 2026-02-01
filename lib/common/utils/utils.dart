@@ -7,14 +7,17 @@ void showSnackBar({required BuildContext context, required String content}) {
 }
 
 Future<File?> pickImageFromGallery(BuildContext context) async {
-  File? image;
   try {
     final pickedImage = await ImagePicker().pickImage(
       source: ImageSource.gallery,
+
+      imageQuality: 70,
+      maxHeight: 1080,
+      maxWidth: 1080,
     );
 
     if (pickedImage != null) {
-      image = File(pickedImage.path);
+      return File(pickedImage.path);
     }
   } catch (e) {
     if (context.mounted) {
@@ -23,5 +26,5 @@ Future<File?> pickImageFromGallery(BuildContext context) async {
       ).showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
-  return image;
+  return null;
 }

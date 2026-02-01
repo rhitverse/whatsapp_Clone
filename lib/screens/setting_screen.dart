@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/features/app/welcome/welcome_page.dart';
 import 'package:whatsapp_clone/features/auth/repository/auth_providers.dart';
+import 'package:whatsapp_clone/models/user_model.dart';
 import 'package:whatsapp_clone/screens/settings/account_screen.dart';
 import 'package:whatsapp_clone/screens/settings/chats_screen.dart';
 import 'package:whatsapp_clone/screens/settings/help_screen.dart';
@@ -13,6 +14,7 @@ import 'package:whatsapp_clone/screens/settings/privacy_screen.dart';
 import 'package:whatsapp_clone/screens/settings/profile_screen.dart';
 import 'package:whatsapp_clone/screens/settings/starrted_message_screen.dart';
 import 'package:whatsapp_clone/screens/settings/storage_screen.dart';
+import 'package:whatsapp_clone/widgets/helpful_widgets/profilepic.dart';
 
 class SettingScreen extends ConsumerWidget {
   const SettingScreen({super.key});
@@ -91,7 +93,7 @@ class SettingScreen extends ConsumerWidget {
             ),
           ),
           SizedBox(height: 18),
-          _profileTile(context),
+          _profileTile(context, ref),
           SizedBox(height: 20),
 
           Text(
@@ -212,36 +214,55 @@ class SettingScreen extends ConsumerWidget {
     );
   }
 
-  Widget _profileTile(BuildContext context) {
-    return InkWell(
-      onTap: () => _go(context, const ProfileScreen()),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            radius: 28,
-            backgroundImage: NetworkImage(
-              'https://upload.wikimedia.org/wikipedia/en/thumb/9/91/Mike_Wheeler.png/250px-Mike_Wheeler.png',
-            ),
-          ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Robin",
-                  style: TextStyle(color: Colors.white, fontSize: 18),
-                ),
-                Text(
-                  "Dunia ki ma ki chut!",
-                  style: TextStyle(color: Colors.white60),
-                ),
-              ],
-            ),
-          ),
-          Icon(Icons.qr_code, color: uiColor),
+  Widget _profileTile(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(userProvider);
+
+    return userAsync.when(
+      loading: () => Row(
+        children: const [
+          CircleAvatar(radius: 28, backgroundColor: Colors.grey),
+          SizedBox(width: 12),
+          Text("Loading...", style: TextStyle(color: Colors.white)),
         ],
       ),
+      error: (err, stack) => const SizedBox(),
+      data: (user) {
+        if (user == null || user.profilePic.isEmpty) {
+          return Row(
+            children: const [
+              CircleAvatar(radius: 34, backgroundColor: Colors.grey),
+              SizedBox(width: 12),
+              Text("No profile picture", style: TextStyle(color: Colors.white)),
+            ],
+          );
+        }
+
+        return InkWell(
+          onTap: () => _go(context, const ProfileScreen()),
+          child: Row(
+            children: [
+              profileAvatar(radius: 28, photoUrl: user.profilePic, image: null),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.name,
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                    const Text(
+                      "Dunia ki ma ki chut!",
+                      style: TextStyle(color: Colors.white60),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.qr_code, color: uiColor),
+            ],
+          ),
+        );
+      },
     );
   }
 

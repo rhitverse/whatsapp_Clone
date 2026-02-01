@@ -135,14 +135,11 @@ class _DisplayNameState extends ConsumerState<DisplayName> {
                         OverlayEntry? loader;
 
                         try {
-                          await Future.delayed(
-                            const Duration(milliseconds: 100),
-                          );
-
                           loader = AppLoader.show(
                             context,
                             message: "Creating your account...",
                           );
+
                           await ref
                               .read(authControllerProvider)
                               .saveUserDataToFirebase(
@@ -152,45 +149,56 @@ class _DisplayNameState extends ConsumerState<DisplayName> {
                               );
 
                           await Future.delayed(
-                            const Duration(milliseconds: 500),
+                            const Duration(milliseconds: 800),
                           );
                           loader?.remove();
-
                           if (!mounted) return;
-
-                          Navigator.pushReplacement(
+                          Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
                               builder: (_) => const MobileScreenLayout(),
                             ),
+                            (route) => false,
                           );
                         } catch (e) {
                           loader?.remove();
                           setState(() {
                             isSaving = false;
                           });
+
                           if (!mounted) return;
+
                           InfoPopup.show(
                             context,
                             "Error creating account. Please try again",
                           );
+                          debugPrint("Account creation error: $e");
                         }
                       },
 
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: uiColor,
+                  backgroundColor: isSaving ? Colors.grey : uiColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: const Text(
-                  "Next",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+                child: isSaving
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        "Next",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 25),
