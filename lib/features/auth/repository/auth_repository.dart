@@ -251,10 +251,6 @@ class AuthRepository {
           .collection('users')
           .doc(uid)
           .set(user.toMap(), SetOptions(merge: true));
-
-      if (context.mounted) {
-        Navigator.pop(context);
-      }
     } catch (e) {
       if (context.mounted) {
         showSnackBar(context: context, content: e.toString());

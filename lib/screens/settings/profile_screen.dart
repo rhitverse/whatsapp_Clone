@@ -76,10 +76,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               );
                         },
                   style: ButtonStyle(
-                    foregroundColor: MaterialStateProperty.resolveWith<Color>((
+                    foregroundColor: WidgetStateProperty.resolveWith<Color>((
                       states,
                     ) {
-                      if (states.contains(MaterialState.disabled)) {
+                      if (states.contains(WidgetState.disabled)) {
                         return Colors.grey;
                       }
                       return uiColor;

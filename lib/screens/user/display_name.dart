@@ -2,22 +2,24 @@ import 'dart:io';
 import 'package:whatsapp_clone/common/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
 import 'package:whatsapp_clone/screens/mobile_screen_layout.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/app_loader.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/info_popup.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/input_field.dart';
+import 'package:whatsapp_clone/widgets/helpful_widgets/profilepic.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class DisplayName extends StatefulWidget {
+class DisplayName extends ConsumerStatefulWidget {
   const DisplayName({super.key});
 
   @override
-  State<DisplayName> createState() => _DisplayNameState();
+  ConsumerState<DisplayName> createState() => _DisplayNameState();
 }
 
-class _DisplayNameState extends State<DisplayName> {
+class _DisplayNameState extends ConsumerState<DisplayName> {
   final TextEditingController nameController = TextEditingController();
+  bool isSaving = false;
   File? image;
 
   @override
@@ -62,17 +64,13 @@ class _DisplayNameState extends State<DisplayName> {
                 Stack(
                   alignment: Alignment.center,
                   children: [
-                    image == null
-                        ? const CircleAvatar(
-                            radius: 34,
-                            backgroundImage: NetworkImage(
-                              'https://png.pngitem.com/pimgs/s/649-6490124_katie-notopoulos-katienotopoulos-i-write-about-tech-round.png',
-                            ),
-                          )
-                        : CircleAvatar(
-                            backgroundImage: FileImage(image!),
-                            radius: 34,
-                          ),
+                    profileAvatar(
+                      radius: 34,
+                      image: image,
+                      photoUrl:
+                          'https://png.pngitem.com/pimgs/s/649-6490124_katie-notopoulos-katienotopoulos-i-write-about-tech-round.png',
+                    ),
+
                     InkWell(
                       onTap: () {
                         selectImage();
@@ -119,46 +117,65 @@ class _DisplayNameState extends State<DisplayName> {
               width: double.infinity,
               height: 55,
               child: ElevatedButton(
-                onPressed: () async {
-                  if (nameController.text.trim().isEmpty) {
-                    InfoPopup.show(context, "Please enter a display name");
-                    return;
-                  }
-                  final loader = AppLoader.show(
-                    context,
-                    message: "Creating your account...",
-                  );
+                onPressed: isSaving
+                    ? null
+                    : () async {
+                        if (nameController.text.trim().isEmpty) {
+                          InfoPopup.show(
+                            context,
+                            "Please enter a display name",
+                          );
+                          return;
+                        }
 
-                  try {
-                    final uid = FirebaseAuth.instance.currentUser?.uid;
+                        setState(() {
+                          isSaving = true;
+                        });
 
-                    if (uid == null) {
-                      loader.remove();
-                      return;
-                    }
+                        OverlayEntry? loader;
 
-                    await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(uid)
-                        .set({
-                          'displayName': nameController.text.trim(),
-                        }, SetOptions(merge: true));
+                        try {
+                          await Future.delayed(
+                            const Duration(milliseconds: 100),
+                          );
 
-                    loader.remove();
+                          loader = AppLoader.show(
+                            context,
+                            message: "Creating your account...",
+                          );
+                          await ref
+                              .read(authControllerProvider)
+                              .saveUserDataToFirebase(
+                                context,
+                                nameController.text.trim(),
+                                image,
+                              );
 
-                    if (!mounted) return;
+                          await Future.delayed(
+                            const Duration(milliseconds: 500),
+                          );
+                          loader?.remove();
 
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const MobileScreenLayout(),
-                      ),
-                    );
-                  } catch (e) {
-                    loader.remove();
-                    debugPrint("Display name save error: $e");
-                  }
-                },
+                          if (!mounted) return;
+
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const MobileScreenLayout(),
+                            ),
+                          );
+                        } catch (e) {
+                          loader?.remove();
+                          setState(() {
+                            isSaving = false;
+                          });
+                          if (!mounted) return;
+                          InfoPopup.show(
+                            context,
+                            "Error creating account. Please try again",
+                          );
+                        }
+                      },
 
                 style: ElevatedButton.styleFrom(
                   backgroundColor: uiColor,
