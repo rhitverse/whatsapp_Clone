@@ -205,33 +205,26 @@ class AuthRepository {
   }
 
   Future<void> saveUserDataToFirebase({
-    required String name,
+    required String displayname,
     required File? profilePic,
     required BuildContext context,
   }) async {
     try {
       final uid = _auth.currentUser!.uid;
+      final userDoc = await _firestore.collection('users').doc(uid).get();
+      final userData = userDoc.data();
 
       String photoUrl =
+          userData?['profilePic'] ??
           'https://png.pngitem.com/pimgs/s/649-6490124_katie-notopoulos-katienotopoulos-i-write-about-tech-round.png';
 
       if (profilePic != null) {
-        final userDoc = await _firestore.collection('users').doc(uid).get();
-        final userData = userDoc.data();
-        final oldProfilePic = userData?['profilePic'] as String?;
-
-        if (oldProfilePic != null &&
-            !oldProfilePic.contains('katie-notopoulos') &&
-            oldProfilePic.contains('cloudinary')) {
-          final cloudRepo = CommonCloudinaryRepository();
-          try {
-            await cloudRepo.deleteFileFromCloudinary(oldProfilePic);
-          } catch (e) {
-            debugPrint('Failed to delete old image: $e');
-          }
-        }
-
         final cloudRepo = CommonCloudinaryRepository();
+        if (photoUrl.contains('cloudinary')) {
+          try {
+            await cloudRepo.deleteFileFromCloudinary(photoUrl);
+          } catch (_) {}
+        }
         final uploaderUrl = await cloudRepo.storeFileToCloudinary(profilePic);
 
         if (uploaderUrl != null) {
@@ -239,18 +232,10 @@ class AuthRepository {
         }
       }
 
-      final user = UserModel(
-        name: name,
-        uid: uid,
-        profilePic: photoUrl,
-        username: uid,
-        groupId: [],
-      );
-
-      await _firestore
-          .collection('users')
-          .doc(uid)
-          .set(user.toMap(), SetOptions(merge: true));
+      await _firestore.collection('users').doc(uid).update({
+        'displayname': displayname,
+        'profilePic': photoUrl,
+      });
     } catch (e) {
       if (context.mounted) {
         showSnackBar(context: context, content: e.toString());

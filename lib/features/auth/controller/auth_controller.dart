@@ -146,11 +146,11 @@ class AuthController {
 
   Future<void> saveUserDataToFirebase(
     BuildContext context,
-    String name,
+    String displayname,
     File? profilePic,
   ) async {
     _authRepository.saveUserDataToFirebase(
-      name: name,
+      displayname: displayname,
       profilePic: profilePic,
       context: context,
     );

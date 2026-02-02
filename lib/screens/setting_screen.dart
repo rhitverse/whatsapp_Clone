@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/features/app/welcome/welcome_page.dart';
 import 'package:whatsapp_clone/features/auth/repository/auth_providers.dart';
-import 'package:whatsapp_clone/models/user_model.dart';
 import 'package:whatsapp_clone/screens/settings/account_screen.dart';
 import 'package:whatsapp_clone/screens/settings/chats_screen.dart';
 import 'package:whatsapp_clone/screens/settings/help_screen.dart';
@@ -227,7 +226,7 @@ class SettingScreen extends ConsumerWidget {
       ),
       error: (err, stack) => const SizedBox(),
       data: (user) {
-        if (user == null || user.profilePic.isEmpty) {
+        if (user.profilePic.isEmpty) {
           return Row(
             children: const [
               CircleAvatar(radius: 34, backgroundColor: Colors.grey),
@@ -248,7 +247,7 @@ class SettingScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      user.name,
+                      user.displayname,
                       style: const TextStyle(color: Colors.white, fontSize: 18),
                     ),
                     const Text(

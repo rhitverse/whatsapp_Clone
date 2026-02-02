@@ -151,7 +151,7 @@ class _DisplayNameState extends ConsumerState<DisplayName> {
                           await Future.delayed(
                             const Duration(milliseconds: 800),
                           );
-                          loader?.remove();
+                          loader.remove();
                           if (!mounted) return;
                           Navigator.pushAndRemoveUntil(
                             context,
