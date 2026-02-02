@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:whatsapp_clone/common/enum/username_result.dart';
 import 'package:whatsapp_clone/common/utils/common_cloudinary_repository.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
 import 'package:whatsapp_clone/features/auth/otp_page.dart';
@@ -142,7 +143,6 @@ class AuthRepository {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
 
       if (!context.mounted) return;
-
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const MobileScreenLayout()),
@@ -277,6 +277,69 @@ class AuthRepository {
         );
       }
     }
+  }
+
+  Future<void> ensureUserDocument() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    final docRef = _firestore.collection('users').doc(user.uid);
+    final doc = await docRef.get();
+
+    if (!doc.exists) {
+      await docRef.set({
+        'uid': user.uid,
+        'bio': '',
+        'groupId': [],
+        'username': null,
+        'usernameSetAt': null,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+  Future<UsernameResult> setUsername(String username) async {
+    username = username.trim().toLowerCase();
+    final uid = _auth.currentUser!.uid;
+    final docRef = _firestore.collection('users').doc(uid);
+
+    final query = await _firestore
+        .collection('users')
+        .where('username', isEqualTo: username)
+        .get();
+
+    for (final doc in query.docs) {
+      if (doc.id != uid) {
+        return UsernameResult.alreadyExists;
+      }
+    }
+
+    final userDoc = await docRef.get();
+    final data = userDoc.data() ?? {};
+    if (data['username'] == username) {
+      return UsernameResult.success;
+    }
+
+    final Timestamp? usernameSetAt = data['usernameSetAt'];
+    if (usernameSetAt != null) {
+      final diffDays = DateTime.now().difference(usernameSetAt.toDate()).inDays;
+
+      if (diffDays < 30) {
+        return UsernameResult.toEarly;
+      }
+    }
+
+    await docRef.update({
+      'username': username,
+      'usernameSetAt': FieldValue.serverTimestamp(),
+    });
+
+    return UsernameResult.success;
+  }
+
+  Future<void> updateUserBio(String bio) async {
+    final uid = _auth.currentUser!.uid;
+    await _firestore.collection('users').doc(uid).update({'bio': bio.trim()});
   }
 
   Stream<UserModel> getUserData() {

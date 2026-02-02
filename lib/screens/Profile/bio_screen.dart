@@ -3,7 +3,6 @@ import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
 import 'package:whatsapp_clone/features/auth/repository/auth_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:whatsapp_clone/widgets/helpful_widgets/info_popup.dart';
 
 class BioScreen extends ConsumerStatefulWidget {
   const BioScreen({super.key});
@@ -13,13 +12,13 @@ class BioScreen extends ConsumerStatefulWidget {
 }
 
 class _BioScreenState extends ConsumerState<BioScreen> {
-  final TextEditingController nameController = TextEditingController();
+  final TextEditingController bioController = TextEditingController();
   bool _isInitialized = false;
 
   @override
   void dispose() {
+    bioController.dispose();
     super.dispose();
-    nameController.dispose();
   }
 
   @override
@@ -32,16 +31,10 @@ class _BioScreenState extends ConsumerState<BioScreen> {
         backgroundColor: whiteColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios,
-            color: Colors.black,
-            fontWeight: FontWeight.w100,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 18),
+          onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
+        title: const Text(
           "Your Bio",
           style: TextStyle(
             color: Colors.black,
@@ -53,10 +46,9 @@ class _BioScreenState extends ConsumerState<BioScreen> {
       body: userAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text("Error: $e")),
-
         data: (user) {
           if (!_isInitialized) {
-            nameController.text = user.displayname;
+            bioController.text = user.bio ?? '';
             _isInitialized = true;
           }
 
@@ -65,22 +57,23 @@ class _BioScreenState extends ConsumerState<BioScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 30),
+                const SizedBox(height: 20),
 
-                const SizedBox(height: 8),
                 TextField(
-                  controller: nameController,
+                  controller: bioController,
                   cursorColor: uiColor,
-                  style: TextStyle(color: Colors.black),
+                  maxLength: 120,
+                  style: const TextStyle(color: Colors.black),
                   decoration: InputDecoration(
-                    hintText: "Enter yours",
+                    hintText: "Write something about yourself",
+                    counterText: '',
                     enabledBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: uiColor, width: 1.2),
                     ),
                     focusedBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: uiColor, width: 1.2),
                     ),
-                    suffixIcon: nameController.text.isNotEmpty
+                    suffixIcon: bioController.text.isNotEmpty
                         ? IconButton(
                             icon: const Icon(
                               Icons.close,
@@ -88,40 +81,35 @@ class _BioScreenState extends ConsumerState<BioScreen> {
                               color: Colors.black,
                             ),
                             onPressed: () {
-                              nameController.clear();
+                              bioController.clear();
                               setState(() {});
                             },
                           )
                         : null,
                   ),
-                  onChanged: (value) {
-                    setState(() {});
-                  },
+                  onChanged: (_) => setState(() {}),
                 ),
+
                 const Spacer(),
+
                 SizedBox(
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton(
                     onPressed: () async {
-                      final name = nameController.text.trim();
-
-                      if (name.isEmpty) {
-                        InfoPopup.show(context, "Enter your name");
-                        return;
-                      }
-
                       await ref
                           .read(authControllerProvider)
-                          .saveUserDataToFirebase(context, name, null);
+                          .updateBio(bioController.text.trim());
 
-                      Navigator.pop(context);
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: uiColor,
                       elevation: 4,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
+                        borderRadius: BorderRadius.circular(18),
                       ),
                     ),
                     child: const Text(
@@ -134,7 +122,8 @@ class _BioScreenState extends ConsumerState<BioScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 15),
+
+                const SizedBox(height: 20),
               ],
             ),
           );

@@ -70,33 +70,46 @@ class _DisplayEditScreenState extends ConsumerState<DisplayEditScreen> {
                   "Display Name",
                   style: TextStyle(color: Colors.black, fontSize: 14),
                 ),
-
                 const SizedBox(height: 8),
-                TextField(
-                  controller: nameController,
-                  cursorColor: uiColor,
-                  style: TextStyle(color: Colors.black),
-                  decoration: InputDecoration(
-                    hintText: "Enter your name",
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: uiColor, width: 1.2),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: uiColor, width: 1.2),
-                    ),
-                    suffixIcon: nameController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.close, size: 17),
-                            onPressed: () {
-                              nameController.clear();
-                              setState(() {});
-                            },
-                          )
-                        : null,
+                Container(
+                  height: 58,
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 5,
                   ),
-                  onChanged: (value) {
-                    setState(() {});
-                  },
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(17),
+                    color: Colors.transparent,
+                    border: Border.all(color: uiColor, width: 1.5),
+                  ),
+                  child: Center(
+                    child: TextField(
+                      controller: nameController,
+                      cursorColor: uiColor,
+                      maxLength: 20,
+                      style: TextStyle(color: Colors.black),
+                      decoration: InputDecoration(
+                        hintText: "Enter your name",
+                        counterText: "",
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        suffixIcon: nameController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.close, size: 17),
+                                onPressed: () {
+                                  nameController.clear();
+                                  setState(() {});
+                                },
+                              )
+                            : null,
+                      ),
+                      onChanged: (value) {
+                        setState(() {});
+                      },
+                    ),
+                  ),
                 ),
                 const Spacer(),
                 SizedBox(

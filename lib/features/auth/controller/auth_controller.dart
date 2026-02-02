@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:whatsapp_clone/common/enum/username_result.dart';
 import 'package:whatsapp_clone/features/auth/repository/auth_repository.dart';
 import 'package:whatsapp_clone/features/auth/repository/auth_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,6 +23,7 @@ class AuthController {
 
   Future<void> signInWithGoogle({required BuildContext context}) async {
     await _authRepository.signInWithGoogle(context: context);
+    await _authRepository.ensureUserDocument();
   }
 
   Future<void> signInWithPhone({
@@ -154,6 +156,15 @@ class AuthController {
       profilePic: profilePic,
       context: context,
     );
+  }
+
+  Future<UsernameResult> setUsername({required String username}) async {
+    final result = await _authRepository.setUsername(username);
+    return result;
+  }
+
+  Future<void> updateBio(String bio) async {
+    await _authRepository.updateUserBio(bio);
   }
 
   Future<void> deleteProfilePicture({required BuildContext context}) async {
