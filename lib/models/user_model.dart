@@ -4,6 +4,7 @@ class UserModel {
   final String profilePic;
   final String? bio;
   final String? username;
+  final String? birthday;
   final List<String> groupId;
 
   UserModel({
@@ -13,6 +14,7 @@ class UserModel {
     this.bio,
     required this.groupId,
     this.username,
+    this.birthday,
   });
 
   Map<String, dynamic> toMap() {
@@ -22,6 +24,7 @@ class UserModel {
       'profilePic': profilePic,
       'bio': bio,
       'username': username,
+      'birthday': birthday,
       'groupId': groupId,
     };
   }
@@ -33,6 +36,7 @@ class UserModel {
       profilePic: map['profilePic'] ?? '',
       bio: map['bio'],
       username: map['username'],
+      birthday: map['birthday'],
       groupId: map['groupId'] != null ? List<String>.from(map['groupId']) : [],
     );
   }

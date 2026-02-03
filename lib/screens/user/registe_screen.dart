@@ -1,10 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_holo_date_picker/flutter_holo_date_picker.dart';
-import 'package:cloud_functions/cloud_functions.dart';
-
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/features/app/welcome/welcome_page.dart';
 import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
@@ -31,8 +31,12 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
   DateTime? selectedDate;
   bool receiveEmails = true;
   bool isLoading = false;
-
   String? errorText;
+
+  String generate6DigiCode() {
+    final random = Random.secure();
+    return (100000 + random.nextInt(900000)).toString();
+  }
 
   String get formattedDate {
     if (selectedDate == null) return "";
@@ -89,6 +93,12 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
             email: emailController.text.trim(),
             password: passwordController.text.trim(),
           );
+
+      if (selectedDate != null) {
+        await ref
+            .read(authControllerProvider)
+            .updateBirthday(context: context, dob: selectedDate!);
+      }
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const DisplayName()),
@@ -121,11 +131,18 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
     }
 
     try {
-      final functions = FirebaseFunctions.instanceFor(region: 'us-central1');
+      final generatedOtp = generate6DigiCode();
 
-      await functions.httpsCallable('sendEmailOtp').call({"email": email});
+      print("Generated OTP: $generatedOtp");
 
-      showEmailVerificationDialog(context);
+      // final functions = FirebaseFunctions.instanceFor(region: 'us-central1');
+
+      // await functions.httpsCallable('sendEmailOtp').call({
+      // "email": email,
+      //"otp": generatedOtp,
+      //});
+
+      showEmailVerificationDialog(generatedOtp);
     } catch (e) {
       InfoPopup.show(
         context,
@@ -134,13 +151,14 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
     }
   }
 
-  void showEmailVerificationDialog(BuildContext context) {
+  void showEmailVerificationDialog(String otp) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
         return EmailVerificationDialog(
           email: emailController.text.trim(),
+          generatedOtp: otp,
           onVerified: () async {
             await createAccountAfterVerification();
           },

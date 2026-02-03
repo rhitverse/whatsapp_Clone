@@ -1,10 +1,171 @@
 import 'package:flutter/material.dart';
+import 'package:whatsapp_clone/colors.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter_holo_date_picker/flutter_holo_date_picker.dart';
 
-class BirthdayScreen extends StatelessWidget {
-  const BirthdayScreen({super.key});
+class BirthdayScreen extends StatefulWidget {
+  final DateTime birthday;
+  final bool showBirthday;
+  final bool showBirthYear;
+  final Function(DateTime dob) onBirthdayChanged;
+
+  const BirthdayScreen({
+    super.key,
+    required this.onBirthdayChanged,
+    required this.birthday,
+    this.showBirthYear = true,
+    this.showBirthday = true,
+  });
+
+  @override
+  State<BirthdayScreen> createState() => _BirthdayScreenState();
+}
+
+class _BirthdayScreenState extends State<BirthdayScreen> {
+  late bool _showBirthday;
+  late bool _showBirthYear;
+  late DateTime _birthday;
+  String? errorText;
+  @override
+  void initState() {
+    super.initState();
+    _birthday = widget.birthday;
+    _showBirthYear = widget.showBirthYear;
+    _showBirthday = widget.showBirthday;
+  }
+
+  Future<void> openDatePicker() async {
+    final date = await DatePicker.showSimpleDatePicker(
+      context,
+      initialDate: _birthday,
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      dateFormat: "dd-MMMM_yyyy",
+      locale: DateTimePickerLocale.en_us,
+      titleText: "Date of Birth",
+      textColor: Colors.black,
+      backgroundColor: Colors.white,
+      itemTextStyle: const TextStyle(color: Colors.black, fontSize: 18),
+      looping: false,
+      confirmText: "CONFIRM",
+      cancelText: "CANCEL",
+    );
+
+    if (date != null) {
+      final now = DateTime.now();
+      int age = now.year - date.year;
+      if (now.month < date.month ||
+          (now.month == date.month && now.day < date.day)) {
+        age--;
+      }
+
+      setState(() {
+        errorText = age < 13 ? "Please enter a valid date of birth" : null;
+        _birthday = date;
+      });
+
+      if (age >= 13) {
+        widget.onBirthdayChanged(date);
+      }
+    }
+  }
+
+  String get formattedDate => DateFormat("d MMMM yyyy").format(_birthday);
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Scaffold(
+      backgroundColor: whiteColor,
+      appBar: AppBar(
+        backgroundColor: whiteColor,
+        elevation: 0.5,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+        ),
+        title: Text(
+          "Birthday",
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+        ),
+      ),
+      body: Column(
+        children: [
+          InkWell(
+            onTap: (openDatePicker),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+              child: Row(
+                children: [
+                  Text(
+                    formattedDate,
+                    style: const TextStyle(fontSize: 16, color: Colors.black),
+                  ),
+                  const Spacer(),
+                  const Icon(Icons.chevron_right, color: Colors.grey),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: const Divider(height: 1, thickness: 0.6, color: Colors.grey),
+          ),
+
+          if (errorText != null) ...[
+            const SizedBox(height: 6),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  const Icon(Icons.error, color: Colors.red, size: 16),
+                  const SizedBox(width: 6),
+                  Text(
+                    errorText!,
+                    style: TextStyle(color: Colors.red, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          SwitchListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+            title: const Text(
+              "Show My birthday",
+              style: TextStyle(fontSize: 16, color: Colors.black),
+            ),
+            value: _showBirthday,
+            activeColor: uiColor,
+            onChanged: (value) {
+              setState(() => _showBirthday = value);
+            },
+          ),
+          SwitchListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+            title: const Text(
+              "show my birth year",
+              style: TextStyle(fontSize: 16, color: Colors.black),
+            ),
+            value: _showBirthYear,
+            activeColor: uiColor,
+            onChanged: (value) {
+              setState(() => _showBirthYear = value);
+            },
+          ),
+          SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              "if you choose to show your birthday, your friends will be able to see"
+              " the date from your profile, the Home and Chat tabs, and more.",
+              style: TextStyle(
+                fontSize: 12.6,
+                color: Colors.grey.shade600,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

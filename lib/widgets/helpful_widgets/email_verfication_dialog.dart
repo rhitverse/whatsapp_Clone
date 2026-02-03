@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/info_popup.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 
 class EmailVerificationDialog extends StatefulWidget {
   final String email;
-
+  final String generatedOtp;
   final Future<void> Function() onVerified;
 
   const EmailVerificationDialog({
     super.key,
     required this.email,
+    required this.generatedOtp,
     required this.onVerified,
   });
 
@@ -149,21 +149,23 @@ class _EmailVerificationDialogState extends State<EmailVerificationDialog> {
                           return;
                         }
 
-                        try {
-                          final functions = FirebaseFunctions.instanceFor(
-                            region: 'us-central1',
-                          );
+                        //try {
+                        //final functions = FirebaseFunctions.instanceFor(
+                        //region: 'us-central1',
+                        //);
 
-                          final result = await functions
-                              .httpsCallable('verifyEmailOtp')
-                              .call({"email": widget.email, "otp": code});
+                        //final result = await functions
+                        //  .httpsCallable('verifyEmailOtp')
+                        // .call({"email": widget.email, "otp": code});
 
-                          if (result.data["verified"] == true) {
-                            _attempts = 0;
-                            Navigator.pop(context);
-                            await widget.onVerified();
-                          }
-                        } catch (e) {
+                        //if (result.data["verified"] == true) {
+                        if (code == widget.generatedOtp) {
+                          _attempts = 0;
+                          Navigator.pop(context);
+                          await widget.onVerified();
+                          // }
+                          // } catch (e) {
+                        } else {
                           _attempts++;
 
                           if (_attempts >= _maxAttempts) {

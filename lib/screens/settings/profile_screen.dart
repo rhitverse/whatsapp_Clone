@@ -6,6 +6,7 @@ import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
 import 'package:whatsapp_clone/features/auth/repository/auth_providers.dart';
 import 'package:whatsapp_clone/models/user_model.dart';
 import 'package:whatsapp_clone/screens/Profile/bio_screen.dart';
+import 'package:whatsapp_clone/screens/Profile/birthday_screen.dart';
 import 'package:whatsapp_clone/screens/Profile/display_edit_screen.dart';
 import 'package:whatsapp_clone/screens/Profile/qr_screen.dart';
 import 'package:whatsapp_clone/screens/Profile/username_screen.dart';
@@ -308,7 +309,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   const Divider(),
                   SizedBox(height: 6),
                   InkWell(
-                    onTap: () => _go(context, const QrScreen()),
+                    onTap: () {
+                      if (user.birthday == null || user.birthday!.isEmpty)
+                        return;
+
+                      final dob = DateTime.parse(user.birthday!);
+
+                      _go(
+                        context,
+                        BirthdayScreen(
+                          birthday: dob,
+                          onBirthdayChanged: (newDob) {
+                            ref
+                                .read(authControllerProvider)
+                                .updateBirthday(context: context, dob: newDob);
+                          },
+                        ),
+                      );
+                    },
+
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       child: Row(

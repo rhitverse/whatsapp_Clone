@@ -342,6 +342,35 @@ class AuthRepository {
     await _firestore.collection('users').doc(uid).update({'bio': bio.trim()});
   }
 
+  Future<void> saveUserBirthay({
+    required String uid,
+    required String birthday,
+  }) async {
+    await _firestore.collection('users').doc(uid).update({
+      'birthday': birthday,
+    });
+  }
+
+  Future<void> updateBirthday({
+    required BuildContext context,
+    required DateTime dob,
+  }) async {
+    try {
+      final uid = _auth.currentUser!.uid;
+
+      final formattedDob =
+          "${dob.year.toString().padLeft(4, '0')}-"
+          "${dob.month.toString().padLeft(2, '0')}-"
+          "${dob.day.toString().padLeft(2, '0')}";
+
+      await saveUserBirthay(uid: uid, birthday: formattedDob);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to update birthday")),
+      );
+    }
+  }
+
   Stream<UserModel> getUserData() {
     final uid = _auth.currentUser!.uid;
 

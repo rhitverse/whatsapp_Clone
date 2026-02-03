@@ -163,6 +163,13 @@ class AuthController {
     return result;
   }
 
+  Future<void> updateBirthday({
+    required BuildContext context,
+    required DateTime dob,
+  }) async {
+    await _authRepository.updateBirthday(context: context, dob: dob);
+  }
+
   Future<void> updateBio(String bio) async {
     await _authRepository.updateUserBio(bio);
   }
