@@ -250,14 +250,15 @@ class SettingScreen extends ConsumerWidget {
                       user.displayname,
                       style: const TextStyle(color: Colors.white, fontSize: 18),
                     ),
-                    const Text(
-                      "Dunia ki ma ki chut!",
+                    Text(
+                      user.bio?.isNotEmpty == true ? user.bio! : "Hey there!",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: Colors.white60),
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.qr_code, color: uiColor),
             ],
           ),
         );

@@ -12,6 +12,12 @@ import 'package:whatsapp_clone/screens/Profile/qr_screen.dart';
 import 'package:whatsapp_clone/screens/Profile/username_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/profilepic.dart';
+import 'package:intl/intl.dart';
+
+String formatBirthday(String date) {
+  final dob = DateTime.parse(date);
+  return DateFormat('dd MMMM yyyy').format(dob);
+}
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -23,7 +29,13 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final TextEditingController nameController = TextEditingController();
   bool isSaving = false;
+  bool allowAddById = true;
   File? image;
+
+  String formatBirthday(String date) {
+    final dob = DateTime.parse(date);
+    return DateFormat('dd MMMM yyyy').format(dob);
+  }
 
   void selectImage() async {
     image = await pickImageFromGallery(context);
@@ -256,9 +268,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   SizedBox(height: 20),
                   _tile(
                     "Display name",
+                    value: user.displayname,
                     onTap: () => _go(context, const DisplayEditScreen()),
                   ),
-                  _tile("Bio", onTap: () => _go(context, const BioScreen())),
+                  _tile(
+                    "Bio",
+                    value: user.bio,
+                    onTap: () => _go(context, const BioScreen()),
+                  ),
 
                   SizedBox(height: 4),
                   InkWell(
@@ -282,28 +299,53 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                   _tile(
                     "MINE ID",
+                    value: user.username,
                     onTap: () => _go(context, const UsernameScreen()),
                   ),
-                  SizedBox(height: 12),
-
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text(
-                      "Allow others to add me by ID",
-                      style: TextStyle(fontWeight: FontWeight.w500),
-                    ),
-                    subtitle: const Padding(
-                      padding: EdgeInsets.only(top: 5),
-                      child: Text(
-                        "Others can add you as a friend searching your ID",
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                  SizedBox(height: 22),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              "Allow others to add me by ID",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: whiteColor,
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                              "Others can add you as a friend searching your ID",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                                height: 1.3,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    trailing: Switch(
-                      value: false,
-                      onChanged: (_) {},
-                      activeThumbColor: uiColor,
-                    ),
+                      Transform.scale(
+                        scale: 0.85,
+                        child: Switch(
+                          value: allowAddById,
+                          onChanged: (value) {
+                            setState(() {
+                              allowAddById = value;
+                            });
+                          },
+                          activeColor: whiteColor,
+                          activeTrackColor: uiColor,
+                          inactiveThumbColor: whiteColor,
+                          inactiveTrackColor: Colors.grey.shade300,
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(height: 10),
                   const Divider(),
@@ -331,12 +373,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       child: Row(
-                        children: const [
-                          Text(
+                        children: [
+                          const Text(
                             "Birthday",
                             style: TextStyle(color: Colors.white, fontSize: 18),
                           ),
                           Spacer(),
+                          Text(
+                            user.birthday != null && user.birthday!.isNotEmpty
+                                ? formatBirthday(user.birthday!)
+                                : "Not set",
+                            style: TextStyle(
+                              color:
+                                  user.birthday != null &&
+                                      user.birthday!.isEmpty
+                                  ? Colors.grey
+                                  : Colors.white60,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
                           Icon(Icons.chevron_right, color: Colors.grey),
                         ],
                       ),
@@ -351,7 +407,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _tile(String title, {VoidCallback? onTap, bool showNotSet = true}) {
+  Widget _tile(String title, {String? value, VoidCallback? onTap}) {
+    final bool hasValue = value != null && value.trim().isNotEmpty;
+
     return ListTile(
       onTap: onTap,
       contentPadding: EdgeInsets.zero,
@@ -363,15 +421,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           fontSize: 13,
         ),
       ),
-      subtitle: showNotSet
-          ? const Padding(
-              padding: EdgeInsets.only(top: 6),
-              child: Text(
-                "Not set",
-                style: TextStyle(color: Colors.grey, fontSize: 17),
-              ),
-            )
-          : null,
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: Text(
+          hasValue ? value! : "Not set",
+          style: TextStyle(
+            color: hasValue ? whiteColor : Colors.grey,
+            fontSize: 17,
+          ),
+        ),
+      ),
       trailing: const Icon(Icons.chevron_right, color: Colors.grey),
     );
   }

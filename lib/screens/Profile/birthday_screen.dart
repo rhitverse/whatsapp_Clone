@@ -127,26 +127,16 @@ class _BirthdayScreenState extends State<BirthdayScreen> {
               ),
             ),
           ],
-          SwitchListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-            title: const Text(
-              "Show My birthday",
-              style: TextStyle(fontSize: 16, color: Colors.black),
-            ),
+          waToggle(
+            title: "Show my birthday",
             value: _showBirthday,
-            activeColor: uiColor,
             onChanged: (value) {
               setState(() => _showBirthday = value);
             },
           ),
-          SwitchListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-            title: const Text(
-              "show my birth year",
-              style: TextStyle(fontSize: 16, color: Colors.black),
-            ),
+          waToggle(
+            title: "Show my birth year",
             value: _showBirthYear,
-            activeColor: uiColor,
             onChanged: (value) {
               setState(() => _showBirthYear = value);
             },
@@ -162,6 +152,37 @@ class _BirthdayScreenState extends State<BirthdayScreen> {
                 color: Colors.grey.shade600,
                 height: 1.4,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget waToggle({
+    required String title,
+    required bool value,
+    required Function(bool) onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(fontSize: 16, color: Colors.black),
+            ),
+          ),
+          Transform.scale(
+            scale: 0.85,
+            child: Switch(
+              value: value,
+              onChanged: onChanged,
+              activeColor: whiteColor,
+              activeTrackColor: uiColor,
+              inactiveThumbColor: whiteColor,
+              inactiveTrackColor: Colors.grey.shade300,
             ),
           ),
         ],
