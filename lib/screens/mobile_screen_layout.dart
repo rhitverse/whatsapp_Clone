@@ -42,7 +42,7 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
                 'Chats',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 30,
+                  fontSize: 27,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -51,45 +51,40 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
                 Padding(
                   padding: const EdgeInsets.only(right: 4),
                   child: IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints(minWidth: 40),
                     onPressed: () {},
-                    icon: const Icon(
-                      Icons.camera_alt_outlined,
-                      color: Colors.white,
-                      size: 32,
+                    icon: Icon(
+                      Icons.notifications,
+                      size: 26,
+                      color: whiteColor,
                     ),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: GestureDetector(
-                    onTap: () {
-                      debugPrint("Circular icon tapped");
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(6),
-                      child: SvgPicture.asset(
-                        "assets/svg/circular.svg",
-                        width: 32,
-                        height: 32,
-                      ),
-                    ),
+                  padding: const EdgeInsets.only(right: 4),
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints(minWidth: 40),
+                    onPressed: () {},
+                    icon: Icon(Icons.add, size: 34, color: Colors.white),
                   ),
                 ),
               ],
               bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(56),
+                preferredSize: const Size.fromHeight(35),
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(
                     width * 0.03,
                     0,
                     width * 0.03,
-                    8,
+                    1,
                   ),
                   child: Container(
-                    height: 45,
+                    height: 42,
                     decoration: BoxDecoration(
                       color: searchBarColor,
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(15),
                     ),
                     child: TextField(
                       style: const TextStyle(color: Colors.white),

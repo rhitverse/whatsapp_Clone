@@ -339,7 +339,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               allowAddById = value;
                             });
                           },
-                          activeColor: whiteColor,
+                          activeThumbColor: whiteColor,
                           activeTrackColor: uiColor,
                           inactiveThumbColor: whiteColor,
                           inactiveTrackColor: Colors.grey.shade300,
@@ -352,8 +352,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   SizedBox(height: 6),
                   InkWell(
                     onTap: () {
-                      if (user.birthday == null || user.birthday!.isEmpty)
+                      if (user.birthday == null || user.birthday!.isEmpty) {
                         return;
+                      }
 
                       final dob = DateTime.parse(user.birthday!);
 
@@ -424,7 +425,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       subtitle: Padding(
         padding: const EdgeInsets.only(top: 6),
         child: Text(
-          hasValue ? value! : "Not set",
+          hasValue ? value : "Not set",
           style: TextStyle(
             color: hasValue ? whiteColor : Colors.grey,
             fontSize: 17,

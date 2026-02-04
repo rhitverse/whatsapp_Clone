@@ -127,20 +127,28 @@ class _BirthdayScreenState extends State<BirthdayScreen> {
               ),
             ),
           ],
+          SizedBox(height: 10),
           waToggle(
             title: "Show my birthday",
             value: _showBirthday,
             onChanged: (value) {
-              setState(() => _showBirthday = value);
+              setState(() {
+                _showBirthday = value;
+
+                if (!_showBirthday) {
+                  _showBirthYear = false;
+                }
+              });
             },
           ),
-          waToggle(
-            title: "Show my birth year",
-            value: _showBirthYear,
-            onChanged: (value) {
-              setState(() => _showBirthYear = value);
-            },
-          ),
+          if (_showBirthday)
+            waToggle(
+              title: "Show my birth year",
+              value: _showBirthYear,
+              onChanged: (value) {
+                setState(() => _showBirthYear = value);
+              },
+            ),
           SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -165,7 +173,7 @@ class _BirthdayScreenState extends State<BirthdayScreen> {
     required Function(bool) onChanged,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
       child: Row(
         children: [
           Expanded(
@@ -179,9 +187,11 @@ class _BirthdayScreenState extends State<BirthdayScreen> {
             child: Switch(
               value: value,
               onChanged: onChanged,
-              activeColor: whiteColor,
+              trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+              trackOutlineWidth: WidgetStateProperty.all(0),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              activeThumbColor: whiteColor,
               activeTrackColor: uiColor,
-              inactiveThumbColor: whiteColor,
               inactiveTrackColor: Colors.grey.shade300,
             ),
           ),
