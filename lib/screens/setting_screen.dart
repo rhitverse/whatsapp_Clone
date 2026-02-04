@@ -118,7 +118,7 @@ class SettingScreen extends ConsumerWidget {
           Text('General', style: TextStyle(color: Colors.grey, fontSize: 13)),
           SizedBox(height: 5),
           _svgTile(
-            svgPath: "assets/svg/notifications.svg",
+            icon: Icons.notifications_outlined,
             "Notifications",
             onTap: () => _go(context, const NotificationsScreen()),
           ),
@@ -148,19 +148,19 @@ class SettingScreen extends ConsumerWidget {
           _svgTile(
             svgPath: "assets/svg/friends.svg",
             "Friends",
-            iconSize: 32,
+            iconSize: 26,
             onTap: () => _go(context, const StarrtedMessageScreen()),
           ),
           _svgTile(
             svgPath: "assets/svg/language.svg",
             "Language",
-            iconSize: 22,
+            iconSize: 20,
             onTap: () => _go(context, const StarrtedMessageScreen()),
           ),
           _svgTile(
             svgPath: "assets/svg/folders.svg",
             "Back up and restore",
-            iconSize: 23,
+            iconSize: 22,
             onTap: () => _go(context, const StarrtedMessageScreen()),
           ),
 

@@ -48,26 +48,25 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
               ),
               centerTitle: false,
               actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 4),
-                  child: IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: BoxConstraints(minWidth: 40),
-                    onPressed: () {},
-                    icon: Icon(
-                      Icons.notifications,
-                      size: 26,
-                      color: whiteColor,
-                    ),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints(minWidth: 40),
+                  onPressed: () {},
+                  icon: Icon(
+                    Icons.notifications_outlined,
+                    size: 28,
+                    color: whiteColor,
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 4),
-                  child: IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: BoxConstraints(minWidth: 40),
-                    onPressed: () {},
-                    icon: Icon(Icons.add, size: 34, color: Colors.white),
+                SizedBox(width: 2),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints(minWidth: 40),
+                  onPressed: () {},
+                  icon: SvgPicture.asset(
+                    "assets/svg/adduser.svg",
+                    width: 29,
+                    color: Colors.white,
                   ),
                 ),
               ],
@@ -91,8 +90,22 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
                       cursorColor: Colors.green,
                       decoration: InputDecoration(
                         prefixIcon: Padding(
-                          padding: const EdgeInsets.only(left: 20, right: 6),
-                          child: SvgPicture.asset("assets/svg/search_icon.svg"),
+                          padding: const EdgeInsets.only(right: 15, left: 17),
+                          child: SvgPicture.asset(
+                            "assets/svg/search_icon.svg",
+                            width: 20,
+                          ),
+                        ),
+                        suffixIcon: Padding(
+                          padding: const EdgeInsets.only(right: 3),
+                          child: IconButton(
+                            onPressed: () {},
+                            icon: SvgPicture.asset(
+                              "assets/svg/scan.svg",
+                              width: 20,
+                              color: whiteColor,
+                            ),
+                          ),
                         ),
                         hintText: 'Ask Gemini AI or Search',
                         hintStyle: TextStyle(color: Colors.grey),
