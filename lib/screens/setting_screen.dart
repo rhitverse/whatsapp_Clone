@@ -13,6 +13,7 @@ import 'package:whatsapp_clone/screens/settings/privacy_screen.dart';
 import 'package:whatsapp_clone/screens/settings/profile_screen.dart';
 import 'package:whatsapp_clone/screens/settings/starrted_message_screen.dart';
 import 'package:whatsapp_clone/screens/settings/storage_screen.dart';
+import 'package:whatsapp_clone/screens/settings/theme_screen.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/profilepic.dart';
 
 class SettingScreen extends ConsumerWidget {
@@ -135,9 +136,9 @@ class SettingScreen extends ConsumerWidget {
             onTap: () => _go(context, const ChatsScreen()),
           ),
           _svgTile(
-            icon: Icons.format_paint_outlined,
+            icon: Icons.palette_outlined,
             "Themes",
-            onTap: () => _go(context, const StarrtedMessageScreen()),
+            onTap: () => _go(context, const ThemeScreen()),
           ),
           _svgTile(
             svgPath: "assets/svg/call.svg",

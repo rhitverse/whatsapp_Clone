@@ -53,17 +53,7 @@ class CallsScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 6),
-            ListTile(
-              leading: const CircleAvatar(
-                backgroundColor: uiColor,
-                child: Icon(Icons.add, color: Colors.white, size: 26),
-              ),
-              title: const Text(
-                "Add favourite",
-                style: TextStyle(color: Colors.white),
-              ),
-              onTap: () {},
-            ),
+
             ListTile(
               contentPadding: const EdgeInsets.only(left: 16, right: 6),
               leading: CircleAvatar(
