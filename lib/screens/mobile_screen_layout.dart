@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/screens/friends/friends_newchat.dart';
 import 'package:whatsapp_clone/screens/setting_screen.dart';
 import 'package:whatsapp_clone/screens/settings/calls/calls_screen.dart';
 import 'package:whatsapp_clone/screens/updates/update_screen.dart';
@@ -119,6 +120,42 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
             )
           : null,
       body: IndexedStack(index: _currentIndex, children: _pages),
+
+      floatingActionButton: _currentIndex == 0
+          ? GestureDetector(
+              onTap: () {
+                print("clicked $GestureDetector");
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const FriendsNewchat()),
+                );
+              },
+              child: Container(
+                height: 58,
+                width: 57,
+                decoration: BoxDecoration(
+                  color: uiColor,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.25),
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: SvgPicture.asset(
+                    "assets/svg/newchat.svg",
+                    width: 36,
+                    color: whiteColor,
+                  ),
+                ),
+              ),
+            )
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
 
       bottomNavigationBar: CustomBottomNavBar(
         currentIndex: _currentIndex,
