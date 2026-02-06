@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/screens/Notifications/notification_screen.dart';
 import 'package:whatsapp_clone/screens/friends/friends_newchat.dart';
+import 'package:whatsapp_clone/screens/friends/qr_bottom_nav.dart';
+import 'package:whatsapp_clone/screens/friends/qr_scanner.dart';
+import 'package:whatsapp_clone/screens/friends/user_search.dart';
 import 'package:whatsapp_clone/screens/setting_screen.dart';
 import 'package:whatsapp_clone/screens/settings/calls/calls_screen.dart';
 import 'package:whatsapp_clone/screens/updates/update_screen.dart';
@@ -52,7 +56,14 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
                 IconButton(
                   padding: EdgeInsets.zero,
                   constraints: BoxConstraints(minWidth: 40),
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const NotificaionScreen(),
+                      ),
+                    );
+                  },
                   icon: Icon(
                     Icons.notifications_outlined,
                     size: 28,
@@ -63,7 +74,14 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
                 IconButton(
                   padding: EdgeInsets.zero,
                   constraints: BoxConstraints(minWidth: 40),
-                  onPressed: () {},
+                  onPressed: () {
+                    setState(() {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const UserSearch()),
+                      );
+                    });
+                  },
                   icon: SvgPicture.asset(
                     "assets/svg/adduser.svg",
                     width: 29,
@@ -100,7 +118,14 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
                         suffixIcon: Padding(
                           padding: const EdgeInsets.only(right: 3),
                           child: IconButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const QrScanner(),
+                                ),
+                              );
+                            },
                             icon: SvgPicture.asset(
                               "assets/svg/scan.svg",
                               width: 20,

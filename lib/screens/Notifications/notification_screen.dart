@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/colors.dart';
 
-class FriendsNewchat extends StatelessWidget {
-  const FriendsNewchat({super.key});
+class NotificaionScreen extends StatelessWidget {
+  const NotificaionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,14 +16,7 @@ class FriendsNewchat extends StatelessWidget {
           },
           icon: Icon(Icons.arrow_back_ios, color: whiteColor),
         ),
-        title: Row(
-          children: [
-            Text(
-              "New Chat",
-              style: TextStyle(color: whiteColor, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
+        title: Text("Notifications", style: TextStyle(color: whiteColor)),
       ),
     );
   }

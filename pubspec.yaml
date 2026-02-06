@@ -63,6 +63,7 @@ dev_dependencies:
   http: ^1.6.0
   crypto: ^3.0.7
   flutter_image_compress: ^2.4.0
+  mobile_scanner: ^7.1.4
   
 
 # For information on the generic Dart part of this file, see the
