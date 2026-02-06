@@ -3,7 +3,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/screens/Notifications/notification_screen.dart';
 import 'package:whatsapp_clone/screens/friends/friends_newchat.dart';
-import 'package:whatsapp_clone/screens/friends/qr_bottom_nav.dart';
 import 'package:whatsapp_clone/screens/friends/qr_scanner.dart';
 import 'package:whatsapp_clone/screens/friends/user_search.dart';
 import 'package:whatsapp_clone/screens/setting_screen.dart';

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 class MyQrCodeTab extends StatelessWidget {
   const MyQrCodeTab({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Container(

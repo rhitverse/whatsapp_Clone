@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/screens/friends/my_qr_code_tab.dart';
+import 'package:whatsapp_clone/screens/friends/scan_qr_tab.dart';
+import 'package:whatsapp_clone/screens/friends/qr_bottom_nav.dart';
 
 class QrScanner extends StatefulWidget {
   const QrScanner({super.key});
@@ -10,17 +13,17 @@ class QrScanner extends StatefulWidget {
 
 class _QrScannerState extends State<QrScanner>
     with SingleTickerProviderStateMixin {
-  late TabController tabCon;
+  late TabController tabController;
 
   @override
   void initState() {
     super.initState();
-    tabCon = TabController(length: 2, vsync: this);
+    tabController = TabController(length: 2, vsync: this);
   }
 
   @override
   void dispose() {
-    tabCon.dispose();
+    tabController.dispose();
     super.dispose();
   }
 
@@ -31,12 +34,13 @@ class _QrScannerState extends State<QrScanner>
       body: Stack(
         children: [
           TabBarView(
-            controller: tabCon,
+            controller: tabController,
             children: const [
-              Center(child: Text("Scan QR Code")),
-              Center(child: Text("My QR Code")),
+              ScanQrTab(), // ✅ Correct widget
+              MyQrCodeTab(),
             ],
           ),
+          QrBottomNav(controller: tabController),
         ],
       ),
     );
