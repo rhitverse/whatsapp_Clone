@@ -1,8 +1,12 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/screens/friends/my_qr_code_tab.dart';
 import 'package:whatsapp_clone/screens/friends/scan_qr_tab.dart';
 import 'package:whatsapp_clone/screens/friends/qr_bottom_nav.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 class QrScanner extends StatefulWidget {
   const QrScanner({super.key});
@@ -14,11 +18,50 @@ class QrScanner extends StatefulWidget {
 class _QrScannerState extends State<QrScanner>
     with SingleTickerProviderStateMixin {
   late TabController tabController;
+  Uint8List? recentImage;
 
   @override
   void initState() {
     super.initState();
     tabController = TabController(length: 2, vsync: this);
+    loadRecentImage();
+  }
+
+  Future<void> loadRecentImage() async {
+    final permission = await PhotoManager.requestPermissionExtend();
+    if (!permission.isAuth) return;
+
+    final albums = await PhotoManager.getAssetPathList(type: RequestType.image);
+    final recentAlbum = albums.first;
+
+    final assets = await recentAlbum.getAssetListPaged(page: 0, size: 1);
+    final thumb = await assets.first.thumbnailDataWithSize(
+      const ThumbnailSize(300, 300),
+    );
+
+    if (thumb == null || thumb.isEmpty) {
+      debugPrint("Thumbnail Null or EMpty");
+    }
+
+    setState(() {
+      recentImage = thumb;
+    });
+  }
+
+  Future<void> scanFromGallery() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) return;
+
+    final inputImage = InputImage.fromFilePath(pickedFile.path);
+    final scanner = BarcodeScanner();
+
+    final barcodes = await scanner.processImage(inputImage);
+
+    for (Barcode barcode in barcodes) {
+      debugPrint("Gallery QR: ${barcode.rawValue}");
+    }
+    scanner.close();
   }
 
   @override
@@ -35,12 +78,46 @@ class _QrScannerState extends State<QrScanner>
         children: [
           TabBarView(
             controller: tabController,
-            children: const [
-              ScanQrTab(), // ✅ Correct widget
-              MyQrCodeTab(),
-            ],
+            children: const [ScanQrTab(), MyQrCodeTab()],
           ),
+
           QrBottomNav(controller: tabController),
+
+          Positioned(
+            top: 50,
+            left: 15,
+            child: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: Icon(Icons.close, color: whiteColor, size: 26),
+            ),
+          ),
+
+          Positioned(
+            bottom: 190,
+            right: 20,
+            child: GestureDetector(
+              onTap: scanFromGallery,
+              child: Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.black38,
+                ),
+                child: recentImage != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.memory(
+                          recentImage!,
+                          fit: BoxFit.cover,
+                          width: 48,
+                          height: 48,
+                        ),
+                      )
+                    : Icon(Icons.photo, color: whiteColor),
+              ),
+            ),
+          ),
         ],
       ),
     );

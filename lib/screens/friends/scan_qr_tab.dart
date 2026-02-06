@@ -13,6 +13,9 @@ class _ScanQrTabState extends State<ScanQrTab> {
 
   @override
   Widget build(BuildContext context) {
+    final double boxWidth = 285;
+    final double boxHeight = 270;
+    const double verticalOffset = -102;
     return Stack(
       children: [
         MobileScanner(
@@ -26,13 +29,26 @@ class _ScanQrTabState extends State<ScanQrTab> {
             }
           },
         ),
-        Center(
+        CustomPaint(
+          size: Size(
+            MediaQuery.of(context).size.width,
+            MediaQuery.of(context).size.height,
+          ),
+          painter: ScannerOverlayPainter(
+            width: boxWidth,
+            height: boxHeight,
+            borderRadius: 20,
+            verticalOffset: verticalOffset,
+          ),
+        ),
+        Align(
+          alignment: const Alignment(0, -0.3),
           child: Container(
-            width: 260,
-            height: 260,
+            width: boxWidth,
+            height: boxHeight,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              border: Border.all(color: Colors.transparent),
             ),
             child: Stack(
               children: [
@@ -84,4 +100,43 @@ class _ScanQrTabState extends State<ScanQrTab> {
       ),
     );
   }
+}
+
+class ScannerOverlayPainter extends CustomPainter {
+  final double width;
+  final double height;
+  final double borderRadius;
+  final double verticalOffset;
+
+  ScannerOverlayPainter({
+    required this.width,
+    required this.height,
+    required this.verticalOffset,
+    this.borderRadius = 20,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.black.withOpacity(0.25)
+      ..style = PaintingStyle.fill;
+
+    final overlayPath = Path()
+      ..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    final center = Offset(size.width / 2, size.height / 2 + verticalOffset);
+
+    final boxRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: center, width: width, height: height),
+      Radius.circular(borderRadius),
+    );
+
+    overlayPath.addRRect(boxRect);
+    overlayPath.fillType = PathFillType.evenOdd;
+
+    canvas.drawPath(overlayPath, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
