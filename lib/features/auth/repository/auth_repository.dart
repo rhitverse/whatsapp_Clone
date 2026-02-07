@@ -214,6 +214,10 @@ class AuthRepository {
       final userDoc = await _firestore.collection('users').doc(uid).get();
       final userData = userDoc.data();
 
+      final currentDisplayName = displayname.isNotEmpty
+          ? displayname
+          : (userData?['displayname'] ?? '');
+
       String photoUrl =
           userData?['profilePic'] ??
           'https://png.pngitem.com/pimgs/s/649-6490124_katie-notopoulos-katienotopoulos-i-write-about-tech-round.png';
@@ -233,7 +237,7 @@ class AuthRepository {
       }
 
       await _firestore.collection('users').doc(uid).update({
-        'displayname': displayname,
+        'displayname': currentDisplayName,
         'profilePic': photoUrl,
       });
     } catch (e) {

@@ -11,6 +11,8 @@ import 'package:vision_gallery_saver/vision_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:whatsapp_clone/models/user_model.dart';
+import 'package:whatsapp_clone/widgets/helpful_widgets/custom_messenger.dart';
+import 'package:whatsapp_clone/widgets/helpful_widgets/regenerate_dialog.dart';
 
 class MyQrCodeTab extends StatefulWidget {
   const MyQrCodeTab({super.key});
@@ -23,11 +25,51 @@ class _MyQrCodeTabState extends State<MyQrCodeTab> {
   final controller = ScreenshotController();
   String qrData = "";
 
-  void regenerateQR() {
-    setState(() {
-      qrData =
-          "${FirebaseAuth.instance.currentUser!.uid}_${DateTime.now().millisecondsSinceEpoch}";
-    });
+  @override
+  void initState() {
+    super.initState();
+    loadUsername();
+  }
+
+  Future<void> loadUsername() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
+
+    if (doc.exists) {
+      final user = UserModel.fromMap(doc.data()!);
+      setState(() {
+        qrData = doc.data()!.containsKey('qrData')
+            ? doc.data()!['qrData']
+            : (user.username ?? user.displayname);
+      });
+    }
+  }
+
+  void regenerateQR() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
+
+    if (doc.exists) {
+      final user = UserModel.fromMap(doc.data()!);
+      final newQR =
+          "${user.username ?? user.displayname}_${DateTime.now().millisecondsSinceEpoch}";
+
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({
+        'qrData': newQR,
+      });
+
+      setState(() {
+        qrData = newQR;
+      });
+    }
   }
 
   Future<void> downloadQR() async {
@@ -41,9 +83,7 @@ class _MyQrCodeTabState extends State<MyQrCodeTab> {
         name: "qr_${DateTime.now().millisecondsSinceEpoch}",
       );
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("QR saved to gallery")));
+      CustomMessenger.show(context, "QR Saved");
     }
   }
 
@@ -62,33 +102,6 @@ class _MyQrCodeTabState extends State<MyQrCodeTab> {
 
   void copyLink() {
     Clipboard.setData(ClipboardData(text: "https://yourapp.com/user/$qrData"));
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Link Copied")));
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    loadUsername();
-  }
-
-  Future<void> loadUsername() async {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-
-    final doc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .get();
-
-    if (doc.exists) {
-      final user = UserModel.fromMap(doc.data()!);
-
-      setState(() {
-        qrData = user.username ?? user.displayname;
-      });
-    }
   }
 
   @override
@@ -101,10 +114,20 @@ class _MyQrCodeTabState extends State<MyQrCodeTab> {
           children: [
             Screenshot(
               controller: controller,
-              child: QrImageView(
-                data: qrData,
-                size: 220,
-                backgroundColor: whiteColor,
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: whiteColor,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey),
+                ),
+                child: QrImageView(
+                  data: qrData.isEmpty
+                      ? FirebaseAuth.instance.currentUser!.uid
+                      : qrData,
+                  size: 220,
+                  backgroundColor: whiteColor,
+                ),
               ),
             ),
 
@@ -113,15 +136,39 @@ class _MyQrCodeTabState extends State<MyQrCodeTab> {
               "Show or send this QR code to friends\n"
               "to let them add you.",
               style: TextStyle(color: whiteColor, fontSize: 16),
+              textAlign: TextAlign.center,
             ),
-            SizedBox(height: 70),
+
+            const SizedBox(height: 40),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _action(Icons.link, "Copy link", copyLink),
+                _action(Icons.link, "Copy", copyLink),
                 _action(Icons.share, "Share", shareQR),
                 _action(Icons.download, "Save", downloadQR),
               ],
+            ),
+
+            const SizedBox(height: 30),
+            ElevatedButton.icon(
+              onPressed: () {
+                showRegenerateDialog(context, regenerateQR);
+              },
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              label: const Text(
+                "Regenerate",
+                style: TextStyle(color: Colors.white),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
             ),
           ],
         ),
@@ -132,8 +179,11 @@ class _MyQrCodeTabState extends State<MyQrCodeTab> {
   Widget _action(IconData icon, String text, VoidCallback onTap) {
     return Column(
       children: [
-        IconButton(icon: Icon(icon), onPressed: onTap),
-        Text(text),
+        IconButton(
+          icon: Icon(icon, color: Colors.white),
+          onPressed: onTap,
+        ),
+        Text(text, style: const TextStyle(color: Colors.white)),
       ],
     );
   }
