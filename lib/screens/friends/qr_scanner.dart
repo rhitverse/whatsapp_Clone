@@ -91,7 +91,6 @@ class _QrScannerState extends State<QrScanner>
               icon: Icon(Icons.close, color: whiteColor, size: 26),
             ),
           ),
-
           Positioned(
             bottom: 190,
             right: 20,
