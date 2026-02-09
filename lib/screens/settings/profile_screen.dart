@@ -352,11 +352,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   SizedBox(height: 6),
                   InkWell(
                     onTap: () {
+                      DateTime dob;
                       if (user.birthday == null || user.birthday!.isEmpty) {
-                        return;
+                        dob = DateTime.now();
+                      } else {
+                        dob = DateTime.parse(user.birthday!);
                       }
-
-                      final dob = DateTime.parse(user.birthday!);
 
                       _go(
                         context,

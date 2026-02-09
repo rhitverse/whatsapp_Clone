@@ -24,12 +24,18 @@ class BirthdayScreen extends StatefulWidget {
 class _BirthdayScreenState extends State<BirthdayScreen> {
   late bool _showBirthday;
   late bool _showBirthYear;
-  late DateTime _birthday;
+  DateTime? _birthday;
   String? errorText;
   @override
   void initState() {
     super.initState();
-    _birthday = widget.birthday;
+    if (widget.birthday.year == DateTime.now().year &&
+        widget.birthday.month == DateTime.now().month &&
+        widget.birthday.day == DateTime.now().day) {
+      _birthday = null;
+    } else {
+      _birthday = widget.birthday;
+    }
     _showBirthYear = widget.showBirthYear;
     _showBirthday = widget.showBirthday;
   }
@@ -37,7 +43,7 @@ class _BirthdayScreenState extends State<BirthdayScreen> {
   Future<void> openDatePicker() async {
     final date = await DatePicker.showSimpleDatePicker(
       context,
-      initialDate: _birthday,
+      initialDate: _birthday ?? DateTime(2004, 1, 1),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
       dateFormat: "dd-MMMM_yyyy",
@@ -70,8 +76,9 @@ class _BirthdayScreenState extends State<BirthdayScreen> {
     }
   }
 
-  String get formattedDate => DateFormat("d MMMM yyyy").format(_birthday);
-
+  String get formattedDate => _birthday == null
+      ? "DD / MM / YYYY"
+      : DateFormat("d MMMM yyyy").format(_birthday!);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
