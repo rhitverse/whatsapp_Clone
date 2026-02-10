@@ -57,20 +57,12 @@ class CustomBottomNavBar extends StatelessWidget {
             ),
             label: "Chats",
           ),
-          BottomNavigationBarItem(
-            icon: navIcon(
-              unselectedAsset: 'assets/svg/update3.svg',
-              selectedAsset: 'assets/svg/update2.svg',
-              index: 1,
-              size: 26,
-            ),
-            label: "Updates",
-          ),
+
           BottomNavigationBarItem(
             icon: navIcon(
               unselectedAsset: 'assets/svg/meet.svg',
               selectedAsset: 'assets/svg/groups2.svg',
-              index: 2,
+              index: 1,
               size: 26,
             ),
             label: "Meet",

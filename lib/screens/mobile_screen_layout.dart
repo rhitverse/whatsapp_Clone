@@ -5,7 +5,7 @@ import 'package:whatsapp_clone/screens/Notifications/notification_screen.dart';
 import 'package:whatsapp_clone/screens/friends/friends_newchat.dart';
 import 'package:whatsapp_clone/screens/friends/qr_scanner.dart';
 import 'package:whatsapp_clone/screens/friends/user_search.dart';
-import 'package:whatsapp_clone/screens/meet/server_screen.dart';
+import 'package:whatsapp_clone/screens/meet/empty_server_screen.dart';
 import 'package:whatsapp_clone/screens/setting_screen.dart';
 import 'package:whatsapp_clone/screens/settings/calls/calls_screen.dart';
 import 'package:whatsapp_clone/screens/updates/update_screen.dart';
@@ -25,8 +25,7 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
 
   final List<Widget> _pages = const [
     ContactsList(),
-    UpdateScreen(),
-    ServerScreen(),
+    EmptyServerScreen(),
     CallsScreen(),
     SettingScreen(),
   ];
@@ -131,7 +130,7 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
                             ),
                           ),
                         ),
-                        hintText: 'Ask Gemini AI or Search',
+                        hintText: 'Search',
                         hintStyle: TextStyle(color: Colors.grey),
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.symmetric(vertical: 9.6),
