@@ -8,7 +8,6 @@ import 'package:whatsapp_clone/screens/friends/user_search.dart';
 import 'package:whatsapp_clone/screens/meet/empty_server_screen.dart';
 import 'package:whatsapp_clone/screens/setting_screen.dart';
 import 'package:whatsapp_clone/screens/settings/calls/calls_screen.dart';
-import 'package:whatsapp_clone/screens/updates/update_screen.dart';
 import 'package:whatsapp_clone/widgets/contacts_list.dart';
 import 'package:whatsapp_clone/widgets/custom_bottom_nav_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,12 +22,7 @@ class MobileScreenLayout extends ConsumerStatefulWidget {
 class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [
-    ContactsList(),
-    EmptyServerScreen(),
-    CallsScreen(),
-    SettingScreen(),
-  ];
+  List<Map<String, dynamic>> servers = [];
 
   @override
   Widget build(BuildContext context) {
@@ -141,7 +135,15 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
               ),
             )
           : null,
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          const ContactsList(),
+          EmptyServerScreen(servers: servers),
+          const CallsScreen(),
+          const SettingScreen(),
+        ],
+      ),
 
       floatingActionButton: _currentIndex == 0
           ? GestureDetector(

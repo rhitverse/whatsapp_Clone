@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/screens/meet/server_list_screen.dart';
 
 class EmptyServerScreen extends StatelessWidget {
-  const EmptyServerScreen({super.key});
+  final List<Map<String, dynamic>> servers;
+  const EmptyServerScreen({super.key, required this.servers});
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +94,14 @@ class EmptyServerScreen extends StatelessWidget {
                   border: Border.all(color: Colors.grey, width: 0.5),
                 ),
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ServerListScreen(servers: servers),
+                      ),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,
