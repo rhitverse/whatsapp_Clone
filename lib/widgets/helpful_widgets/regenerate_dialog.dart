@@ -20,7 +20,7 @@ class RegenerateDialog extends StatelessWidget {
             SizedBox(height: 20),
             Text(
               "Are you sure you want to generate a new QR code? Your existing QR code and invite link will no longer be valid.",
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              style: TextStyle(color: whiteColor, fontSize: 16),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 10),

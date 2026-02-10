@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:whatsapp_clone/colors.dart';
 
 class ScanQrTab extends StatefulWidget {
   const ScanQrTab({super.key});
@@ -76,16 +77,16 @@ class _ScanQrTabState extends State<ScanQrTab> {
         decoration: BoxDecoration(
           border: Border(
             top: top
-                ? const BorderSide(color: Colors.white, width: 4)
+                ? const BorderSide(color: whiteColor, width: 4)
                 : BorderSide.none,
             left: left
-                ? const BorderSide(color: Colors.white, width: 4)
+                ? const BorderSide(color: whiteColor, width: 4)
                 : BorderSide.none,
             right: !left
-                ? const BorderSide(color: Colors.white, width: 4)
+                ? const BorderSide(color: whiteColor, width: 4)
                 : BorderSide.none,
             bottom: !top
-                ? const BorderSide(color: Colors.white, width: 4)
+                ? const BorderSide(color: whiteColor, width: 4)
                 : BorderSide.none,
           ),
           borderRadius: BorderRadius.only(

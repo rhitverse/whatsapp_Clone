@@ -26,7 +26,7 @@ class WebChatAppbar extends StatelessWidget {
               SizedBox(width: MediaQuery.of(context).size.width * 0.01),
               Text(
                 info[0]['name'].toString(),
-                style: const TextStyle(fontSize: 18, color: Colors.white),
+                style: const TextStyle(fontSize: 18, color: whiteColor),
               ),
             ],
           ),
@@ -34,11 +34,11 @@ class WebChatAppbar extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: () {},
-                icon: const Icon(Icons.search_outlined, color: Colors.white),
+                icon: const Icon(Icons.search_outlined, color: whiteColor),
               ),
               IconButton(
                 onPressed: () {},
-                icon: const Icon(Icons.more_vert_outlined, color: Colors.white),
+                icon: const Icon(Icons.more_vert_outlined, color: whiteColor),
               ),
             ],
           ),

@@ -35,12 +35,12 @@ class _WebChatBoxState extends State<WebChatBox> {
         children: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.add, color: Colors.white, size: 24),
+            icon: const Icon(Icons.add, color: whiteColor, size: 24),
           ),
           SizedBox(width: 12),
           SvgPicture.asset(
             'assets/svg/Sticker.svg',
-            color: Colors.white,
+            color: whiteColor,
             width: 26,
             height: 26,
           ),
@@ -49,7 +49,7 @@ class _WebChatBoxState extends State<WebChatBox> {
             child: TextField(
               controller: _controller,
               cursorColor: Colors.green,
-              style: const TextStyle(fontSize: 15, color: Colors.white),
+              style: const TextStyle(fontSize: 15, color: whiteColor),
               onChanged: (value) {
                 setState(() {
                   isTyping = value.trim().isNotEmpty;
@@ -100,7 +100,7 @@ class _WebChatBoxState extends State<WebChatBox> {
                     ),
                     child: Icon(
                       _isMicHover ? Icons.mic : Icons.mic_none_outlined,
-                      color: _isMicHover ? Colors.black : Colors.white,
+                      color: _isMicHover ? Colors.black : whiteColor,
                       size: 24,
                     ),
                   ),

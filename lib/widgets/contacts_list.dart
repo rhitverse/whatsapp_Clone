@@ -39,7 +39,7 @@ class ContactsList extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.normal,
-                              color: Colors.white,
+                              color: whiteColor,
                             ),
                           ),
                         ),

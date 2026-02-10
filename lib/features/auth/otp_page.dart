@@ -46,7 +46,7 @@ class _OtpPageState extends ConsumerState<OtpPage> {
         textAlign: TextAlign.center,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         style: const TextStyle(
-          color: Colors.white,
+          color: whiteColor,
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
@@ -122,7 +122,7 @@ class _OtpPageState extends ConsumerState<OtpPage> {
               Text(
                 widget.phoneNumber,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: whiteColor,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
@@ -170,7 +170,7 @@ class _OtpPageState extends ConsumerState<OtpPage> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: whiteColor,
                     ),
                   ),
                 ),

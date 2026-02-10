@@ -23,7 +23,7 @@ class WebSearchBar extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: TextField(
-                style: const TextStyle(color: Colors.white, fontSize: 14),
+                style: const TextStyle(color: whiteColor, fontSize: 14),
                 cursorColor: Colors.green,
                 decoration: const InputDecoration(
                   hintText: 'Ask Meta AI or Search',

@@ -96,9 +96,25 @@ class _ServerScreenState extends State<ServerScreen> {
               onPressed: () {},
               icon: Icon(Icons.search_outlined, color: whiteColor, size: 27),
             ),
-            IconButton(
-              onPressed: () {},
-              icon: Icon(Icons.person_add_alt_1, color: whiteColor, size: 26),
+            SizedBox(width: 8),
+            Material(
+              color: Colors.transparent,
+              shape: const CircleBorder(),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(50),
+                onTap: () {
+                  print("Invite tapped");
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: SvgPicture.asset(
+                    "assets/svg/inviteF.svg",
+                    width: 28,
+                    height: 28,
+                    color: whiteColor,
+                  ),
+                ),
+              ),
             ),
             const SizedBox(width: 8),
           ],
@@ -127,6 +143,33 @@ class _ServerScreenState extends State<ServerScreen> {
                     'Join a Server or Create your own Server',
                     style: TextStyle(color: whiteColor, fontSize: 16),
                   ),
+                  SizedBox(height: 90),
+                  SizedBox(
+                    height: 55,
+                    width: MediaQuery.of(context).size.width * 0.9,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: uiColor,
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(color: Colors.grey, width: 0.5),
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                        ),
+                        child: const Text(
+                          "Join Server",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: whiteColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             )
@@ -144,7 +187,7 @@ class _ServerScreenState extends State<ServerScreen> {
                       backgroundColor: isText ? Colors.blue : Colors.green,
                       child: Icon(
                         isText ? Icons.chat : Icons.mic,
-                        color: Colors.white,
+                        color: whiteColor,
                       ),
                     ),
                     title: Text(

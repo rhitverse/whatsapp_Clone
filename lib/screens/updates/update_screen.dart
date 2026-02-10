@@ -16,7 +16,7 @@ class UpdateScreen extends StatelessWidget {
         title: Text(
           "Updates",
           style: TextStyle(
-            color: Colors.white,
+            color: whiteColor,
             fontWeight: FontWeight.bold,
             fontSize: 26,
           ),
@@ -24,11 +24,11 @@ class UpdateScreen extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.search_outlined, size: 28, color: Colors.white),
+            icon: Icon(Icons.search_outlined, size: 28, color: whiteColor),
           ),
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.more_vert_outlined, size: 28, color: Colors.white),
+            icon: Icon(Icons.more_vert_outlined, size: 28, color: whiteColor),
           ),
         ],
         centerTitle: false,
@@ -45,7 +45,7 @@ class UpdateScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: whiteColor,
               ),
             ),
             const SizedBox(height: 8),

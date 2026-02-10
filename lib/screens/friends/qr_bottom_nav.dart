@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:whatsapp_clone/colors.dart';
 
 class QrBottomNav extends StatelessWidget {
   final TabController controller;
@@ -16,7 +17,7 @@ class QrBottomNav extends StatelessWidget {
             height: 186,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: whiteColor,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(30),
               ),

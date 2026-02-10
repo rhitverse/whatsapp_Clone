@@ -24,15 +24,15 @@ class SettingScreen extends ConsumerWidget {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: const Color(0xff1e2023),
-        title: const Text('Logout', style: TextStyle(color: Colors.white)),
+        title: const Text('Logout', style: TextStyle(color: whiteColor)),
         content: const Text(
           'Are you sure you want to logout?',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: whiteColor),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+            child: const Text('Cancel', style: TextStyle(color: whiteColor)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
@@ -78,7 +78,7 @@ class SettingScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(14),
             ),
             child: TextField(
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: whiteColor),
               cursorColor: Colors.green,
               decoration: InputDecoration(
                 prefixIcon: Padding(
@@ -222,7 +222,7 @@ class SettingScreen extends ConsumerWidget {
         children: const [
           CircleAvatar(radius: 28, backgroundColor: Colors.grey),
           SizedBox(width: 12),
-          Text("Loading...", style: TextStyle(color: Colors.white)),
+          Text("Loading...", style: TextStyle(color: whiteColor)),
         ],
       ),
       error: (err, stack) => const SizedBox(),
@@ -232,7 +232,7 @@ class SettingScreen extends ConsumerWidget {
             children: const [
               CircleAvatar(radius: 34, backgroundColor: Colors.grey),
               SizedBox(width: 12),
-              Text("No profile picture", style: TextStyle(color: Colors.white)),
+              Text("No profile picture", style: TextStyle(color: whiteColor)),
             ],
           );
         }
@@ -249,7 +249,7 @@ class SettingScreen extends ConsumerWidget {
                   children: [
                     Text(
                       user.displayname,
-                      style: const TextStyle(color: Colors.white, fontSize: 18),
+                      style: const TextStyle(color: whiteColor, fontSize: 18),
                     ),
                     Text(
                       user.bio?.isNotEmpty == true ? user.bio! : "Hey there!",
@@ -289,17 +289,13 @@ class SettingScreen extends ConsumerWidget {
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                   onPressed: onIconPressed ?? onTap,
-                  icon: Icon(
-                    icon,
-                    size: iconSize,
-                    color: color ?? Colors.white,
-                  ),
+                  icon: Icon(icon, size: iconSize, color: color ?? whiteColor),
                 )
               : SvgPicture.asset(
                   svgPath!,
                   width: iconSize,
                   height: iconSize,
-                  color: color ?? Colors.white,
+                  color: color ?? whiteColor,
                   fit: BoxFit.contain,
                 ),
         ),

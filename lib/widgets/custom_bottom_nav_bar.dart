@@ -24,7 +24,7 @@ class CustomBottomNavBar extends StatelessWidget {
       isSelected ? selectedAsset : unselectedAsset,
       width: size,
       height: size,
-      colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+      colorFilter: const ColorFilter.mode(whiteColor, BlendMode.srcIn),
     );
   }
 
@@ -41,8 +41,8 @@ class CustomBottomNavBar extends StatelessWidget {
         onTap: onTap,
         type: BottomNavigationBarType.fixed,
         backgroundColor: backgroundColor,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white,
+        selectedItemColor: whiteColor,
+        unselectedItemColor: whiteColor,
         selectedFontSize: 12,
         unselectedFontSize: 12,
         selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),

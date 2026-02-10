@@ -42,9 +42,9 @@ class _AgaScreenState extends State<AgaScreen> {
       dateFormat: "dd-MMMM_yyyy",
       locale: DateTimePickerLocale.en_us,
       titleText: "Date of Birth",
-      textColor: Colors.white,
+      textColor: whiteColor,
       backgroundColor: const Color(0xff2b2d31),
-      itemTextStyle: const TextStyle(color: Colors.white, fontSize: 18),
+      itemTextStyle: const TextStyle(color: whiteColor, fontSize: 18),
       looping: false,
       confirmText: "CONFIRM",
       cancelText: "CANCEL",
@@ -72,14 +72,14 @@ class _AgaScreenState extends State<AgaScreen> {
               const SizedBox(height: 10),
               IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: Icon(Icons.arrow_back, color: Colors.white),
+                icon: Icon(Icons.arrow_back, color: whiteColor),
               ),
               const SizedBox(height: 20),
               const Center(
                 child: Text(
                   "And,how old are you?",
                   style: TextStyle(
-                    color: Colors.white,
+                    color: whiteColor,
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
                   ),
@@ -105,9 +105,7 @@ class _AgaScreenState extends State<AgaScreen> {
                   child: Text(
                     selectedDate == null ? "DD / MM / YYYY" : formattedDate,
                     style: TextStyle(
-                      color: selectedDate == null
-                          ? Colors.white38
-                          : Colors.white,
+                      color: selectedDate == null ? Colors.white38 : whiteColor,
                       fontSize: 16,
                     ),
                   ),
@@ -187,7 +185,7 @@ class _AgaScreenState extends State<AgaScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: whiteColor,
                     ),
                   ),
                 ),

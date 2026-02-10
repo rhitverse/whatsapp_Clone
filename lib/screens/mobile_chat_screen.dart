@@ -42,7 +42,7 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
               child: Text(
                 info[0]['name'].toString(),
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 18, color: Colors.white),
+                style: TextStyle(fontSize: 18, color: whiteColor),
               ),
             ),
           ],
@@ -51,18 +51,18 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
         actions: [
           SvgPicture.asset(
             'assets/svg/videocall.svg',
-            color: Colors.white,
+            color: whiteColor,
             width: 25,
             height: 25,
           ),
           SizedBox(width: 10),
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.call_outlined, color: Colors.white),
+            icon: Icon(Icons.call_outlined, color: whiteColor),
           ),
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.more_vert, color: Colors.white),
+            icon: Icon(Icons.more_vert, color: whiteColor),
           ),
         ],
       ),

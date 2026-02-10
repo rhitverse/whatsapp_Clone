@@ -67,7 +67,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
           Image.asset(
             "assets/app.png",
-            color: Colors.white,
+            color: whiteColor,
             width: 130,
             height: 130,
           ),
@@ -90,7 +90,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                   children: [
                     Image.asset(
                       "assets/meta.png",
-                      color: Colors.white,
+                      color: whiteColor,
                       width: 35,
                       height: 35,
                     ),
@@ -100,7 +100,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                       style: TextStyle(
                         fontSize: 25,
                         fontWeight: FontWeight.w500,
-                        color: Colors.white,
+                        color: whiteColor,
                       ),
                     ),
                   ],

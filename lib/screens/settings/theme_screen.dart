@@ -121,7 +121,7 @@ class _ThemeScreenState extends State<ThemeScreen>
                               child: Text(
                                 'Tap to change theme',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: whiteColor,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -291,7 +291,7 @@ class _ThemeScreenState extends State<ThemeScreen>
     return Positioned(
       left: MediaQuery.of(context).size.width * x,
       top: MediaQuery.of(context).size.height * y * 0.5,
-      child: Icon(Icons.star, color: Colors.white, size: size),
+      child: Icon(Icons.star, color: whiteColor, size: size),
     );
   }
 
@@ -315,7 +315,7 @@ class _ThemeScreenState extends State<ThemeScreen>
               width: size * 0.5,
               height: size * 0.4,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: whiteColor,
                 shape: BoxShape.circle,
               ),
             ),
@@ -323,7 +323,7 @@ class _ThemeScreenState extends State<ThemeScreen>
               width: size * 0.6,
               height: size * 0.5,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: whiteColor,
                 shape: BoxShape.circle,
               ),
             ),
@@ -331,7 +331,7 @@ class _ThemeScreenState extends State<ThemeScreen>
               width: size * 0.5,
               height: size * 0.4,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: whiteColor,
                 shape: BoxShape.circle,
               ),
             ),

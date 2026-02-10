@@ -67,7 +67,7 @@ class _AppLoaderState extends State<AppLoader>
                   vertical: 18,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: whiteColor,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(

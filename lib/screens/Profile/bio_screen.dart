@@ -115,7 +115,7 @@ class _BioScreenState extends ConsumerState<BioScreen> {
                     child: const Text(
                       "Save",
                       style: TextStyle(
-                        color: Colors.white,
+                        color: whiteColor,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),

@@ -36,7 +36,7 @@ class _DisplayNameState extends ConsumerState<DisplayName> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: whiteColor,
       appBar: AppBar(
         backgroundColor: whiteColor,
         title: Text(
@@ -81,7 +81,7 @@ class _DisplayNameState extends ConsumerState<DisplayName> {
                         child: const Icon(
                           Icons.add_a_photo_outlined,
                           size: 20,
-                          color: Colors.white,
+                          color: whiteColor,
                         ),
                       ),
                     ),
@@ -187,7 +187,7 @@ class _DisplayNameState extends ConsumerState<DisplayName> {
                         height: 20,
                         width: 20,
                         child: CircularProgressIndicator(
-                          color: Colors.white,
+                          color: whiteColor,
                           strokeWidth: 2,
                         ),
                       )
@@ -196,7 +196,7 @@ class _DisplayNameState extends ConsumerState<DisplayName> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: whiteColor,
                         ),
                       ),
               ),

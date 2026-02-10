@@ -76,14 +76,14 @@ class _WelcomePageState extends State<WelcomePage>
                             Image.asset(
                               "assets/app.png",
                               height: 90,
-                              color: Colors.white,
+                              color: whiteColor,
                             ),
                             const SizedBox(height: 30),
                             const Text(
                               'WELCOME TO\nMY APP',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: Colors.white,
+                                color: whiteColor,
                                 fontSize: 32,
                                 fontWeight: FontWeight.bold,
                                 height: 1.2,
@@ -93,10 +93,7 @@ class _WelcomePageState extends State<WelcomePage>
                             const Text(
                               'Chating with your Homies!',
                               textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
+                              style: TextStyle(color: whiteColor, fontSize: 16),
                             ),
                           ],
                         ),
@@ -115,7 +112,7 @@ class _WelcomePageState extends State<WelcomePage>
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
+                          backgroundColor: whiteColor,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),
@@ -145,7 +142,7 @@ class _WelcomePageState extends State<WelcomePage>
                         child: const Text(
                           'Log In',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: whiteColor,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),

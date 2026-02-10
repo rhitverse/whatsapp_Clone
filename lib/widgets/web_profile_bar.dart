@@ -17,7 +17,7 @@ class WebProfileBar extends StatelessWidget {
           const Text(
             "WhatsApp",
             style: TextStyle(
-              color: Colors.white,
+              color: whiteColor,
               fontSize: 20,
               fontWeight: FontWeight.w600,
             ),
@@ -26,7 +26,7 @@ class WebProfileBar extends StatelessWidget {
           SizedBox(width: 25),
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.more_vert, color: Colors.white),
+            icon: Icon(Icons.more_vert, color: whiteColor),
           ),
         ],
       ),

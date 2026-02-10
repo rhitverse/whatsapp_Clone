@@ -37,7 +37,7 @@ class _MobileChatBoxState extends State<MobileChatBox> {
               SizedBox(width: 12),
               SvgPicture.asset(
                 'assets/svg/Sticker.svg',
-                color: Colors.white,
+                color: whiteColor,
                 width: 26,
                 height: 26,
               ),
@@ -46,7 +46,7 @@ class _MobileChatBoxState extends State<MobileChatBox> {
                 child: TextField(
                   controller: _controller,
                   cursorColor: Colors.green,
-                  style: const TextStyle(fontSize: 16, color: Colors.white),
+                  style: const TextStyle(fontSize: 16, color: whiteColor),
                   onChanged: (value) {
                     setState(() {
                       isTyping = value.trim().isNotEmpty;

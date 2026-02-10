@@ -50,7 +50,7 @@ class _BirthdayScreenState extends State<BirthdayScreen> {
       locale: DateTimePickerLocale.en_us,
       titleText: "Date of Birth",
       textColor: Colors.black,
-      backgroundColor: Colors.white,
+      backgroundColor: whiteColor,
       itemTextStyle: const TextStyle(color: Colors.black, fontSize: 18),
       looping: false,
       confirmText: "CONFIRM",

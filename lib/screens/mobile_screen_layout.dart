@@ -44,7 +44,7 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
               title: const Text(
                 'Chats',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: whiteColor,
                   fontSize: 27,
                   fontWeight: FontWeight.bold,
                 ),
@@ -83,7 +83,7 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
                   icon: SvgPicture.asset(
                     "assets/svg/adduser.svg",
                     width: 29,
-                    color: Colors.white,
+                    color: whiteColor,
                   ),
                 ),
               ],
@@ -103,7 +103,7 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: TextField(
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: whiteColor),
                       cursorColor: Colors.green,
                       decoration: InputDecoration(
                         prefixIcon: Padding(

@@ -154,10 +154,10 @@ class _MyQrCodeTabState extends State<MyQrCodeTab> {
               onPressed: () {
                 showRegenerateDialog(context, regenerateQR);
               },
-              icon: const Icon(Icons.refresh, color: Colors.white),
+              icon: const Icon(Icons.refresh, color: whiteColor),
               label: const Text(
                 "Regenerate",
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: whiteColor),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
@@ -180,10 +180,10 @@ class _MyQrCodeTabState extends State<MyQrCodeTab> {
     return Column(
       children: [
         IconButton(
-          icon: Icon(icon, color: Colors.white),
+          icon: Icon(icon, color: whiteColor),
           onPressed: onTap,
         ),
-        Text(text, style: const TextStyle(color: Colors.white)),
+        Text(text, style: const TextStyle(color: whiteColor)),
       ],
     );
   }

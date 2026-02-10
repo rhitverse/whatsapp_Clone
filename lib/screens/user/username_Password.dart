@@ -109,14 +109,14 @@ class _UsernamePasswordState extends State<UsernamePassword> {
                 const SizedBox(height: 10),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  icon: const Icon(Icons.arrow_back, color: whiteColor),
                 ),
                 const SizedBox(height: 30),
                 const Center(
                   child: Text(
                     "Next, create an account",
                     style: TextStyle(
-                      color: Colors.white,
+                      color: whiteColor,
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
@@ -125,7 +125,7 @@ class _UsernamePasswordState extends State<UsernamePassword> {
                 const SizedBox(height: 40),
                 const Text(
                   "Username",
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                  style: TextStyle(color: whiteColor70, fontSize: 14),
                 ),
                 const SizedBox(height: 8),
                 Container(
@@ -145,11 +145,11 @@ class _UsernamePasswordState extends State<UsernamePassword> {
                     focusNode: usernameFocus,
                     controller: usernameController,
                     onChanged: validateUsername,
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: whiteColor),
                     cursorColor: Colors.green,
                     decoration: const InputDecoration(
                       hintText: "Username",
-                      hintStyle: TextStyle(color: Colors.white54),
+                      hintStyle: TextStyle(color: whiteColor54),
                       border: InputBorder.none,
                     ),
                   ),
@@ -159,7 +159,7 @@ class _UsernamePasswordState extends State<UsernamePassword> {
                     padding: EdgeInsets.only(top: 6),
                     child: Text(
                       "Only use letters, number, underscores, and periods.",
-                      style: TextStyle(color: Colors.white54, fontSize: 12),
+                      style: TextStyle(color: whiteColor54, fontSize: 12),
                     ),
                   ),
                 if (isUsernameInvalid)
@@ -179,7 +179,7 @@ class _UsernamePasswordState extends State<UsernamePassword> {
                 const SizedBox(height: 22),
                 const Text(
                   "Password",
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                  style: TextStyle(color: whiteColor70, fontSize: 14),
                 ),
 
                 const SizedBox(height: 8),
@@ -195,11 +195,11 @@ class _UsernamePasswordState extends State<UsernamePassword> {
                     controller: passwordController,
                     obscureText: !isPasswordVisible,
                     onChanged: checkPasswordStrength,
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: whiteColor),
                     cursorColor: Colors.green,
                     decoration: InputDecoration(
                       hintText: "Password",
-                      hintStyle: const TextStyle(color: Colors.white54),
+                      hintStyle: const TextStyle(color: whiteColor54),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
                       suffixIcon: GestureDetector(
@@ -212,7 +212,7 @@ class _UsernamePasswordState extends State<UsernamePassword> {
                           isPasswordVisible
                               ? Icons.visibility
                               : Icons.visibility_off,
-                          color: Colors.white54,
+                          color: whiteColor54,
                         ),
                       ),
                     ),
@@ -242,7 +242,7 @@ class _UsernamePasswordState extends State<UsernamePassword> {
                         padding: EdgeInsetsGeometry.only(top: 4),
                         child: Text(
                           "Password must be 8 or more characters. Strong password have a symbol, one uppercase, and lowercase letter.",
-                          style: TextStyle(color: Colors.white54, fontSize: 12),
+                          style: TextStyle(color: whiteColor54, fontSize: 12),
                         ),
                       ),
                     ],
@@ -275,7 +275,7 @@ class _UsernamePasswordState extends State<UsernamePassword> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: whiteColor,
                       ),
                     ),
                   ),

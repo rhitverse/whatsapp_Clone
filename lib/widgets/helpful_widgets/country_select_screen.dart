@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:country_picker/country_picker.dart';
+import 'package:whatsapp_clone/colors.dart';
 
 class CountrySelectScreen extends StatelessWidget {
   const CountrySelectScreen({super.key});
@@ -12,12 +13,12 @@ class CountrySelectScreen extends StatelessWidget {
         backgroundColor: const Color(0xff040406),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: whiteColor),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           "Select country",
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: whiteColor),
         ),
       ),
       body: Builder(
@@ -32,8 +33,8 @@ class CountrySelectScreen extends StatelessWidget {
               },
               countryListTheme: CountryListThemeData(
                 backgroundColor: const Color(0xff040406),
-                textStyle: const TextStyle(color: Colors.white),
-                searchTextStyle: const TextStyle(color: Colors.white),
+                textStyle: const TextStyle(color: whiteColor),
+                searchTextStyle: const TextStyle(color: whiteColor),
                 inputDecoration: InputDecoration(
                   hintText: 'Search country',
                   hintStyle: const TextStyle(color: Colors.white54),

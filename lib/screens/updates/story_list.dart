@@ -62,7 +62,7 @@ class StoryList extends StatelessWidget {
           const SizedBox(height: 6),
           const Text(
             "It's yours",
-            style: TextStyle(color: Colors.white, fontSize: 12),
+            style: TextStyle(color: whiteColor, fontSize: 12),
           ),
         ],
       ),
@@ -88,7 +88,7 @@ class StoryList extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white, fontSize: 12),
+              style: const TextStyle(color: whiteColor, fontSize: 12),
             ),
           ),
         ],

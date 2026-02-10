@@ -7,7 +7,7 @@ class CustomMessenger {
     String message, {
     Duration duration = const Duration(seconds: 2),
     Color backgroundColor = Colors.black87,
-    Color textColor = Colors.white,
+    Color textColor = whiteColor,
     IconData? icon,
   }) {
     final overlay = Overlay.of(context);

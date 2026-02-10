@@ -57,7 +57,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             backgroundColor: backgroundColor,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+              icon: const Icon(Icons.arrow_back_ios, color: whiteColor),
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -68,7 +68,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 Text(
                   "Profile",
                   style: TextStyle(
-                    color: Colors.white,
+                    color: whiteColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 17,
                   ),
@@ -147,11 +147,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 ListTile(
                                   leading: const Icon(
                                     Icons.remove_red_eye,
-                                    color: Colors.white,
+                                    color: whiteColor,
                                   ),
                                   title: const Text(
                                     'View',
-                                    style: TextStyle(color: Colors.white),
+                                    style: TextStyle(color: whiteColor),
                                   ),
                                   onTap: () {
                                     Navigator.pop(context);
@@ -189,7 +189,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                         backgroundColor: backgroundColor,
                                         title: const Text(
                                           'Delete Profile Picture?',
-                                          style: TextStyle(color: Colors.white),
+                                          style: TextStyle(color: whiteColor),
                                         ),
                                         content: const Text(
                                           'Are you sure you want to delete your profile picture?',
@@ -202,7 +202,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                             child: const Text(
                                               'Cancel',
                                               style: TextStyle(
-                                                color: Colors.white,
+                                                color: whiteColor,
                                               ),
                                             ),
                                           ),
@@ -256,7 +256,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 ),
                                 child: const Center(
                                   child: CircularProgressIndicator(
-                                    color: Colors.white,
+                                    color: whiteColor,
                                   ),
                                 ),
                               ),
@@ -286,7 +286,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         children: const [
                           Text(
                             "My QR code",
-                            style: TextStyle(color: Colors.white, fontSize: 18),
+                            style: TextStyle(color: whiteColor, fontSize: 18),
                           ),
                           Spacer(),
                           Icon(Icons.chevron_right, color: Colors.grey),
@@ -298,7 +298,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   const Divider(),
 
                   _tile(
-                    "MINE ID",
+                    "Usename",
                     value: user.username,
                     onTap: () => _go(context, const UsernameScreen()),
                   ),
@@ -378,7 +378,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         children: [
                           const Text(
                             "Birthday",
-                            style: TextStyle(color: Colors.white, fontSize: 18),
+                            style: TextStyle(color: whiteColor, fontSize: 18),
                           ),
                           Spacer(),
                           Text(

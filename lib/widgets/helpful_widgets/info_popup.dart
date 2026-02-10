@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:whatsapp_clone/colors.dart';
 
 class InfoPopup extends StatefulWidget {
   final String message;
@@ -70,7 +71,7 @@ class _InfoPopupState extends State<InfoPopup>
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: whiteColor,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(

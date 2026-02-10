@@ -65,7 +65,7 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
       locale: DateTimePickerLocale.en_us,
       titleText: "Date of Birth",
       textColor: Colors.black,
-      backgroundColor: Colors.white,
+      backgroundColor: whiteColor,
       itemTextStyle: const TextStyle(color: Colors.black, fontSize: 18),
       looping: false,
       confirmText: "CONFIRM",
@@ -197,7 +197,7 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
                           child: Text(
                             "Create Your\nAccount",
                             style: TextStyle(
-                              color: Colors.white,
+                              color: whiteColor,
                               fontSize: 40,
                               fontWeight: FontWeight.bold,
                               height: 1.1,
@@ -223,7 +223,7 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
                         vertical: 20,
                       ),
                       decoration: const BoxDecoration(
-                        color: Colors.white,
+                        color: whiteColor,
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(30),
                           topRight: Radius.circular(30),
@@ -323,7 +323,7 @@ class _RegisteScreenState extends ConsumerState<RegisteScreen> {
                                   "Sign Up",
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: Colors.white,
+                                    color: whiteColor,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),

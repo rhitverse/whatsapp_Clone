@@ -20,7 +20,7 @@ class CallsScreen extends StatelessWidget {
         title: Text(
           "Calls",
           style: TextStyle(
-            color: Colors.white,
+            color: whiteColor,
             fontSize: 25,
             fontWeight: FontWeight.bold,
           ),
@@ -46,7 +46,7 @@ class CallsScreen extends StatelessWidget {
               child: Text(
                 "Favourites",
                 style: TextStyle(
-                  color: Colors.white,
+                  color: whiteColor,
                   fontWeight: FontWeight.w600,
                   fontSize: 18,
                 ),
@@ -65,7 +65,7 @@ class CallsScreen extends StatelessWidget {
               title: Text(
                 favUser['name']?.toString() ?? '',
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: whiteColor,
                   fontSize: 14.5,
                   fontWeight: FontWeight.w400,
                 ),
@@ -90,7 +90,7 @@ class CallsScreen extends StatelessWidget {
                     style: const TextStyle(color: Colors.grey, fontSize: 13),
                   ),
                   const SizedBox(width: 12),
-                  SvgPicture.asset("assets/svg/info.svg", color: Colors.white),
+                  SvgPicture.asset("assets/svg/info.svg", color: whiteColor),
                 ],
               ),
               onTap: () {},
@@ -103,7 +103,7 @@ class CallsScreen extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 20,
-                  color: Colors.white,
+                  color: whiteColor,
                 ),
               ),
             ),
@@ -130,7 +130,7 @@ class CallsScreen extends StatelessWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.w400,
                         fontSize: 14.5,
-                        color: isMissed ? Colors.red : Colors.white,
+                        color: isMissed ? Colors.red : whiteColor,
                       ),
                     ),
                     subtitle: Row(
@@ -172,7 +172,7 @@ class CallsScreen extends StatelessWidget {
                           },
                           child: SvgPicture.asset(
                             "assets/svg/info.svg",
-                            color: Colors.white,
+                            color: whiteColor,
                           ),
                         ),
                       ],

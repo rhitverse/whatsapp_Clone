@@ -200,7 +200,7 @@ class _UsernameScreen extends ConsumerState<UsernameScreen> {
                     child: const Text(
                       "Save",
                       style: TextStyle(
-                        color: Colors.white,
+                        color: whiteColor,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),

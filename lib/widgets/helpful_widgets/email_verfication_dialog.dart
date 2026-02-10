@@ -34,7 +34,7 @@ class _EmailVerificationDialogState extends State<EmailVerificationDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: whiteColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       insetPadding: const EdgeInsets.symmetric(horizontal: 24),
       child: Padding(
@@ -181,7 +181,7 @@ class _EmailVerificationDialogState extends State<EmailVerificationDialog> {
 
                       style: ElevatedButton.styleFrom(
                         backgroundColor: uiColor,
-                        foregroundColor: Colors.white,
+                        foregroundColor: whiteColor,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(25),
