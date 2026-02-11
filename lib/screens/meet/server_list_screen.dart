@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/widgets/helpful_widgets/channel_log_press_sheet.dart';
 
 class ServerListScreen extends StatefulWidget {
   final List<Map<String, dynamic>> servers;
@@ -18,6 +19,8 @@ class ServerListScreen extends StatefulWidget {
 
 class _ServerListScreenState extends State<ServerListScreen> {
   bool isExpanded = false;
+  bool textExpanded = true;
+  bool voiceExpanded = true;
   int selectedServerIndex = 0;
   final TextEditingController _searchController = TextEditingController();
 
@@ -126,7 +129,7 @@ class _ServerListScreenState extends State<ServerListScreen> {
                 selectedServer?['name']?[0]?.toUpperCase() ?? 'S',
                 style: const TextStyle(
                   color: whiteColor,
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -240,7 +243,7 @@ class _ServerListScreenState extends State<ServerListScreen> {
                                     server['name']?[0]?.toUpperCase() ?? '?',
                                     style: const TextStyle(
                                       color: whiteColor,
-                                      fontSize: 16,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -284,62 +287,125 @@ class _ServerListScreenState extends State<ServerListScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      "Text Channels",
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.bold,
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          textExpanded = !textExpanded;
+                        });
+                      },
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 4),
+                          const Text(
+                            "Text Channels",
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          Icon(
+                            textExpanded
+                                ? Icons.keyboard_arrow_down
+                                : Icons.keyboard_arrow_right,
+                            size: 20,
+                            color: Colors.grey,
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                  ListTile(
-                    leading: const Icon(Icons.tag, color: whiteColor),
-                    title: const Text(
-                      "general",
-                      style: TextStyle(color: whiteColor, fontSize: 16),
-                    ),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Opening general channel'),
-                          duration: Duration(seconds: 1),
+                  const SizedBox(height: 1),
+                  if (textExpanded)
+                    ListTile(
+                      dense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                      ),
+                      minLeadingWidth: 0,
+                      horizontalTitleGap: 8,
+                      leading: SvgPicture.asset(
+                        "assets/svg/hashtag.svg",
+                        width: 22,
+                        height: 22,
+                        color: Colors.grey,
+                      ),
+
+                      title: const Text(
+                        "general",
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                      onLongPress: () {
+                        ChannelLongPressSheet.show(context, "general");
+                      },
+                    ),
 
                   const SizedBox(height: 10),
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      "Voice Channels",
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.bold,
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          voiceExpanded = !voiceExpanded;
+                        });
+                      },
+                      child: Row(
+                        children: [
+                          Text(
+                            "Voice Channels",
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          Icon(
+                            voiceExpanded
+                                ? Icons.keyboard_arrow_down
+                                : Icons.keyboard_arrow_right,
+                            color: Colors.grey,
+                            size: 20,
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                  ListTile(
-                    leading: const Icon(
-                      Icons.volume_up,
-                      color: whiteColor,
-                      size: 23,
-                    ),
-                    title: const Text(
-                      "General",
-                      style: TextStyle(color: whiteColor, fontSize: 16),
-                    ),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Joining voice channel'),
-                          duration: Duration(seconds: 1),
+                  const SizedBox(height: 6),
+                  if (voiceExpanded)
+                    ListTile(
+                      dense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                      ),
+                      minLeadingWidth: 0,
+                      horizontalTitleGap: 8,
+                      leading: SvgPicture.asset(
+                        "assets/svg/speaker.svg",
+                        width: 22,
+                        height: 22,
+                        color: Colors.grey,
+                      ),
+
+                      title: const Text(
+                        "General",
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                      onTap: () {},
+                    ),
                 ],
               ),
             ),
