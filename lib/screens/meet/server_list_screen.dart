@@ -266,7 +266,7 @@ class _ServerListScreenState extends State<ServerListScreen> {
                     child: Container(
                       height: 40,
                       decoration: BoxDecoration(
-                        color: Color(0xff373a43),
+                        color: searchBarColor,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: TextField(
