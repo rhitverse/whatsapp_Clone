@@ -71,7 +71,7 @@ class CustomBottomNavBar extends StatelessWidget {
             icon: navIcon(
               unselectedAsset: 'assets/svg/call.svg',
               selectedAsset: 'assets/svg/call1.svg',
-              index: 3,
+              index: 2,
               size: 26,
             ),
             label: "Calls",
@@ -80,7 +80,7 @@ class CustomBottomNavBar extends StatelessWidget {
             icon: navIcon(
               unselectedAsset: 'assets/svg/setting.svg',
               selectedAsset: 'assets/svg/settings2.svg',
-              index: 4,
+              index: 3,
               size: 25,
             ),
             label: "Settings",

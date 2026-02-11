@@ -204,8 +204,9 @@ class _ServerListScreenState extends State<ServerListScreen> {
                                     width: 48,
                                     height: 48,
                                     decoration: BoxDecoration(
-                                      color: Colors.grey.shade700,
+                                      color: Colors.transparent,
                                       shape: BoxShape.circle,
+                                      border: Border.all(color: Colors.grey),
                                     ),
                                     child: const Icon(
                                       Icons.add,
