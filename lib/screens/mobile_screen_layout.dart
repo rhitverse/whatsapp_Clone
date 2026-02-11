@@ -6,6 +6,7 @@ import 'package:whatsapp_clone/screens/friends/friends_newchat.dart';
 import 'package:whatsapp_clone/screens/friends/qr_scanner.dart';
 import 'package:whatsapp_clone/screens/friends/user_search.dart';
 import 'package:whatsapp_clone/screens/meet/empty_server_screen.dart';
+import 'package:whatsapp_clone/screens/meet/server_screen.dart';
 import 'package:whatsapp_clone/screens/setting_screen.dart';
 import 'package:whatsapp_clone/screens/settings/calls/calls_screen.dart';
 import 'package:whatsapp_clone/widgets/contacts_list.dart';
@@ -139,7 +140,7 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
         index: _currentIndex,
         children: [
           const ContactsList(),
-          EmptyServerScreen(servers: servers),
+          const ServerScreen(),
           const CallsScreen(),
           const SettingScreen(),
         ],

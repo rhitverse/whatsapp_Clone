@@ -11,12 +11,22 @@ class ServerScreen extends StatefulWidget {
 
 class _ServerScreenState extends State<ServerScreen> {
   List<Map<String, dynamic>> servers = [];
+  void _onServerListChnaged() {
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     if (servers.isEmpty) {
-      return EmptyServerScreen(servers: servers);
+      return EmptyServerScreen(
+        servers: servers,
+        onServerCreated: _onServerListChnaged,
+      );
     } else {
-      return ServerListScreen(servers: servers);
+      return ServerListScreen(
+        servers: servers,
+        onServerDeleted: _onServerListChnaged,
+      );
     }
   }
 }

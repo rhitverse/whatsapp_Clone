@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whatsapp_clone/colors.dart';
-import 'package:whatsapp_clone/screens/meet/server_list_screen.dart';
 
 class EmptyServerScreen extends StatefulWidget {
   final List<Map<String, dynamic>> servers;
-  const EmptyServerScreen({super.key, required this.servers});
+  final VoidCallback? onServerCreated;
+  const EmptyServerScreen({
+    super.key,
+    required this.servers,
+    this.onServerCreated,
+  });
 
   @override
   State<EmptyServerScreen> createState() => _EmptyServerScreenState();
@@ -57,10 +61,15 @@ class _EmptyServerScreenState extends State<EmptyServerScreen> {
                 });
 
                 Navigator.pop(context);
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ServerListScreen(servers: widget.servers),
+                if (widget.onServerCreated != null) {
+                  widget.onServerCreated!();
+                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Server"${serverNameController.text}" created!',
+                    ),
+                    duration: const Duration(seconds: 2),
                   ),
                 );
               } else {
@@ -91,22 +100,21 @@ class _EmptyServerScreenState extends State<EmptyServerScreen> {
         ),
       );
     } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ServerListScreen(servers: widget.servers),
-        ),
-      );
+      if (widget.onServerCreated != null) {
+        widget.onServerCreated!();
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: backgroundColor,
         elevation: 0,
+
         title: const Text(
           "Server",
           style: TextStyle(
@@ -154,7 +162,6 @@ class _EmptyServerScreenState extends State<EmptyServerScreen> {
                   fontWeight: FontWeight.w400,
                 ),
               ),
-
               const Spacer(),
               SizedBox(
                 height: 55,

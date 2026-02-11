@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:whatsapp_clone/colors.dart';
 
 class ServerListScreen extends StatefulWidget {
   final List<Map<String, dynamic>> servers;
+  final VoidCallback? onServerDeleted;
 
-  const ServerListScreen({super.key, required this.servers});
+  const ServerListScreen({
+    super.key,
+    required this.servers,
+    this.onServerDeleted,
+  });
 
   @override
   State<ServerListScreen> createState() => _ServerListScreenState();
@@ -103,6 +109,7 @@ class _ServerListScreenState extends State<ServerListScreen> {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
+        scrolledUnderElevation: 0,
         backgroundColor: backgroundColor,
         elevation: 0,
         leading: GestureDetector(
@@ -141,18 +148,25 @@ class _ServerListScreenState extends State<ServerListScreen> {
           ],
         ),
         actions: [
-          IconButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Add member'),
-                  duration: Duration(seconds: 1),
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: () {
+                  print("click");
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SvgPicture.asset(
+                    "assets/svg/inviteF.svg",
+                    width: 27,
+                    height: 27,
+                    color: whiteColor,
+                  ),
                 ),
-              );
-            },
-            icon: const Icon(
-              Icons.person_add_alt_1_outlined,
-              color: whiteColor,
+              ),
             ),
           ),
         ],
@@ -244,8 +258,7 @@ class _ServerListScreenState extends State<ServerListScreen> {
           Expanded(
             child: Container(
               color: backgroundColor,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: ListView(
                 children: [
                   const SizedBox(height: 4),
                   Padding(
