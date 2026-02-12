@@ -24,6 +24,7 @@ class MyQrCodeTab extends StatefulWidget {
 class _MyQrCodeTabState extends State<MyQrCodeTab> {
   final controller = ScreenshotController();
   String qrData = "";
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -39,12 +40,20 @@ class _MyQrCodeTabState extends State<MyQrCodeTab> {
         .doc(uid)
         .get();
 
-    if (doc.exists) {
-      final user = UserModel.fromMap(doc.data()!);
+    if (doc.exists && mounted) {
+      String initialQrData;
+
+      if (doc.data()!.containsKey('qrData') &&
+          doc.data()!['qrData'] != null &&
+          doc.data()!['qrData'].toString().isNotEmpty) {
+        initialQrData = doc.data()!['qrData'];
+      } else {
+        initialQrData = uid;
+      }
+
       setState(() {
-        qrData = doc.data()!.containsKey('qrData')
-            ? doc.data()!['qrData']
-            : (user.username ?? user.displayname);
+        qrData = initialQrData;
+        isLoading = false;
       });
     }
   }
@@ -66,9 +75,11 @@ class _MyQrCodeTabState extends State<MyQrCodeTab> {
         'qrData': newQR,
       });
 
-      setState(() {
-        qrData = newQR;
-      });
+      if (mounted) {
+        setState(() {
+          qrData = newQR;
+        });
+      }
     }
   }
 
@@ -77,7 +88,7 @@ class _MyQrCodeTabState extends State<MyQrCodeTab> {
 
     final image = await controller.capture();
 
-    if (image != null) {
+    if (image != null && mounted) {
       await VisionGallerySaver.saveImage(
         image,
         name: "qr_${DateTime.now().millisecondsSinceEpoch}",
@@ -95,9 +106,11 @@ class _MyQrCodeTabState extends State<MyQrCodeTab> {
 
     await file.writeAsBytes(image!);
 
-    await Share.shareXFiles([
-      XFile(file.path),
-    ], text: "https://yourapp.com/user/$qrData");
+    if (mounted) {
+      await Share.shareXFiles([
+        XFile(file.path),
+      ], text: "https://yourapp.com/user/$qrData");
+    }
   }
 
   void copyLink() {
@@ -121,13 +134,13 @@ class _MyQrCodeTabState extends State<MyQrCodeTab> {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.grey),
                 ),
-                child: QrImageView(
-                  data: qrData.isEmpty
-                      ? FirebaseAuth.instance.currentUser!.uid
-                      : qrData,
-                  size: 220,
-                  backgroundColor: whiteColor,
-                ),
+                child: isLoading
+                    ? const CircularProgressIndicator()
+                    : QrImageView(
+                        data: qrData,
+                        size: 220,
+                        backgroundColor: whiteColor,
+                      ),
               ),
             ),
 

@@ -63,6 +63,8 @@ class SettingScreen extends ConsumerWidget {
         scrolledUnderElevation: 0,
         elevation: 0,
         backgroundColor: backgroundColor,
+        leading: Icon(Icons.arrow_back_ios),
+
         title: const Text(
           "Settings",
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),

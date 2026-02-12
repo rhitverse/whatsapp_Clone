@@ -21,8 +21,85 @@ class MobileScreenLayout extends ConsumerStatefulWidget {
 
 class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
   int _currentIndex = 0;
+  OverlayEntry? _menuOverlay;
+  bool _isMenuOpen = false;
 
   List<Map<String, dynamic>> servers = [];
+
+  void _toggleMenu(BuildContext context) {
+    if (_isMenuOpen) {
+      _menuOverlay?.remove();
+      _menuOverlay = null;
+      setState(() => _isMenuOpen = false);
+      return;
+    }
+    final overlay = Overlay.of(context);
+    final RenderBox button = context.findRenderObject() as RenderBox;
+    final Offset position = button.localToGlobal(Offset.zero);
+
+    _menuOverlay = OverlayEntry(
+      builder: (context) => Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => _toggleMenu(context),
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+          Positioned(
+            top: position.dy + 95,
+            right: 10,
+            child: Material(
+              color: searchBarColor,
+              elevation: 8,
+              borderRadius: BorderRadius.circular(15),
+              child: SizedBox(
+                width: 180,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.person_add, color: whiteColor),
+                      title: const Text(
+                        "Add Friend",
+                        style: TextStyle(color: whiteColor),
+                      ),
+                      onTap: () {
+                        _toggleMenu(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const UserSearch()),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.settings, color: whiteColor),
+                      title: const Text(
+                        "Settings",
+                        style: TextStyle(color: whiteColor),
+                      ),
+                      onTap: () {
+                        _toggleMenu(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const SettingScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    overlay.insert(_menuOverlay!);
+    setState(() => _isMenuOpen = true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,54 +111,33 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
               backgroundColor: backgroundColor,
               scrolledUnderElevation: 0,
               elevation: 0,
-              title: const Text(
-                'Chats',
-                style: TextStyle(
-                  color: whiteColor,
-                  fontSize: 27,
-                  fontWeight: FontWeight.bold,
-                ),
+              title: Row(
+                children: [
+                  Text(
+                    'Messages',
+                    style: TextStyle(
+                      color: whiteColor,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
               centerTitle: false,
               actions: [
                 IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: BoxConstraints(minWidth: 40),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const NotificaionScreen(),
-                      ),
-                    );
-                  },
                   icon: Icon(
-                    Icons.notifications_outlined,
-                    size: 28,
+                    _isMenuOpen ? Icons.close : Icons.add,
                     color: whiteColor,
+                    size: 32,
                   ),
-                ),
-                SizedBox(width: 2),
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: BoxConstraints(minWidth: 40),
-                  onPressed: () {
-                    setState(() {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const UserSearch()),
-                      );
-                    });
-                  },
-                  icon: SvgPicture.asset(
-                    "assets/svg/adduser.svg",
-                    width: 29,
-                    color: whiteColor,
-                  ),
+
+                  onPressed: () => _toggleMenu(context),
                 ),
               ],
+
               bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(35),
+                preferredSize: const Size.fromHeight(42),
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(
                     width * 0.03,
@@ -93,7 +149,7 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
                     height: 42,
                     decoration: BoxDecoration(
                       color: searchBarColor,
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     child: TextField(
                       style: const TextStyle(color: whiteColor),
@@ -139,9 +195,9 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
         index: _currentIndex,
         children: [
           const ContactsList(),
+          const NotificaionScreen(),
           const ServerScreen(),
           const CallsScreen(),
-          const SettingScreen(),
         ],
       ),
 

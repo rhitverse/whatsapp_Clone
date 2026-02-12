@@ -53,16 +53,25 @@ class CustomBottomNavBar extends StatelessWidget {
               unselectedAsset: 'assets/svg/chat2.svg',
               selectedAsset: 'assets/svg/chats2.svg',
               index: 0,
-              size: 25,
+              size: 28,
             ),
             label: "Chats",
           ),
 
           BottomNavigationBarItem(
             icon: navIcon(
+              unselectedAsset: 'assets/svg/notifications.svg',
+              selectedAsset: 'assets/svg/notification.svg',
+              index: 1,
+              size: 23,
+            ),
+            label: "Notifications",
+          ),
+          BottomNavigationBarItem(
+            icon: navIcon(
               unselectedAsset: 'assets/svg/meet.svg',
               selectedAsset: 'assets/svg/groups2.svg',
-              index: 1,
+              index: 2,
               size: 26,
             ),
             label: "Meet",
@@ -71,19 +80,10 @@ class CustomBottomNavBar extends StatelessWidget {
             icon: navIcon(
               unselectedAsset: 'assets/svg/call.svg',
               selectedAsset: 'assets/svg/call1.svg',
-              index: 2,
+              index: 3,
               size: 26,
             ),
             label: "Calls",
-          ),
-          BottomNavigationBarItem(
-            icon: navIcon(
-              unselectedAsset: 'assets/svg/setting.svg',
-              selectedAsset: 'assets/svg/settings2.svg',
-              index: 3,
-              size: 25,
-            ),
-            label: "Settings",
           ),
         ],
       ),

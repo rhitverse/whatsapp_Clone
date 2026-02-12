@@ -10,12 +10,7 @@ class NotificaionScreen extends StatelessWidget {
       backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: backgroundColor,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Icon(Icons.arrow_back_ios, color: whiteColor),
-        ),
+
         title: Text("Notifications", style: TextStyle(color: whiteColor)),
       ),
     );
