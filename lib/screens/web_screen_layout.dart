@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/screens/chat/contact_list.dart';
 import 'package:whatsapp_clone/widgets/chat_filter_items.dart';
 import 'package:whatsapp_clone/widgets/chat_list.dart';
-import 'package:whatsapp_clone/widgets/contacts_list.dart';
 import 'package:whatsapp_clone/widgets/web_chat_appbar.dart';
 import 'package:whatsapp_clone/widgets/web_chat_box.dart';
 import 'package:whatsapp_clone/widgets/web_profile_bar.dart';

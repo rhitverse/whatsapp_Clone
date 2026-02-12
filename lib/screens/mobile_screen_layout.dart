@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/screens/Notifications/notification_screen.dart';
+import 'package:whatsapp_clone/screens/chat/empty_contacts_screen.dart';
 import 'package:whatsapp_clone/screens/friends/friends_newchat.dart';
 import 'package:whatsapp_clone/screens/friends/qr_scanner.dart';
 import 'package:whatsapp_clone/screens/friends/user_search.dart';
 import 'package:whatsapp_clone/screens/meet/server_screen.dart';
 import 'package:whatsapp_clone/screens/setting_screen.dart';
 import 'package:whatsapp_clone/screens/settings/calls/calls_screen.dart';
-import 'package:whatsapp_clone/widgets/contacts_list.dart';
 import 'package:whatsapp_clone/widgets/custom_bottom_nav_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -105,6 +105,7 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: _currentIndex == 0
           ? AppBar(
               automaticallyImplyLeading: false,
@@ -194,7 +195,7 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
       body: IndexedStack(
         index: _currentIndex,
         children: [
-          const ContactsList(),
+          const EmptyContactsScreen(),
           const NotificaionScreen(),
           const ServerScreen(),
           const CallsScreen(),

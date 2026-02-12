@@ -63,7 +63,12 @@ class SettingScreen extends ConsumerWidget {
         scrolledUnderElevation: 0,
         elevation: 0,
         backgroundColor: backgroundColor,
-        leading: Icon(Icons.arrow_back_ios),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.arrow_back_ios),
+        ),
 
         title: const Text(
           "Settings",
