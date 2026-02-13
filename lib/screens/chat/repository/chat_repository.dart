@@ -28,7 +28,7 @@ class ChatRepository {
     await messageRef.set({
       'senderId': senderId,
       'text': text,
-      'timeSent': FieldValue.serverTimestamp(),
+      'time': FieldValue.serverTimestamp(),
     });
 
     await _firestore.collection('Chats').doc(chatId).update({

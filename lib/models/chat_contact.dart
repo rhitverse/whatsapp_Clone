@@ -23,17 +23,34 @@ class ChatContact {
     String currentUid,
     Map<String, dynamic> otherUserData,
   ) {
-    final participants = List<String>.from(map['participants']);
+    final participants = List<String>.from(map['participants'] ?? []);
 
-    final otherUid = participants.firstWhere((uid) => uid != currentUid);
+    final otherUid = participants.firstWhere(
+      (uid) => uid != currentUid,
+      orElse: () => '',
+    );
+
+    DateTime messageTime;
+    try {
+      if (map['lastMessageTime'] != null) {
+        messageTime = (map['lastMessageTime'] as Timestamp).toDate();
+      } else {
+        messageTime = DateTime.now();
+      }
+    } catch (e) {
+      messageTime = DateTime.now();
+    }
 
     return ChatContact(
       chatId: chatId,
       otherUid: otherUid,
-      otherUserName: otherUserData['name'] ?? 'Unknown',
+      otherUserName:
+          otherUserData['displayname'] ??
+          otherUserData['username'] ??
+          'Unknown User',
       otherUserProfilePic: otherUserData['profilePic'] ?? '',
       lastMessage: map['lastMessage'] ?? '',
-      lastMessageTime: (map['lastMessageTime'] as Timestamp).toDate(),
+      lastMessageTime: messageTime,
     );
   }
 }
