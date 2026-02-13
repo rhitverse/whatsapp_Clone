@@ -6,7 +6,13 @@ import 'package:whatsapp_clone/widgets/chat_list.dart';
 import 'package:whatsapp_clone/widgets/mobile_chat_box.dart';
 
 class MobileChatScreen extends StatefulWidget {
-  const MobileChatScreen({super.key});
+  final String chatId;
+  final String otherUid;
+  const MobileChatScreen({
+    super.key,
+    required this.chatId,
+    required this.otherUid,
+  });
 
   @override
   State<MobileChatScreen> createState() => _MobileChatScreenState();

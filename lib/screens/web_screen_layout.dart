@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:whatsapp_clone/colors.dart';
-import 'package:whatsapp_clone/screens/chat/contact_list.dart';
+import 'package:whatsapp_clone/screens/chat/chats_control.dart';
 import 'package:whatsapp_clone/widgets/chat_filter_items.dart';
 import 'package:whatsapp_clone/widgets/chat_list.dart';
 import 'package:whatsapp_clone/widgets/web_chat_appbar.dart';
 import 'package:whatsapp_clone/widgets/web_chat_box.dart';
 import 'package:whatsapp_clone/widgets/web_profile_bar.dart';
 import 'package:whatsapp_clone/widgets/web_search_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class WebScreenLayout extends StatefulWidget {
   const WebScreenLayout({super.key});
@@ -113,7 +114,11 @@ class _WebScreenLayoutState extends State<WebScreenLayout> {
                 const WebSearchBar(),
                 const ChatFilterItems(isWeb: true),
                 SizedBox(height: 17),
-                Expanded(child: ContactsList()),
+                Expanded(
+                  child: ChatControl(
+                    userId: FirebaseAuth.instance.currentUser!.uid,
+                  ),
+                ),
               ],
             ),
           ),
