@@ -6,9 +6,7 @@ import 'package:whatsapp_clone/screens/chat/empty_contacts_screen.dart';
 
 class ChatControl extends StatelessWidget {
   final String userId;
-
   const ChatControl({super.key, required this.userId});
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
@@ -33,23 +31,18 @@ class ChatControl extends StatelessWidget {
         if (docs.isEmpty) {
           return const EmptyContactsScreen();
         }
-        for (var doc in docs) {}
         return FutureBuilder<List<ChatContact>>(
           future: Future.wait(
             docs.map((doc) async {
               final data = doc.data() as Map<String, dynamic>;
-
               final participants = data['participants'] as List<dynamic>? ?? [];
-
               if (participants.isEmpty) {
                 return null;
               }
-
               final otherUid = participants.firstWhere(
                 (uid) => uid != userId,
                 orElse: () => null,
               );
-
               if (otherUid == null) {
                 return null;
               }
@@ -57,12 +50,10 @@ class ChatControl extends StatelessWidget {
                   .collection('users')
                   .doc(otherUid)
                   .get();
-
               if (!otherUserDoc.exists) {
                 return null;
               }
               final otherUserData = otherUserDoc.data() ?? {};
-
               return ChatContact.fromMap(data, doc.id, userId, otherUserData);
             }),
           ).then((list) => list.whereType<ChatContact>().toList()),
