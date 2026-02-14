@@ -48,12 +48,13 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
     if (_messageController.text.trim().isEmpty) return;
 
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+
     if (currentUserId == null) return;
+    final messageText = _messageController.text.trim();
+    _messageController.clear();
 
     try {
-      final messageText = _messageController.text.trim();
-
-      await FirebaseFirestore.instance
+      FirebaseFirestore.instance
           .collection('Chats')
           .doc(widget.chatId)
           .collection('messages')
@@ -63,32 +64,14 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
             'time': FieldValue.serverTimestamp(),
           });
 
-      await FirebaseFirestore.instance
-          .collection('Chats')
-          .doc(widget.chatId)
-          .update({
-            'lastMessage': messageText,
-            'lastMessageTime': FieldValue.serverTimestamp(),
-          });
-
-      _messageController.clear();
-      _scrollToBottom();
+      FirebaseFirestore.instance.collection('Chats').doc(widget.chatId).update({
+        'lastMessage': messageText,
+        'lastMessageTime': FieldValue.serverTimestamp(),
+      });
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Failed to send message')));
-    }
-  }
-
-  void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      Future.delayed(Duration(milliseconds: 100), () {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      });
+      ).showSnackBar(const SnackBar(content: Text('Failed to send message')));
     }
   }
 
@@ -106,11 +89,11 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
         titleSpacing: 0,
         leadingWidth: 40,
         leading: IconButton(
-          padding: EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(Icons.arrow_back_ios),
+          icon: const Icon(Icons.arrow_back_ios),
         ),
         title: Row(
           children: [
@@ -156,13 +139,11 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
                   .collection('Chats')
                   .doc(widget.chatId)
                   .collection('messages')
-                  .orderBy('time', descending: false)
+                  .orderBy('time', descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(color: uiColor),
-                  );
+                if (!snapshot.hasData) {
+                  return const SizedBox();
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -177,12 +158,9 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
 
                 final messages = snapshot.data!.docs;
 
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _scrollToBottom();
-                });
-
                 return ListView.builder(
                   controller: _scrollController,
+                  reverse: true,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 10,
@@ -200,75 +178,29 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
                         ? DateFormat('h:mm a').format(timestamp.toDate())
                         : '';
 
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Row(
-                        mainAxisAlignment: isMe
-                            ? MainAxisAlignment.end
-                            : MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          if (isMe) const Spacer(),
-                          Flexible(
-                            child: Container(
-                              margin: EdgeInsets.only(
-                                left: isMe ? 60 : 0,
-                                right: isMe ? 0 : 60,
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              decoration: BoxDecoration(
-                                color: isMe
-                                    ? const Color(0xFF3797F0)
-                                    : const Color(0xFF262626),
-                                borderRadius: BorderRadius.only(
-                                  topLeft: const Radius.circular(20),
-                                  topRight: const Radius.circular(20),
-                                  bottomLeft: isMe
-                                      ? const Radius.circular(20)
-                                      : const Radius.circular(4),
-                                  bottomRight: isMe
-                                      ? const Radius.circular(4)
-                                      : const Radius.circular(20),
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    text,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 15,
-                                      height: 1.4,
-                                    ),
-                                  ),
-                                  if (isMe && index == messages.length - 1) ...[
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Read $timeString',
-                                      style: TextStyle(
-                                        color: Colors.grey[400],
-                                        fontSize: 11,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ),
-                          if (!isMe) const Spacer(),
-                        ],
-                      ),
+                    bool showTail = true;
+                    if (index < messages.length - 1) {
+                      final nextMessageData =
+                          messages[index + 1].data() as Map<String, dynamic>;
+                      final nextSenderId = nextMessageData['senderId'] ?? '';
+
+                      if (senderId == nextSenderId) {
+                        showTail = false;
+                      }
+                    }
+
+                    return MessageBubble(
+                      text: text,
+                      isMe: isMe,
+                      time: timeString,
+
+                      showTail: showTail,
                     );
                   },
                 );
               },
             ),
           ),
-          // Message Input
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
@@ -280,7 +212,6 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
             child: SafeArea(
               child: Row(
                 children: [
-                  // Plus button
                   Container(
                     width: 36,
                     height: 36,
@@ -291,7 +222,6 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
                     child: const Icon(Icons.add, color: Colors.white, size: 24),
                   ),
                   const SizedBox(width: 8),
-                  // Text input
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -324,7 +254,6 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  // Voice message button
                   GestureDetector(
                     onTap: _sendMessage,
                     child: Container(
@@ -342,20 +271,6 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  // Image/Media button
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[900],
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.image_outlined,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -371,4 +286,142 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
     _scrollController.dispose();
     super.dispose();
   }
+}
+
+class MessageBubble extends StatelessWidget {
+  final String text;
+  final bool isMe;
+  final String time;
+  final bool showTail;
+
+  const MessageBubble({
+    super.key,
+    required this.text,
+    required this.isMe,
+    required this.time,
+    this.showTail = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+      child: Align(
+        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.75,
+              ),
+              child: Container(
+                margin: EdgeInsets.only(
+                  left: isMe ? 40 : 8,
+                  right: isMe ? 8 : 40,
+                  bottom: 2,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: isMe
+                      ? const Color(0xFF3797F0)
+                      : const Color(0xFF262626),
+                  borderRadius: BorderRadius.only(
+                    topLeft: const Radius.circular(20),
+                    topRight: const Radius.circular(20),
+                    bottomLeft: isMe
+                        ? const Radius.circular(20)
+                        : (showTail
+                              ? const Radius.circular(5)
+                              : const Radius.circular(20)),
+                    bottomRight: isMe
+                        ? (showTail
+                              ? const Radius.circular(5)
+                              : const Radius.circular(20))
+                        : const Radius.circular(20),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      text,
+                      softWrap: true,
+                      overflow: TextOverflow.visible,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (showTail)
+              Positioned(
+                bottom: 0,
+                left: isMe ? null : -1,
+                right: isMe ? -1 : null,
+                child: CustomPaint(
+                  painter: BubbleTailPainter(
+                    color: isMe
+                        ? const Color(0xFF3797F0)
+                        : const Color(0xFF262626),
+                    isMe: isMe,
+                  ),
+                  size: const Size(13, 20),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class BubbleTailPainter extends CustomPainter {
+  final Color color;
+  final bool isMe;
+
+  BubbleTailPainter({required this.color, required this.isMe});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final path = Path();
+
+    if (isMe) {
+      path.moveTo(0, 0);
+      path.quadraticBezierTo(
+        size.width * 0.25,
+        size.height * 0.5,
+        size.width,
+        size.height,
+      );
+      path.lineTo(0, size.height - 2);
+      path.close();
+    } else {
+      path.moveTo(size.width, 0);
+      path.quadraticBezierTo(
+        size.width * 0.75,
+        size.height * 0.5,
+        0,
+        size.height,
+      );
+      path.lineTo(size.width, size.height - 2);
+      path.close();
+    }
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
