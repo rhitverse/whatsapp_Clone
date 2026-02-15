@@ -17,11 +17,13 @@ class ChatController {
     required String chatId,
     required String senderId,
     required String text,
+    required String receiverId,
   }) async {
     await _chatRepository.sendMessage(
       chatId: chatId,
       senderId: senderId,
       text: text,
+      receiverId: receiverId,
     );
   }
 

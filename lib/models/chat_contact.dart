@@ -2,30 +2,51 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatContact {
   final String chatId;
-  final String otherUid;
-  final String otherUserName;
-  final String otherUserProfilePic;
+  final String receiverUid;
+  final String receiverDisplayName;
+  final String receiverProfilePic;
   final DateTime lastMessageTime;
   final String lastMessage;
+  final String lastMessageSenderId;
+  final int unreadCount;
+  final bool isOnline;
+  final DateTime? lastSeen;
 
   ChatContact({
     required this.chatId,
-    required this.otherUid,
-    required this.otherUserName,
-    required this.otherUserProfilePic,
+    required this.receiverUid,
+    required this.receiverDisplayName,
+    required this.receiverProfilePic,
     required this.lastMessageTime,
     required this.lastMessage,
+    required this.lastMessageSenderId,
+    this.unreadCount = 0,
+    this.isOnline = false,
+    this.lastSeen,
   });
+
+  bool isLastMessageMine(String currentUid) {
+    return lastMessageSenderId == currentUid;
+  }
+
+  String getDisplayMessage(String currentUid) {
+    if (lastMessage.isEmpty) return 'No message yet';
+
+    if (isLastMessageMine(currentUid)) {
+      return 'You: $lastMessage';
+    }
+    return lastMessage;
+  }
 
   factory ChatContact.fromMap(
     Map<String, dynamic> map,
     String chatId,
     String currentUid,
-    Map<String, dynamic> otherUserData,
+    Map<String, dynamic> receiverUserData,
   ) {
     final participants = List<String>.from(map['participants'] ?? []);
 
-    final otherUid = participants.firstWhere(
+    final receiverUid = participants.firstWhere(
       (uid) => uid != currentUid,
       orElse: () => '',
     );
@@ -41,16 +62,29 @@ class ChatContact {
       messageTime = DateTime.now();
     }
 
+    DateTime? lastSeenTime;
+    try {
+      if (receiverUserData['lastSeen'] != null) {
+        lastSeenTime = (receiverUserData['lastSeen'] as Timestamp).toDate();
+      }
+    } catch (e) {
+      lastSeenTime = null;
+    }
+
     return ChatContact(
       chatId: chatId,
-      otherUid: otherUid,
-      otherUserName:
-          otherUserData['displayname'] ??
-          otherUserData['username'] ??
+      receiverUid: receiverUid,
+      receiverDisplayName:
+          receiverUserData['displayname'] ??
+          receiverUserData['username'] ??
           'Unknown User',
-      otherUserProfilePic: otherUserData['profilePic'] ?? '',
+      receiverProfilePic: receiverUserData['profilePic'] ?? '',
       lastMessage: map['lastMessage'] ?? '',
       lastMessageTime: messageTime,
+      lastMessageSenderId: map['lastMessageSenderId'] ?? '',
+      unreadCount: map['unreadCount_$currentUid'] ?? 0,
+      isOnline: receiverUserData['isOnline'] ?? false,
+      lastSeen: lastSeenTime,
     );
   }
 }

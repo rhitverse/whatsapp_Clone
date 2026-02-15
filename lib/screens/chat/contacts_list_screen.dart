@@ -24,7 +24,9 @@ class ContactsListScreen extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (_) => MobileChatScreen(
                     chatId: chat.chatId,
-                    otherUid: chat.otherUid,
+                    receiverUid: chat.receiverUid,
+                    receiverDisplayName: chat.receiverDisplayName,
+                    receiverProfilePic: chat.receiverProfilePic,
                   ),
                 ),
               );
@@ -38,10 +40,10 @@ class ContactsListScreen extends StatelessWidget {
                   CircleAvatar(
                     radius: 30,
                     backgroundColor: Colors.grey[800],
-                    backgroundImage: chat.otherUserProfilePic.isNotEmpty
-                        ? NetworkImage(chat.otherUserProfilePic)
+                    backgroundImage: chat.receiverProfilePic.isNotEmpty
+                        ? NetworkImage(chat.receiverProfilePic)
                         : null,
-                    child: chat.otherUserProfilePic.isEmpty
+                    child: chat.receiverProfilePic.isEmpty
                         ? Icon(Icons.person, size: 28, color: Colors.grey[600])
                         : null,
                   ),
@@ -55,7 +57,7 @@ class ContactsListScreen extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                chat.otherUserName,
+                                chat.receiverDisplayName,
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,

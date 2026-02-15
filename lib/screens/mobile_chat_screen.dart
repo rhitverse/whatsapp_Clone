@@ -1,3 +1,4 @@
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,12 +7,16 @@ import 'package:intl/intl.dart';
 
 class MobileChatScreen extends StatefulWidget {
   final String chatId;
-  final String otherUid;
+  final String receiverUid;
+  final String receiverDisplayName;
+  final String receiverProfilePic;
 
   const MobileChatScreen({
     super.key,
     required this.chatId,
-    required this.otherUid,
+    required this.receiverUid,
+    required this.receiverDisplayName,
+    required this.receiverProfilePic,
   });
 
   @override
@@ -21,27 +26,16 @@ class MobileChatScreen extends StatefulWidget {
 class _MobileChatScreenState extends State<MobileChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  String otherUserName = '';
-  String otherUserProfilePic = '';
+  bool showEmoji = false;
+  FocusNode focusNode = FocusNode();
+  String receiverDisplayName = '';
+  String receiverProfilePic = '';
 
   @override
   void initState() {
     super.initState();
-    _loadOtherUserData();
-  }
-
-  Future<void> _loadOtherUserData() async {
-    final userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(widget.otherUid)
-        .get();
-
-    if (userDoc.exists) {
-      setState(() {
-        otherUserName = userDoc.data()?['displayname'] ?? 'Unknown';
-        otherUserProfilePic = userDoc.data()?['profilePic'] ?? '';
-      });
-    }
+    receiverDisplayName = widget.receiverDisplayName;
+    receiverProfilePic = widget.receiverProfilePic;
   }
 
   Future<void> _sendMessage() async {
@@ -67,6 +61,8 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
       FirebaseFirestore.instance.collection('Chats').doc(widget.chatId).update({
         'lastMessage': messageText,
         'lastMessageTime': FieldValue.serverTimestamp(),
+        'lastMessageSenderId': currentUserId,
+        'unreadCount_${widget.receiverUid}': FieldValue.increment(1),
       });
     } catch (e) {
       ScaffoldMessenger.of(
@@ -99,14 +95,14 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
           children: [
             CircleAvatar(
               radius: 26,
-              backgroundImage: otherUserProfilePic.isNotEmpty
-                  ? NetworkImage(otherUserProfilePic)
+              backgroundImage: receiverProfilePic.isNotEmpty
+                  ? NetworkImage(receiverProfilePic)
                   : null,
             ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                otherUserName,
+                receiverDisplayName,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -179,13 +175,15 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
                         : '';
 
                     bool showTail = true;
-                    if (index < messages.length - 1) {
-                      final nextMessageData =
-                          messages[index + 1].data() as Map<String, dynamic>;
-                      final nextSenderId = nextMessageData['senderId'] ?? '';
+                    bool isGrouped = false;
+                    if (index > 0) {
+                      final prevMessageData =
+                          messages[index - 1].data() as Map<String, dynamic>;
+                      final prevSenderId = prevMessageData['senderId'] ?? '';
 
-                      if (senderId == nextSenderId) {
+                      if (senderId == prevSenderId) {
                         showTail = false;
+                        isGrouped = true;
                       }
                     }
 
@@ -193,8 +191,8 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
                       text: text,
                       isMe: isMe,
                       time: timeString,
-
                       showTail: showTail,
+                      isGrouped: isGrouped,
                     );
                   },
                 );
@@ -232,17 +230,27 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
                       ),
                       child: TextField(
                         controller: _messageController,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                        ),
+                        focusNode: focusNode,
+                        style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
-                          hintText: 'iMessage',
+                          hintText: 'Type your message...',
                           hintStyle: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 15,
                           ),
                           border: InputBorder.none,
+                          prefixIcon: IconButton(
+                            icon: const Icon(
+                              Icons.emoji_emotions_outlined,
+                              color: Colors.grey,
+                            ),
+                            onPressed: () {
+                              focusNode.unfocus();
+                              setState(() {
+                                showEmoji = !showEmoji;
+                              });
+                            },
+                          ),
                           contentPadding: const EdgeInsets.symmetric(
                             vertical: 10,
                           ),
@@ -260,7 +268,7 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
                       width: 36,
                       height: 36,
                       decoration: const BoxDecoration(
-                        color: Color(0xFF3797F0),
+                        color: senderMessageColor,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -275,6 +283,16 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
               ),
             ),
           ),
+          if (showEmoji)
+            SizedBox(
+              height: 300,
+              child: EmojiPicker(
+                textEditingController: _messageController,
+                onEmojiSelected: (category, emoji) {
+                  _messageController.text += emoji.emoji;
+                },
+              ),
+            ),
         ],
       ),
     );
@@ -284,6 +302,7 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
+    focusNode.dispose();
     super.dispose();
   }
 }
@@ -293,6 +312,7 @@ class MessageBubble extends StatelessWidget {
   final bool isMe;
   final String time;
   final bool showTail;
+  final bool isGrouped;
 
   const MessageBubble({
     super.key,
@@ -300,12 +320,13 @@ class MessageBubble extends StatelessWidget {
     required this.isMe,
     required this.time,
     this.showTail = true,
+    this.isGrouped = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+      padding: EdgeInsets.symmetric(vertical: isGrouped ? 1 : 5, horizontal: 4),
       child: Align(
         alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
         child: Stack(
@@ -326,9 +347,7 @@ class MessageBubble extends StatelessWidget {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: isMe
-                      ? const Color(0xFF3797F0)
-                      : const Color(0xFF262626),
+                  color: isMe ? senderMessageColor : const Color(0xFF262626),
                   borderRadius: BorderRadius.only(
                     topLeft: const Radius.circular(20),
                     topRight: const Radius.circular(20),
@@ -368,9 +387,7 @@ class MessageBubble extends StatelessWidget {
                 right: isMe ? -1 : null,
                 child: CustomPaint(
                   painter: BubbleTailPainter(
-                    color: isMe
-                        ? const Color(0xFF3797F0)
-                        : const Color(0xFF262626),
+                    color: isMe ? senderMessageColor : const Color(0xFF262626),
                     isMe: isMe,
                   ),
                   size: const Size(13, 20),
@@ -398,22 +415,22 @@ class BubbleTailPainter extends CustomPainter {
     final path = Path();
 
     if (isMe) {
-      path.moveTo(0, 0);
+      path.moveTo(4, 4);
       path.quadraticBezierTo(
-        size.width * 0.25,
-        size.height * 0.5,
-        size.width,
-        size.height,
+        size.width * 0.5,
+        size.height * 0.9,
+        size.width * 1.2,
+        size.height * 1.2,
       );
       path.lineTo(0, size.height - 2);
       path.close();
     } else {
-      path.moveTo(size.width, 0);
+      path.moveTo(size.width - 4, 4);
       path.quadraticBezierTo(
-        size.width * 0.75,
-        size.height * 0.5,
-        0,
-        size.height,
+        size.width * 0.5,
+        size.height * 0.9,
+        -size.width * 0.2,
+        size.height * 1.2,
       );
       path.lineTo(size.width, size.height - 2);
       path.close();
