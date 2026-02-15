@@ -27,8 +27,7 @@ class MobileChatScreen extends StatefulWidget {
 class _MobileChatScreenState extends State<MobileChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  bool showEmoji = false;
-  FocusNode focusNode = FocusNode();
+  final FocusNode focusNode = FocusNode();
   String receiverDisplayName = '';
   String receiverProfilePic = '';
 
@@ -37,14 +36,33 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
     super.initState();
     receiverDisplayName = widget.receiverDisplayName;
     receiverProfilePic = widget.receiverProfilePic;
+  }
 
-    // Hide emoji picker when keyboard opens
-    focusNode.addListener(() {
-      if (focusNode.hasFocus && showEmoji) {
-        setState(() {
-          showEmoji = false;
-        });
-      }
+  void toggleEmojiKeyboard() {
+    focusNode.unfocus();
+    Future.delayed(const Duration(milliseconds: 100), () {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        barrierColor: Colors.black54,
+        builder: (context) {
+          return DraggableScrollableSheet(
+            initialChildSize: 0.5,
+            minChildSize: 0.4,
+            maxChildSize: 0.95,
+            expand: false,
+            snap: true,
+            builder: (context, scrollController) {
+              return CustomEmojiPicker(
+                controller: _messageController,
+                scrollController: scrollController,
+                textField: buildChatInput(isInsideBottomSheet: true),
+              );
+            },
+          );
+        },
+      );
     });
   }
 
@@ -58,7 +76,7 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
     _messageController.clear();
 
     try {
-      FirebaseFirestore.instance
+      await FirebaseFirestore.instance
           .collection('Chats')
           .doc(widget.chatId)
           .collection('messages')
@@ -68,12 +86,15 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
             'time': FieldValue.serverTimestamp(),
           });
 
-      FirebaseFirestore.instance.collection('Chats').doc(widget.chatId).update({
-        'lastMessage': messageText,
-        'lastMessageTime': FieldValue.serverTimestamp(),
-        'lastMessageSenderId': currentUserId,
-        'unreadCount_${widget.receiverUid}': FieldValue.increment(1),
-      });
+      await FirebaseFirestore.instance
+          .collection('Chats')
+          .doc(widget.chatId)
+          .update({
+            'lastMessage': messageText,
+            'lastMessageTime': FieldValue.serverTimestamp(),
+            'lastMessageSenderId': currentUserId,
+            'unreadCount_${widget.receiverUid}': FieldValue.increment(1),
+          });
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -81,11 +102,96 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
     }
   }
 
+  Widget buildChatInput({bool isInsideBottomSheet = false}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.black,
+        border: Border(top: BorderSide(color: Colors.grey[900]!, width: 0.5)),
+      ),
+      child: SafeArea(
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Colors.grey[900],
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.add, color: Colors.white, size: 24),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[900],
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.grey[800]!, width: 1),
+                ),
+                child: TextField(
+                  controller: _messageController,
+                  focusNode: isInsideBottomSheet ? FocusNode() : focusNode,
+                  style: const TextStyle(color: whiteColor),
+                  decoration: InputDecoration(
+                    hintText: 'Type your message...',
+                    hintStyle: TextStyle(color: Colors.grey[600], fontSize: 15),
+                    border: InputBorder.none,
+                    suffixIcon: GestureDetector(
+                      onTap: () {
+                        if (isInsideBottomSheet) {
+                          Navigator.pop(context);
+                          focusNode.requestFocus();
+                        } else {
+                          toggleEmojiKeyboard();
+                        }
+                      },
+                      child: Icon(
+                        isInsideBottomSheet
+                            ? Icons.keyboard_alt_outlined
+                            : Icons.emoji_emotions_outlined,
+                        color: Colors.grey,
+                        size: 24,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                  ),
+                  maxLines: null,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            ValueListenableBuilder<TextEditingValue>(
+              valueListenable: _messageController,
+              builder: (context, value, child) {
+                final hasText = value.text.trim().isNotEmpty;
+                return GestureDetector(
+                  onTap: hasText ? _sendMessage : null,
+                  child: SvgPicture.asset(
+                    hasText ? "assets/svg/message.svg" : "assets/svg/mic.svg",
+                    width: 28,
+                    height: 28,
+                    colorFilter: const ColorFilter.mode(
+                      whiteColor,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: backgroundColor,
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -135,206 +241,61 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              Expanded(
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('Chats')
-                      .doc(widget.chatId)
-                      .collection('messages')
-                      .orderBy('time', descending: true)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return const SizedBox();
-                    }
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('Chats')
+                    .doc(widget.chatId)
+                    .collection('messages')
+                    .orderBy('time', descending: true)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) return const SizedBox();
+                  final messages = snapshot.data!.docs;
 
-                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return Center(
-                        child: Text(
-                          'No messages yet\nSay hi! 👋',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 16,
-                          ),
-                        ),
-                      );
-                    }
-
-                    final messages = snapshot.data!.docs;
-
-                    return ListView.builder(
-                      controller: _scrollController,
-                      reverse: true,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
+                  if (messages.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'No messages yet\nSay hi! 👋',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey[600], fontSize: 16),
                       ),
-                      itemCount: messages.length,
-                      itemBuilder: (context, index) {
-                        final messageData =
-                            messages[index].data() as Map<String, dynamic>;
-                        final senderId = messageData['senderId'] ?? '';
-                        final text = messageData['text'] ?? '';
-                        final timestamp = messageData['time'] as Timestamp?;
-
-                        final isMe = senderId == currentUserId;
-                        final timeString = timestamp != null
-                            ? DateFormat('h:mm a').format(timestamp.toDate())
-                            : '';
-
-                        bool showTail = true;
-                        bool isGrouped = false;
-                        if (index > 0) {
-                          final prevMessageData =
-                              messages[index - 1].data()
-                                  as Map<String, dynamic>;
-                          final prevSenderId =
-                              prevMessageData['senderId'] ?? '';
-
-                          if (senderId == prevSenderId) {
-                            showTail = false;
-                            isGrouped = true;
-                          }
-                        }
-
-                        return MessageBubble(
-                          text: text,
-                          isMe: isMe,
-                          time: timeString,
-                          showTail: showTail,
-                          isGrouped: isGrouped,
-                        );
-                      },
                     );
-                  },
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  border: Border(
-                    top: BorderSide(color: Colors.grey[900]!, width: 0.5),
-                  ),
-                ),
-                child: SafeArea(
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[900],
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.add,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[900],
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.grey[800]!,
-                              width: 1,
-                            ),
-                          ),
-                          child: TextField(
-                            controller: _messageController,
-                            focusNode: focusNode,
-                            style: const TextStyle(color: Colors.white),
-                            decoration: InputDecoration(
-                              hintText: 'Type your message...',
-                              hintStyle: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 15,
-                              ),
-                              border: InputBorder.none,
-                              suffixIcon: GestureDetector(
-                                onTap: () {
-                                  focusNode.unfocus();
-                                  setState(() {
-                                    showEmoji = !showEmoji;
-                                  });
-                                },
-                                child: const Icon(
-                                  Icons.emoji_emotions_outlined,
-                                  color: Colors.grey,
-                                  size: 24,
-                                ),
-                              ),
-                              suffixIconConstraints: const BoxConstraints(
-                                minWidth: 40,
-                                minHeight: 40,
-                              ),
-                              contentPadding: const EdgeInsets.only(
-                                top: 10,
-                                bottom: 10,
-                                left: 16,
-                                right: 8,
-                              ),
-                            ),
-                            maxLines: null,
-                            textInputAction: TextInputAction.newline,
-                            onSubmitted: (_) => _sendMessage(),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ValueListenableBuilder<TextEditingValue>(
-                        valueListenable: _messageController,
-                        builder: (context, value, child) {
-                          final hasText = value.text.trim().isNotEmpty;
-                          return GestureDetector(
-                            onTap: hasText ? _sendMessage : null,
-                            child: SvgPicture.asset(
-                              hasText
-                                  ? "assets/svg/message.svg"
-                                  : "assets/svg/mic.svg",
-                              width: 28,
-                              height: 28,
-                              colorFilter: const ColorFilter.mode(
-                                whiteColor,
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (showEmoji)
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: CustomEmojiPicker(
-                controller: _messageController,
-                onClose: () {
-                  setState(() {
-                    showEmoji = false;
-                  });
+                  }
+
+                  return ListView.builder(
+                    controller: _scrollController,
+                    reverse: true,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final messageData =
+                          messages[index].data() as Map<String, dynamic>;
+                      final isMe = messageData['senderId'] == currentUserId;
+                      final timestamp = messageData['time'] as Timestamp?;
+                      final timeString = timestamp != null
+                          ? DateFormat('h:mm a').format(timestamp.toDate())
+                          : '';
+
+                      return MessageBubble(
+                        text: messageData['text'] ?? '',
+                        isMe: isMe,
+                        time: timeString,
+                      );
+                    },
+                  );
                 },
               ),
             ),
-        ],
+            buildChatInput(isInsideBottomSheet: false),
+          ],
+        ),
       ),
     );
   }
