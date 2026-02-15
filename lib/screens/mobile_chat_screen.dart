@@ -1,9 +1,10 @@
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:intl/intl.dart';
+import 'package:whatsapp_clone/widgets/helpful_widgets/custom_emoji_picker.dart';
 
 class MobileChatScreen extends StatefulWidget {
   final String chatId;
@@ -36,6 +37,15 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
     super.initState();
     receiverDisplayName = widget.receiverDisplayName;
     receiverProfilePic = widget.receiverProfilePic;
+
+    // Hide emoji picker when keyboard opens
+    focusNode.addListener(() {
+      if (focusNode.hasFocus && showEmoji) {
+        setState(() {
+          showEmoji = false;
+        });
+      }
+    });
   }
 
   Future<void> _sendMessage() async {
@@ -86,9 +96,7 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
         leadingWidth: 40,
         leading: IconButton(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
           icon: const Icon(Icons.arrow_back_ios),
         ),
         title: Row(
@@ -127,169 +135,202 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('Chats')
-                  .doc(widget.chatId)
-                  .collection('messages')
-                  .orderBy('time', descending: true)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const SizedBox();
-                }
-
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No messages yet\nSay hi! 👋',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey[600], fontSize: 16),
-                    ),
-                  );
-                }
-
-                final messages = snapshot.data!.docs;
-
-                return ListView.builder(
-                  controller: _scrollController,
-                  reverse: true,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final messageData =
-                        messages[index].data() as Map<String, dynamic>;
-                    final senderId = messageData['senderId'] ?? '';
-                    final text = messageData['text'] ?? '';
-                    final timestamp = messageData['time'] as Timestamp?;
-
-                    final isMe = senderId == currentUserId;
-                    final timeString = timestamp != null
-                        ? DateFormat('h:mm a').format(timestamp.toDate())
-                        : '';
-
-                    bool showTail = true;
-                    bool isGrouped = false;
-                    if (index > 0) {
-                      final prevMessageData =
-                          messages[index - 1].data() as Map<String, dynamic>;
-                      final prevSenderId = prevMessageData['senderId'] ?? '';
-
-                      if (senderId == prevSenderId) {
-                        showTail = false;
-                        isGrouped = true;
-                      }
+          Column(
+            children: [
+              Expanded(
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('Chats')
+                      .doc(widget.chatId)
+                      .collection('messages')
+                      .orderBy('time', descending: true)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const SizedBox();
                     }
 
-                    return MessageBubble(
-                      text: text,
-                      isMe: isMe,
-                      time: timeString,
-                      showTail: showTail,
-                      isGrouped: isGrouped,
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.black,
-              border: Border(
-                top: BorderSide(color: Colors.grey[900]!, width: 0.5),
-              ),
-            ),
-            child: SafeArea(
-              child: Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[900],
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.add, color: Colors.white, size: 24),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[900],
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.grey[800]!, width: 1),
-                      ),
-                      child: TextField(
-                        controller: _messageController,
-                        focusNode: focusNode,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          hintText: 'Type your message...',
-                          hintStyle: TextStyle(
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'No messages yet\nSay hi! 👋',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
                             color: Colors.grey[600],
-                            fontSize: 15,
-                          ),
-                          border: InputBorder.none,
-                          prefixIcon: IconButton(
-                            icon: const Icon(
-                              Icons.emoji_emotions_outlined,
-                              color: Colors.grey,
-                            ),
-                            onPressed: () {
-                              focusNode.unfocus();
-                              setState(() {
-                                showEmoji = !showEmoji;
-                              });
-                            },
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 10,
+                            fontSize: 16,
                           ),
                         ),
-                        maxLines: null,
-                        textInputAction: TextInputAction.newline,
-                        onSubmitted: (_) => _sendMessage(),
+                      );
+                    }
+
+                    final messages = snapshot.data!.docs;
+
+                    return ListView.builder(
+                      controller: _scrollController,
+                      reverse: true,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: _sendMessage,
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: const BoxDecoration(
-                        color: senderMessageColor,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.send,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                ],
+                      itemCount: messages.length,
+                      itemBuilder: (context, index) {
+                        final messageData =
+                            messages[index].data() as Map<String, dynamic>;
+                        final senderId = messageData['senderId'] ?? '';
+                        final text = messageData['text'] ?? '';
+                        final timestamp = messageData['time'] as Timestamp?;
+
+                        final isMe = senderId == currentUserId;
+                        final timeString = timestamp != null
+                            ? DateFormat('h:mm a').format(timestamp.toDate())
+                            : '';
+
+                        bool showTail = true;
+                        bool isGrouped = false;
+                        if (index > 0) {
+                          final prevMessageData =
+                              messages[index - 1].data()
+                                  as Map<String, dynamic>;
+                          final prevSenderId =
+                              prevMessageData['senderId'] ?? '';
+
+                          if (senderId == prevSenderId) {
+                            showTail = false;
+                            isGrouped = true;
+                          }
+                        }
+
+                        return MessageBubble(
+                          text: text,
+                          isMe: isMe,
+                          time: timeString,
+                          showTail: showTail,
+                          isGrouped: isGrouped,
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
-            ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  border: Border(
+                    top: BorderSide(color: Colors.grey[900]!, width: 0.5),
+                  ),
+                ),
+                child: SafeArea(
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[900],
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.add,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[900],
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: Colors.grey[800]!,
+                              width: 1,
+                            ),
+                          ),
+                          child: TextField(
+                            controller: _messageController,
+                            focusNode: focusNode,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              hintText: 'Type your message...',
+                              hintStyle: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 15,
+                              ),
+                              border: InputBorder.none,
+                              suffixIcon: GestureDetector(
+                                onTap: () {
+                                  focusNode.unfocus();
+                                  setState(() {
+                                    showEmoji = !showEmoji;
+                                  });
+                                },
+                                child: const Icon(
+                                  Icons.emoji_emotions_outlined,
+                                  color: Colors.grey,
+                                  size: 24,
+                                ),
+                              ),
+                              suffixIconConstraints: const BoxConstraints(
+                                minWidth: 40,
+                                minHeight: 40,
+                              ),
+                              contentPadding: const EdgeInsets.only(
+                                top: 10,
+                                bottom: 10,
+                                left: 16,
+                                right: 8,
+                              ),
+                            ),
+                            maxLines: null,
+                            textInputAction: TextInputAction.newline,
+                            onSubmitted: (_) => _sendMessage(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ValueListenableBuilder<TextEditingValue>(
+                        valueListenable: _messageController,
+                        builder: (context, value, child) {
+                          final hasText = value.text.trim().isNotEmpty;
+                          return GestureDetector(
+                            onTap: hasText ? _sendMessage : null,
+                            child: SvgPicture.asset(
+                              hasText
+                                  ? "assets/svg/message.svg"
+                                  : "assets/svg/mic.svg",
+                              width: 28,
+                              height: 28,
+                              colorFilter: const ColorFilter.mode(
+                                whiteColor,
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
           if (showEmoji)
-            SizedBox(
-              height: 300,
-              child: EmojiPicker(
-                textEditingController: _messageController,
-                onEmojiSelected: (category, emoji) {
-                  _messageController.text += emoji.emoji;
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: CustomEmojiPicker(
+                controller: _messageController,
+                onClose: () {
+                  setState(() {
+                    showEmoji = false;
+                  });
                 },
               ),
             ),
