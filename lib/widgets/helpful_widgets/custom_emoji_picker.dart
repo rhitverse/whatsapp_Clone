@@ -4,13 +4,11 @@ import 'package:flutter/material.dart';
 class CustomEmojiPicker extends StatefulWidget {
   final TextEditingController controller;
   final ScrollController scrollController;
-  final Widget textField;
 
   const CustomEmojiPicker({
     super.key,
     required this.controller,
     required this.scrollController,
-    required this.textField,
   });
 
   @override
@@ -33,10 +31,7 @@ class _CustomEmojiPickerState extends State<CustomEmojiPicker>
       mainAxisSize: MainAxisSize.min,
       children: [
         const SizedBox(height: 12),
-        Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: widget.textField,
-        ),
+        Padding(padding: const EdgeInsets.only(top: 8.0)),
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),
           height: 40,
@@ -60,7 +55,6 @@ class _CustomEmojiPickerState extends State<CustomEmojiPicker>
             ],
           ),
         ),
-
         Expanded(
           child: TabBarView(
             controller: _tabController,
