@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:intl/intl.dart';
 import 'package:whatsapp_clone/screens/chat/widget/bottom_chat_field.dart';
@@ -45,6 +44,17 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
     });
   }
 
+  void onEmojiTap() {
+    setState(() {
+      showEmoji = !showEmoji;
+    });
+    if (showEmoji) {
+      focusNode.unfocus();
+    } else {
+      focusNode.requestFocus();
+    }
+  }
+
   Future<void> _sendMessage() async {
     if (_messageController.text.trim().isEmpty) return;
 
@@ -53,6 +63,7 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
     if (currentUserId == null) return;
     final messageText = _messageController.text.trim();
     _messageController.clear();
+    focusNode.unfocus();
 
     try {
       FirebaseFirestore.instance
@@ -204,10 +215,7 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
             controller: _messageController,
             focusNode: focusNode,
             showEmoji: showEmoji,
-            onEmojiTap: () {
-              focusNode.unfocus();
-              setState(() => showEmoji = !showEmoji);
-            },
+            onEmojiTap: onEmojiTap,
             onSend: _sendMessage,
           ),
         ],
