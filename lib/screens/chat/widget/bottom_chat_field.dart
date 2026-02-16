@@ -25,7 +25,7 @@ class BottomChatField extends StatefulWidget {
 
 class _BottomChatFieldState extends State<BottomChatField> {
   final ScrollController _emojiScrollController = ScrollController();
-  double _keyboardHeight = 300;
+  double _keyboardHeight = 310;
 
   @override
   void dispose() {
@@ -35,41 +35,39 @@ class _BottomChatFieldState extends State<BottomChatField> {
 
   @override
   Widget build(BuildContext context) {
-    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-    if (keyboardHeight > 0) {
-      _keyboardHeight = keyboardHeight;
+    final double currentKeyboardHeight = MediaQuery.of(
+      context,
+    ).viewInsets.bottom;
+    if (currentKeyboardHeight > 0) {
+      _keyboardHeight = currentKeyboardHeight;
     }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.black,
+            color: backgroundColor,
             border: Border(
               top: BorderSide(color: Colors.grey[900]!, width: 0.5),
             ),
           ),
           child: SafeArea(
+            bottom: !widget.showEmoji,
             child: Row(
               children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[900],
-                    shape: BoxShape.circle,
-                  ),
+                CircleAvatar(
+                  backgroundColor: Colors.grey[900],
+                  radius: 20,
                   child: const Icon(Icons.add, color: Colors.white, size: 24),
                 ),
                 const SizedBox(width: 8),
-
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
                       color: Colors.grey[900],
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(25),
                       border: Border.all(color: Colors.grey[800]!, width: 1),
                     ),
                     child: TextField(
@@ -88,7 +86,10 @@ class _BottomChatFieldState extends State<BottomChatField> {
                         ),
                         border: InputBorder.none,
                         suffixIcon: GestureDetector(
-                          onTap: widget.onEmojiTap,
+                          onTap: () {
+                            widget.focusNode.unfocus();
+                            widget.onEmojiTap();
+                          },
                           child: Icon(
                             widget.showEmoji
                                 ? Icons.keyboard_alt_outlined
@@ -111,9 +112,7 @@ class _BottomChatFieldState extends State<BottomChatField> {
                     ),
                   ),
                 ),
-
                 const SizedBox(width: 8),
-
                 ValueListenableBuilder<TextEditingValue>(
                   valueListenable: widget.controller,
                   builder: (context, value, child) {
@@ -134,8 +133,6 @@ class _BottomChatFieldState extends State<BottomChatField> {
                     );
                   },
                 ),
-
-                const SizedBox(width: 8),
               ],
             ),
           ),
@@ -169,91 +166,63 @@ class CustomEmojiPicker extends StatefulWidget {
 class _CustomEmojiPickerState extends State<CustomEmojiPicker>
     with TickerProviderStateMixin {
   late TabController _tabController;
-  final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _searchController.addListener(() {
-      setState(() {
-        _searchQuery = _searchController.text;
-      });
-    });
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    _searchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          height: 45,
-          decoration: BoxDecoration(
-            color: const Color(0xff131419),
-            borderRadius: BorderRadius.circular(25),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.search, color: Colors.grey, size: 22),
-              const SizedBox(width: 12),
-              Expanded(
-                child: TextField(
-                  controller: _searchController,
-                  style: const TextStyle(color: whiteColor, fontSize: 15),
-                  decoration: InputDecoration(
-                    hintText: 'Search',
-                    hintStyle: TextStyle(color: Colors.grey[600], fontSize: 15),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-              ),
-              if (_searchController.text.isNotEmpty)
-                GestureDetector(
-                  onTap: () {
-                    _searchController.clear();
-                    setState(() {});
-                  },
-                  child: const Icon(Icons.close, color: Colors.grey, size: 20),
-                ),
-            ],
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
+          margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           height: 40,
           decoration: BoxDecoration(
             color: const Color(0xff131419),
             borderRadius: BorderRadius.circular(20),
           ),
-          child: TabBar(
-            controller: _tabController,
-            indicator: BoxDecoration(
-              color: searchBarColor,
-              borderRadius: BorderRadius.circular(20),
+          child: Theme(
+            data: ThemeData(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
             ),
-            dividerColor: Colors.transparent,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.grey,
-            tabs: const [
-              Tab(text: "Emoji"),
-              Tab(text: "GIFs"),
-              Tab(text: "Stickers"),
-            ],
+            child: TabBar(
+              controller: _tabController,
+              indicator: BoxDecoration(
+                color: searchBarColor,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.grey,
+              labelStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.normal,
+              ),
+              labelPadding: EdgeInsets.zero,
+              padding: const EdgeInsets.all(3),
+              tabs: const [
+                Tab(text: "Emoji"),
+                Tab(text: "GIFs"),
+                Tab(text: "Stickers"),
+              ],
+            ),
           ),
         ),
-        const SizedBox(height: 8),
         Expanded(
           child: TabBarView(
             controller: _tabController,
@@ -273,49 +242,47 @@ class _CustomEmojiPickerState extends State<CustomEmojiPicker>
   }
 
   Widget _emojiTab() {
-    if (_searchQuery.isNotEmpty) {
-      return EmojiPicker(
-        scrollController: widget.scrollController,
-        textEditingController: widget.controller,
-        config: Config(
-          checkPlatformCompatibility: false,
-          emojiViewConfig: const EmojiViewConfig(
-            columns: 7,
-            emojiSizeMax: 28,
-            backgroundColor: backgroundColor,
-          ),
-          categoryViewConfig: const CategoryViewConfig(
-            backgroundColor: backgroundColor,
-          ),
-          searchViewConfig: SearchViewConfig(
-            backgroundColor: backgroundColor,
-            buttonIconColor: Colors.white,
-            hintText: _searchQuery,
-          ),
-          bottomActionBarConfig: BottomActionBarConfig(
-            enabled: true,
-            backgroundColor: backgroundColor,
-            showSearchViewButton: false,
-          ),
-          skinToneConfig: const SkinToneConfig(enabled: false),
-        ),
-      );
-    }
     return EmojiPicker(
       scrollController: widget.scrollController,
       textEditingController: widget.controller,
-      config: const Config(
-        checkPlatformCompatibility: false,
+      config: Config(
+        checkPlatformCompatibility: true,
         emojiViewConfig: EmojiViewConfig(
           columns: 7,
           emojiSizeMax: 28,
+          verticalSpacing: 0,
+          horizontalSpacing: 0,
+          gridPadding: EdgeInsets.zero,
           backgroundColor: backgroundColor,
+          buttonMode: ButtonMode.MATERIAL,
+          recentsLimit: 28,
+          noRecents: const Text(
+            'No Recents',
+            style: TextStyle(fontSize: 20, color: Colors.grey),
+            textAlign: TextAlign.center,
+          ),
+          loadingIndicator: const SizedBox.shrink(),
+          replaceEmojiOnLimitExceed: false,
         ),
-        categoryViewConfig: CategoryViewConfig(
+        categoryViewConfig: const CategoryViewConfig(
           backgroundColor: backgroundColor,
+          indicatorColor: whiteColor,
+          iconColorSelected: whiteColor,
+          iconColor: Colors.grey,
+          categoryIcons: CategoryIcons(),
         ),
-        bottomActionBarConfig: BottomActionBarConfig(enabled: false),
-        skinToneConfig: SkinToneConfig(enabled: false),
+        searchViewConfig: const SearchViewConfig(
+          backgroundColor: Color(0xff131419),
+          buttonIconColor: Colors.grey,
+        ),
+        bottomActionBarConfig: const BottomActionBarConfig(
+          enabled: true,
+          backgroundColor: backgroundColor,
+          buttonIconColor: whiteColor,
+          showSearchViewButton: true,
+          showBackspaceButton: true,
+        ),
+        skinToneConfig: const SkinToneConfig(enabled: false),
       ),
     );
   }
