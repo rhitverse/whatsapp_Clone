@@ -26,6 +26,14 @@ class _CustomEmojiPickerState extends State<CustomEmojiPicker>
   }
 
   @override
+  void didUpdateWidget(covariant CustomEmojiPicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      _tabController.index = 0;
+    }
+  }
+
+  @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
@@ -49,9 +57,20 @@ class _CustomEmojiPickerState extends State<CustomEmojiPicker>
               color: searchBarColor,
               borderRadius: BorderRadius.circular(20),
             ),
+            indicatorSize: TabBarIndicatorSize.tab,
             dividerColor: Colors.transparent,
             labelColor: Colors.white,
             unselectedLabelColor: Colors.grey,
+            labelStyle: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.normal,
+            ),
+            labelPadding: EdgeInsets.zero,
+            padding: const EdgeInsets.all(3),
             tabs: const [
               Tab(text: "Emoji"),
               Tab(text: "GIFs"),
@@ -62,6 +81,7 @@ class _CustomEmojiPickerState extends State<CustomEmojiPicker>
         Expanded(
           child: TabBarView(
             controller: _tabController,
+            physics: const NeverScrollableScrollPhysics(),
             children: [
               _emojiTab(),
               const Center(
@@ -79,12 +99,27 @@ class _CustomEmojiPickerState extends State<CustomEmojiPicker>
 
   Widget _emojiTab() {
     return EmojiPicker(
-      scrollController: widget.scrollController,
       textEditingController: widget.controller,
+      onEmojiSelected: (category, emoji) {
+        final text = widget.controller.text;
+        final selection = widget.controller.selection;
+        final newText = selection.isValid
+            ? text.replaceRange(selection.start, selection.end, emoji.emoji)
+            : text + emoji.emoji;
+
+        widget.controller.value = TextEditingValue(
+          text: newText,
+          selection: TextSelection.collapsed(
+            offset: selection.isValid
+                ? selection.start + emoji.emoji.length
+                : newText.length,
+          ),
+        );
+      },
       config: Config(
         checkPlatformCompatibility: true,
         emojiViewConfig: EmojiViewConfig(
-          columns: 7,
+          columns: 8,
           emojiSizeMax: 28,
           verticalSpacing: 0,
           horizontalSpacing: 0,
@@ -93,7 +128,7 @@ class _CustomEmojiPickerState extends State<CustomEmojiPicker>
           buttonMode: ButtonMode.MATERIAL,
           noRecents: const Text(
             'No Recents',
-            style: TextStyle(fontSize: 20, color: Colors.grey),
+            style: TextStyle(fontSize: 15, color: Colors.grey),
             textAlign: TextAlign.center,
           ),
           loadingIndicator: const SizedBox.shrink(),
@@ -114,6 +149,7 @@ class _CustomEmojiPickerState extends State<CustomEmojiPicker>
           enabled: true,
           backgroundColor: backgroundColor,
           buttonIconColor: whiteColor,
+
           showSearchViewButton: true,
           showBackspaceButton: true,
         ),
