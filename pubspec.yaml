@@ -37,6 +37,7 @@ dependencies:
   flutter_svg: ^2.0.9
   cached_network_image: ^3.4.1
   emoji_picker_flutter: ^4.4.0
+  giphy_get: ^3.6.1+1
 
 dev_dependencies:
   flutter_test:

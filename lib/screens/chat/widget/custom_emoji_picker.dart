@@ -1,14 +1,46 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/secret/secret.dart';
+
+class GifItem {
+  final String id;
+  final String previewUrl;
+  final String originalUrl;
+
+  const GifItem({
+    required this.id,
+    required this.previewUrl,
+    required this.originalUrl,
+  });
+  factory GifItem.fromJson(Map<String, dynamic> json) {
+    final images = json['images'] as Map<String, dynamic>;
+    return GifItem(
+      id: json['id'] as String,
+      previewUrl:
+          (images['fixed_width_small'] ?? images['fixed_width'])['url']
+              as String,
+      originalUrl: images['original']['url'] as String,
+    );
+  }
+}
 
 class CustomEmojiPicker extends StatefulWidget {
   final TextEditingController controller;
   final ScrollController scrollController;
+
+  final void Function(String gifUrl)? onGiftSelected;
+
   const CustomEmojiPicker({
     super.key,
     required this.controller,
     required this.scrollController,
+    this.onGiftSelected,
   });
 
   @override
@@ -42,7 +74,7 @@ class _CustomEmojiPickerState extends State<CustomEmojiPicker>
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisSize: MainAxisSize.min,
+      mainAxisSize: MainAxisSize.max,
       children: [
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
@@ -84,11 +116,13 @@ class _CustomEmojiPickerState extends State<CustomEmojiPicker>
             physics: const NeverScrollableScrollPhysics(),
             children: [
               _emojiTab(),
-              const Center(
-                child: Text("GIFs", style: TextStyle(color: Colors.white)),
+              _GifGridTab(
+                type: _GifType.gif,
+                onGifSelected: widget.onGiftSelected,
               ),
-              const Center(
-                child: Text("Stickers", style: TextStyle(color: Colors.white)),
+              _GifGridTab(
+                type: _GifType.sticker,
+                onGifSelected: widget.onGiftSelected,
               ),
             ],
           ),
@@ -147,14 +181,285 @@ class _CustomEmojiPickerState extends State<CustomEmojiPicker>
         ),
         bottomActionBarConfig: const BottomActionBarConfig(
           enabled: true,
+          buttonColor: backgroundColor,
           backgroundColor: backgroundColor,
           buttonIconColor: whiteColor,
 
           showSearchViewButton: true,
+
           showBackspaceButton: true,
         ),
         skinToneConfig: const SkinToneConfig(enabled: false),
       ),
+    );
+  }
+}
+
+enum _GifType { gif, sticker }
+
+class _GifGridTab extends StatefulWidget {
+  final _GifType type;
+  final void Function(String gifUrl)? onGifSelected;
+  const _GifGridTab({required this.type, this.onGifSelected});
+  @override
+  State<_GifGridTab> createState() => _GifGridTabState();
+}
+
+class _GifGridTabState extends State<_GifGridTab>
+    with AutomaticKeepAliveClientMixin {
+  final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
+  List<GifItem> _gifs = [];
+  bool _isLoading = false;
+  bool _isLoadingMore = false;
+  String _query = '';
+  int _offset = 0;
+  bool _hasMore = true;
+  Timer? _debounce;
+
+  static const int _limit = 24;
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTrending();
+    _scrollController.addListener(_onScroll);
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _searchController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoadingMore &&
+        !_isLoadingMore &&
+        _hasMore) {
+      _loadMore();
+    }
+  }
+
+  void _onSearchChanged() {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 400), () {
+      final q = _searchController.text.trim();
+      if (q == _query) return;
+      _query = q;
+      _offset = 0;
+      _hasMore = true;
+      setState(() => _gifs = []);
+      q.isEmpty ? _fetchTrending() : _fetchSearch(q);
+    });
+  }
+
+  String get _endPoint {
+    if (_query.isNotEmpty) {
+      return widget.type == _GifType.gif
+          ? '/v1/gifs/search'
+          : 'v1/stickers/search';
+    }
+    return widget.type == _GifType.gif
+        ? '/v1/gifs/trending'
+        : 'v1/stickers/trending';
+  }
+
+  Future<List<GifItem>> _callGiphy(Map<String, String> extraParams) async {
+    final uri = Uri.https('api.giphy.com', _endPoint, {
+      'api_key': Secrets.giphyApiKey,
+      'limit': _limit.toString(),
+      'rating': 'g',
+      ...extraParams,
+    });
+    try {
+      final res = await http.get(uri);
+      if (res.statusCode != 200) return [];
+      final body = jsonDecode(res.body) as Map<String, dynamic>;
+      final data = body['data'] as List<dynamic>;
+      if (data.length < _limit) _hasMore = false;
+      return data
+          .map((e) => GifItem.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<void> _fetchTrending() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+    final gifs = await _callGiphy({'offset': '0'});
+    _offset = gifs.length;
+    if (mounted)
+      setState(() {
+        _gifs = gifs;
+        _isLoading = false;
+      });
+  }
+
+  Future<void> _fetchSearch(String q) async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+    final gifs = await _callGiphy({'q': q, 'offset': '0'});
+    _offset = gifs.length;
+    if (mounted)
+      setState(() {
+        _gifs = gifs;
+        _isLoading = false;
+      });
+  }
+
+  Future<void> _loadMore() async {
+    if (_isLoadingMore || !_hasMore) return;
+    setState(() => _isLoadingMore = true);
+    final params = _query.isEmpty
+        ? {'offset': _offset.toString()}
+        : {'q': _query, 'offset': _offset.toString()};
+    final more = await _callGiphy(params);
+    _offset += more.length;
+    if (mounted)
+      setState(() {
+        _gifs.addAll(more);
+        _isLoadingMore = false;
+      });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
+          child: TextField(
+            controller: _searchController,
+            style: const TextStyle(color: whiteColor, fontSize: 14),
+            decoration: InputDecoration(
+              hintText: widget.type == _GifType.gif
+                  ? 'Search GIFs...'
+                  : 'Search Stickers...',
+              hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+              prefixIcon: const Icon(
+                Icons.search,
+                color: Colors.grey,
+                size: 20,
+              ),
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? GestureDetector(
+                      onTap: _searchController.clear,
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.grey,
+                        size: 18,
+                      ),
+                    )
+                  : null,
+              filled: true,
+              fillColor: const Color(0xff131419),
+              contentPadding: const EdgeInsets.symmetric(vertical: 8),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              _query.isEmpty
+                  ? (widget.type == _GifType.gif
+                        ? 'Trending GIFs'
+                        : 'Trending Stickers')
+                  : 'Results for "$_query"',
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+          ),
+        ),
+        Expanded(
+          child: _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(color: Colors.white38),
+                )
+              : _gifs.isEmpty
+              ? Center(
+                  child: Text(
+                    widget.type == _GifType.gif
+                        ? 'No GIFs found'
+                        : 'No Stickers found',
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                )
+              : GridView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 4,
+                    mainAxisSpacing: 4,
+                    childAspectRatio: 1.1,
+                  ),
+                  itemCount: _gifs.length + (_isLoadingMore ? 1 : 0),
+                  itemBuilder: (ctx, i) {
+                    if (i == _gifs.length) {
+                      return const Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white38,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      );
+                    }
+                    return GestureDetector(
+                      onTap: () =>
+                          widget.onGifSelected?.call(_gifs[i].previewUrl),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: CachedNetworkImage(
+                          imageUrl: _gifs[i].previewUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (_, __) => Container(
+                            color: const Color(0xff2a2b30),
+                            child: const Center(
+                              child: SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white24,
+                                  strokeWidth: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                          errorWidget: (_, __, ___) => Container(
+                            color: const Color(0xff2a2b30),
+                            child: const Icon(
+                              Icons.broken_image,
+                              color: Colors.white24,
+                              size: 24,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 }

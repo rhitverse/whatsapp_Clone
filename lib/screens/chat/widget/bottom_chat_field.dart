@@ -25,7 +25,21 @@ class BottomChatField extends StatefulWidget {
 
 class _BottomChatFieldState extends State<BottomChatField> {
   final ScrollController _emojiScrollController = ScrollController();
-  double get _emojiHeight => MediaQuery.of(context).size.height * 0.45;
+  double _emojiHeight(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final padding = MediaQuery.of(context).padding;
+    const appBarHeight = kToolbarHeight;
+    const chatFieldHeight = 66.0;
+
+    final available =
+        screenHeight -
+        padding.top -
+        padding.bottom -
+        appBarHeight -
+        chatFieldHeight;
+
+    return available.clamp(200.0, 450.0);
+  }
 
   @override
   void dispose() {
@@ -36,7 +50,7 @@ class _BottomChatFieldState extends State<BottomChatField> {
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisSize: MainAxisSize.min,
+      mainAxisSize: MainAxisSize.max,
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -132,7 +146,7 @@ class _BottomChatFieldState extends State<BottomChatField> {
         ),
         if (widget.showEmoji)
           SizedBox(
-            height: _emojiHeight,
+            height: _emojiHeight(context),
             child: CustomEmojiPicker(
               controller: widget.controller,
               scrollController: _emojiScrollController,

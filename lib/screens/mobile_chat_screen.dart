@@ -95,7 +95,7 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: !showEmoji,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         scrolledUnderElevation: 0,
