@@ -92,6 +92,7 @@ class _CustomEmojiPickerState extends State<CustomEmojiPicker>
             indicatorSize: TabBarIndicatorSize.tab,
             dividerColor: Colors.transparent,
             labelColor: Colors.white,
+
             unselectedLabelColor: Colors.grey,
             labelStyle: const TextStyle(
               fontSize: 14,
@@ -345,11 +346,12 @@ class _GifGridTabState extends State<_GifGridTab>
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
           child: TextField(
             controller: _searchController,
+            cursorColor: uiColor,
             style: const TextStyle(color: whiteColor, fontSize: 14),
             decoration: InputDecoration(
               hintText: widget.type == _GifType.gif
                   ? 'Search GIPHY'
-                  : 'Search Stickers...',
+                  : 'Search GIPHY Stickers',
               hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
               prefixIcon: const Icon(
                 Icons.search,
@@ -386,7 +388,7 @@ class _GifGridTabState extends State<_GifGridTab>
                   _query.isEmpty
                       ? (widget.type == _GifType.gif
                             ? 'Trending GIPHY'
-                            : 'Trending Stickers')
+                            : 'Trending GIPHY Stickers')
                       : 'Results for "$_query"',
                   style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
@@ -404,8 +406,8 @@ class _GifGridTabState extends State<_GifGridTab>
               ? Center(
                   child: Text(
                     widget.type == _GifType.gif
-                        ? 'No GIFs found'
-                        : 'No Stickers found',
+                        ? 'No GIPHY found'
+                        : 'No GIPHY Stickers found',
                     style: const TextStyle(color: Colors.grey),
                   ),
                 )

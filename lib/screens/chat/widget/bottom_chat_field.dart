@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/screens/chat/widget/attachment_sheet.dart';
 import 'package:whatsapp_clone/screens/chat/widget/custom_emoji_picker.dart';
 
 class BottomChatField extends StatefulWidget {
@@ -64,10 +65,13 @@ class _BottomChatFieldState extends State<BottomChatField> {
             bottom: !widget.showEmoji,
             child: Row(
               children: [
-                CircleAvatar(
-                  backgroundColor: Colors.grey[900],
-                  radius: 20,
-                  child: const Icon(Icons.add, color: Colors.white, size: 24),
+                GestureDetector(
+                  onTap: () => showAttachmentSheet(context),
+                  child: CircleAvatar(
+                    backgroundColor: Colors.grey[900],
+                    radius: 20,
+                    child: const Icon(Icons.add, color: Colors.white, size: 24),
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
