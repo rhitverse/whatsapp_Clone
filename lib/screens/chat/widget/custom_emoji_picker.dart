@@ -299,11 +299,12 @@ class _GifGridTabState extends State<_GifGridTab>
     setState(() => _isLoading = true);
     final gifs = await _callGiphy({'offset': '0'});
     _offset = gifs.length;
-    if (mounted)
+    if (mounted) {
       setState(() {
         _gifs = gifs;
         _isLoading = false;
       });
+    }
   }
 
   Future<void> _fetchSearch(String q) async {
@@ -311,11 +312,12 @@ class _GifGridTabState extends State<_GifGridTab>
     setState(() => _isLoading = true);
     final gifs = await _callGiphy({'q': q, 'offset': '0'});
     _offset = gifs.length;
-    if (mounted)
+    if (mounted) {
       setState(() {
         _gifs = gifs;
         _isLoading = false;
       });
+    }
   }
 
   Future<void> _loadMore() async {
@@ -326,11 +328,12 @@ class _GifGridTabState extends State<_GifGridTab>
         : {'q': _query, 'offset': _offset.toString()};
     final more = await _callGiphy(params);
     _offset += more.length;
-    if (mounted)
+    if (mounted) {
       setState(() {
         _gifs.addAll(more);
         _isLoadingMore = false;
       });
+    }
   }
 
   @override
@@ -345,7 +348,7 @@ class _GifGridTabState extends State<_GifGridTab>
             style: const TextStyle(color: whiteColor, fontSize: 14),
             decoration: InputDecoration(
               hintText: widget.type == _GifType.gif
-                  ? 'Search GIFs...'
+                  ? 'Search GIPHY'
                   : 'Search Stickers...',
               hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
               prefixIcon: const Icon(
@@ -373,20 +376,25 @@ class _GifGridTabState extends State<_GifGridTab>
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              _query.isEmpty
-                  ? (widget.type == _GifType.gif
-                        ? 'Trending GIFs'
-                        : 'Trending Stickers')
-                  : 'Results for "$_query"',
-              style: const TextStyle(color: Colors.grey, fontSize: 12),
+        Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  _query.isEmpty
+                      ? (widget.type == _GifType.gif
+                            ? 'Trending GIPHY'
+                            : 'Trending Stickers')
+                      : 'Results for "$_query"',
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+              ),
             ),
-          ),
+          ],
         ),
+
         Expanded(
           child: _isLoading
               ? const Center(
@@ -432,7 +440,7 @@ class _GifGridTabState extends State<_GifGridTab>
                         child: CachedNetworkImage(
                           imageUrl: _gifs[i].previewUrl,
                           fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(
+                          placeholder: (_, _) => Container(
                             color: const Color(0xff2a2b30),
                             child: const Center(
                               child: SizedBox(
@@ -445,7 +453,7 @@ class _GifGridTabState extends State<_GifGridTab>
                               ),
                             ),
                           ),
-                          errorWidget: (_, __, ___) => Container(
+                          errorWidget: (_, _, _) => Container(
                             color: const Color(0xff2a2b30),
                             child: const Icon(
                               Icons.broken_image,

@@ -47,7 +47,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         });
       },
 
-      error: (_, __) {
+      error: (_, _) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const WelcomePage()),
