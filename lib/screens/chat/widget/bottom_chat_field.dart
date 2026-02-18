@@ -69,8 +69,8 @@ class _BottomChatFieldState extends State<BottomChatField> {
                   onTap: () => showAttachmentSheet(context),
                   child: CircleAvatar(
                     backgroundColor: Colors.grey[900],
-                    radius: 20,
-                    child: const Icon(Icons.add, color: Colors.white, size: 24),
+                    radius: 24,
+                    child: const Icon(Icons.add, color: Colors.white, size: 27),
                   ),
                 ),
                 const SizedBox(width: 8),

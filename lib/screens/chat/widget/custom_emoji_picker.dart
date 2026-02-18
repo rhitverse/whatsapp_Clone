@@ -18,6 +18,7 @@ class GifItem {
     required this.previewUrl,
     required this.originalUrl,
   });
+
   factory GifItem.fromJson(Map<String, dynamic> json) {
     final images = json['images'] as Map<String, dynamic>;
     return GifItem(
@@ -33,7 +34,6 @@ class GifItem {
 class CustomEmojiPicker extends StatefulWidget {
   final TextEditingController controller;
   final ScrollController scrollController;
-
   final void Function(String gifUrl)? onGiftSelected;
 
   const CustomEmojiPicker({
@@ -92,7 +92,6 @@ class _CustomEmojiPickerState extends State<CustomEmojiPicker>
             indicatorSize: TabBarIndicatorSize.tab,
             dividerColor: Colors.transparent,
             labelColor: Colors.white,
-
             unselectedLabelColor: Colors.grey,
             labelStyle: const TextStyle(
               fontSize: 14,
@@ -185,9 +184,7 @@ class _CustomEmojiPickerState extends State<CustomEmojiPicker>
           buttonColor: backgroundColor,
           backgroundColor: backgroundColor,
           buttonIconColor: whiteColor,
-
           showSearchViewButton: true,
-
           showBackspaceButton: true,
         ),
         skinToneConfig: const SkinToneConfig(enabled: false),
@@ -202,6 +199,7 @@ class _GifGridTab extends StatefulWidget {
   final _GifType type;
   final void Function(String gifUrl)? onGifSelected;
   const _GifGridTab({required this.type, this.onGifSelected});
+
   @override
   State<_GifGridTab> createState() => _GifGridTabState();
 }
@@ -244,7 +242,6 @@ class _GifGridTabState extends State<_GifGridTab>
     if (_scrollController.position.pixels >=
             _scrollController.position.maxScrollExtent - 200 &&
         !_isLoadingMore &&
-        !_isLoadingMore &&
         _hasMore) {
       _loadMore();
     }
@@ -267,11 +264,11 @@ class _GifGridTabState extends State<_GifGridTab>
     if (_query.isNotEmpty) {
       return widget.type == _GifType.gif
           ? '/v1/gifs/search'
-          : 'v1/stickers/search';
+          : '/v1/stickers/search';
     }
     return widget.type == _GifType.gif
         ? '/v1/gifs/trending'
-        : 'v1/stickers/trending';
+        : '/v1/stickers/trending';
   }
 
   Future<List<GifItem>> _callGiphy(Map<String, String> extraParams) async {
@@ -283,6 +280,9 @@ class _GifGridTabState extends State<_GifGridTab>
     });
     try {
       final res = await http.get(uri);
+      print("✅URL: $uri");
+      print("✅STATUS: ${res.statusCode}");
+      print("✅BODY: ${res.body}");
       if (res.statusCode != 200) return [];
       final body = jsonDecode(res.body) as Map<String, dynamic>;
       final data = body['data'] as List<dynamic>;
@@ -378,25 +378,20 @@ class _GifGridTabState extends State<_GifGridTab>
             ),
           ),
         ),
-        Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  _query.isEmpty
-                      ? (widget.type == _GifType.gif
-                            ? 'Trending GIPHY'
-                            : 'Trending GIPHY Stickers')
-                      : 'Results for "$_query"',
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-              ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              _query.isEmpty
+                  ? (widget.type == _GifType.gif
+                        ? 'Trending GIPHY'
+                        : 'Trending GIPHY Stickers')
+                  : 'Results for "$_query"',
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
             ),
-          ],
+          ),
         ),
-
         Expanded(
           child: _isLoading
               ? const Center(
@@ -406,8 +401,8 @@ class _GifGridTabState extends State<_GifGridTab>
               ? Center(
                   child: Text(
                     widget.type == _GifType.gif
-                        ? 'No GIPHY found'
-                        : 'No GIPHY Stickers found',
+                        ? 'No GIFs found'
+                        : 'No Stickers found',
                     style: const TextStyle(color: Colors.grey),
                   ),
                 )
@@ -435,8 +430,9 @@ class _GifGridTabState extends State<_GifGridTab>
                       );
                     }
                     return GestureDetector(
-                      onTap: () =>
-                          widget.onGifSelected?.call(_gifs[i].previewUrl),
+                      onTap: () => widget.onGifSelected?.call(
+                        _gifs[i].originalUrl,
+                      ), // ✅ originalUrl use karo
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: CachedNetworkImage(

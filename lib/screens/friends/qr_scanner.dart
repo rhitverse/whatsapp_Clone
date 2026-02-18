@@ -32,9 +32,17 @@ class _QrScannerState extends State<QrScanner>
     if (!permission.isAuth) return;
 
     final albums = await PhotoManager.getAssetPathList(type: RequestType.image);
+    if (albums.isEmpty) {
+      debugPrint("No album found");
+      return;
+    }
     final recentAlbum = albums.first;
 
     final assets = await recentAlbum.getAssetListPaged(page: 0, size: 1);
+    if (assets.isEmpty) {
+      debugPrint("No image found");
+      return;
+    }
     final thumb = await assets.first.thumbnailDataWithSize(
       const ThumbnailSize(300, 300),
     );
