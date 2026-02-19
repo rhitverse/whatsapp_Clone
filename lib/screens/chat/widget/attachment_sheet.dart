@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/screens/chat/widget/camera_ui.dart';
 
 void showAttachmentSheet(BuildContext context) {
   showModalBottomSheet(
@@ -124,70 +124,39 @@ class _AttachmentSheetState extends State<AttachmentSheet>
 
   void _sendSelected() => Navigator.pop(context, _selected);
 
+  /// ✅ Camera tile tap → close sheet → open CameraUi
   Future<void> _openCamera() async {
-    Navigator.pop(context);
-    await showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF1C1C1C),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 34,
-              height: 4,
-              margin: const EdgeInsets.only(top: 10, bottom: 16),
-              decoration: BoxDecoration(
-                color: Colors.grey[700],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            ListTile(
-              leading: const CircleAvatar(
-                backgroundColor: Color(0xFF2A2A2A),
-                child: Icon(Icons.camera_alt_outlined, color: Colors.white70),
-              ),
-              title: const Text(
-                'Take Photo',
-                style: TextStyle(color: Colors.white, fontSize: 15),
-              ),
-              onTap: () async {
-                Navigator.pop(ctx);
-                final XFile? file = await ImagePicker().pickImage(
-                  source: ImageSource.camera,
-                  imageQuality: 85,
-                  preferredCameraDevice: CameraDevice.rear,
-                );
-                if (file != null) debugPrint('Photo: ${file.path}');
-              },
-            ),
-            ListTile(
-              leading: const CircleAvatar(
-                backgroundColor: Color(0xFF2A2A2A),
-                child: Icon(Icons.videocam_outlined, color: Colors.white70),
-              ),
-              title: const Text(
-                'Record Video',
-                style: TextStyle(color: Colors.white, fontSize: 15),
-              ),
-              onTap: () async {
-                Navigator.pop(ctx);
-                final XFile? file = await ImagePicker().pickVideo(
-                  source: ImageSource.camera,
-                  preferredCameraDevice: CameraDevice.rear,
-                  maxDuration: const Duration(minutes: 5),
-                );
-                if (file != null) debugPrint('Video: ${file.path}');
-              },
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
+    // 1. Close the attachment sheet first
+    Navigator.of(context).pop();
+
+    // 2. Push the custom CameraUi and wait for result
+    //    result == 'captured' means user took a photo
+    //    result == null means user pressed close without shooting
+    final result = await Navigator.of(context).push<String?>(
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const CameraUi(),
+        // Slide-up transition (feels native for camera)
+        transitionsBuilder: (_, animation, __, child) {
+          return SlideTransition(
+            position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
+                .animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
+            child: child,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
       ),
     );
+
+    // 3. Handle result (hook in your actual file path logic here)
+    if (result == 'captured') {
+      debugPrint('📸 Photo captured from CameraUi');
+      // TODO: Use the returned XFile/path to show preview or send
+    }
   }
 
   @override
@@ -199,57 +168,68 @@ class _AttachmentSheetState extends State<AttachmentSheet>
   @override
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
-    final sheetHeight = mq.size.height * 0.90;
 
     return FadeTransition(
       opacity: _fadeAnim,
       child: SlideTransition(
         position: _slideAnim,
-        child: Container(
-          height: sheetHeight,
-          decoration: const BoxDecoration(
-            color: Color(0xFF111111),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
-          ),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 8, bottom: 2),
-                child: Container(
-                  width: 34,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[700],
-                    borderRadius: BorderRadius.circular(2),
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.60,
+          minChildSize: 0.40,
+          maxChildSize: 0.90,
+          expand: false,
+          snap: true,
+          snapSizes: const [0.60, 0.90],
+          builder: (context, scrollController) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Color(0xFF111111),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+              ),
+              child: Column(
+                children: [
+                  // Drag handle
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8, bottom: 2),
+                    child: Container(
+                      width: 34,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[700],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
                   ),
-                ),
-              ),
 
-              _AlbumHeader(
-                currentAlbum: _currentAlbum,
-                selectedCount: _selected.length,
-                showDropdown: _showAlbumDropdown,
-                onSend: _selected.isNotEmpty ? _sendSelected : null,
-                onToggleDropdown: () =>
-                    setState(() => _showAlbumDropdown = !_showAlbumDropdown),
-              ),
+                  _AlbumHeader(
+                    currentAlbum: _currentAlbum,
+                    selectedCount: _selected.length,
+                    showDropdown: _showAlbumDropdown,
+                    onSend: _selected.isNotEmpty ? _sendSelected : null,
+                    onToggleDropdown: () => setState(
+                      () => _showAlbumDropdown = !_showAlbumDropdown,
+                    ),
+                  ),
 
-              if (_showAlbumDropdown)
-                _AlbumDropdown(
-                  albums: _albums,
-                  currentAlbum: _currentAlbum,
-                  onSelect: _switchAlbum,
-                ),
-              Expanded(child: _buildBody()),
-              SizedBox(height: mq.padding.bottom),
-            ],
-          ),
+                  if (_showAlbumDropdown)
+                    _AlbumDropdown(
+                      albums: _albums,
+                      currentAlbum: _currentAlbum,
+                      onSelect: _switchAlbum,
+                    ),
+
+                  Expanded(child: _buildBody(scrollController)),
+                  SizedBox(height: mq.padding.bottom),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(ScrollController scrollController) {
     if (_loading) {
       return const Center(child: CircularProgressIndicator(color: uiColor));
     }
@@ -305,11 +285,13 @@ class _AttachmentSheetState extends State<AttachmentSheet>
       assets: _assets,
       selected: _selected,
       onToggle: _toggleSelect,
-      onCameraTap: _openCamera,
+      onCameraTap: _openCamera, // ✅ custom camera passed here
+      scrollController: scrollController,
     );
   }
 }
 
+// ─── Album Header ──────────────────────────────────────────────────────────────
 class _AlbumHeader extends StatelessWidget {
   final AssetPathEntity? currentAlbum;
   final int selectedCount;
@@ -333,13 +315,10 @@ class _AlbumHeader extends StatelessWidget {
         children: [
           GestureDetector(
             onTap: () => Navigator.pop(context),
-            child: const Text(
-              'Back',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+            child: const Icon(
+              Icons.close_rounded,
+              color: Colors.white70,
+              size: 22,
             ),
           ),
           Expanded(
@@ -374,7 +353,6 @@ class _AlbumHeader extends StatelessWidget {
               ),
             ),
           ),
-
           if (selectedCount > 0)
             GestureDetector(
               onTap: onSend,
@@ -398,13 +376,14 @@ class _AlbumHeader extends StatelessWidget {
               ),
             )
           else
-            const Text('', style: TextStyle(fontSize: 14)),
+            const SizedBox(width: 22),
         ],
       ),
     );
   }
 }
 
+// ─── Album Dropdown ────────────────────────────────────────────────────────────
 class _AlbumDropdown extends StatelessWidget {
   final List<AssetPathEntity> albums;
   final AssetPathEntity? currentAlbum;
@@ -445,6 +424,7 @@ class _AlbumDropdown extends StatelessWidget {
   }
 }
 
+// ─── Album Row ─────────────────────────────────────────────────────────────────
 class _AlbumRow extends StatefulWidget {
   final AssetPathEntity album;
   final bool isSelected;
@@ -482,11 +462,12 @@ class _AlbumRowState extends State<_AlbumRow> {
       const ThumbnailSize(80, 80),
       quality: 70,
     );
-    if (mounted)
+    if (mounted) {
       setState(() {
         _thumb = bytes;
         _count = count;
       });
+    }
   }
 
   @override
@@ -516,7 +497,6 @@ class _AlbumRowState extends State<_AlbumRow> {
               ),
             ),
             const SizedBox(width: 12),
-
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -539,7 +519,6 @@ class _AlbumRowState extends State<_AlbumRow> {
                 ],
               ),
             ),
-
             if (widget.isSelected)
               const Icon(Icons.check_rounded, color: uiColor, size: 20),
           ],
@@ -549,22 +528,26 @@ class _AlbumRowState extends State<_AlbumRow> {
   }
 }
 
+// ─── Media Grid ────────────────────────────────────────────────────────────────
 class _MediaGrid extends StatelessWidget {
   final List<AssetEntity> assets;
   final List<AssetEntity> selected;
   final void Function(AssetEntity) onToggle;
   final VoidCallback onCameraTap;
+  final ScrollController scrollController;
 
   const _MediaGrid({
     required this.assets,
     required this.selected,
     required this.onToggle,
     required this.onCameraTap,
+    required this.scrollController,
   });
 
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
+      controller: scrollController,
       padding: const EdgeInsets.only(bottom: 12),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
@@ -588,6 +571,7 @@ class _MediaGrid extends StatelessWidget {
   }
 }
 
+// ─── Camera Tile ───────────────────────────────────────────────────────────────
 class _CameraTile extends StatelessWidget {
   final VoidCallback onTap;
   const _CameraTile({required this.onTap});
@@ -614,6 +598,7 @@ class _CameraTile extends StatelessWidget {
   }
 }
 
+// ─── Media Tile ────────────────────────────────────────────────────────────────
 class _MediaTile extends StatefulWidget {
   final AssetEntity asset;
   final bool isSelected;
@@ -664,7 +649,7 @@ class _MediaTileState extends State<_MediaTile> {
         children: [
           _thumb != null
               ? Image.memory(_thumb!, fit: BoxFit.cover)
-              : Container(color: const Color(0xff1c1c1c)),
+              : Container(color: const Color(0xFF1C1C1C)),
 
           if (widget.isSelected)
             Container(color: backgroundColor.withValues(alpha: 0.35)),
