@@ -124,19 +124,13 @@ class _AttachmentSheetState extends State<AttachmentSheet>
 
   void _sendSelected() => Navigator.pop(context, _selected);
 
-  /// ✅ Camera tile tap → close sheet → open CameraUi
   Future<void> _openCamera() async {
-    // 1. Close the attachment sheet first
     Navigator.of(context).pop();
 
-    // 2. Push the custom CameraUi and wait for result
-    //    result == 'captured' means user took a photo
-    //    result == null means user pressed close without shooting
     final result = await Navigator.of(context).push<String?>(
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const CameraUi(),
-        // Slide-up transition (feels native for camera)
-        transitionsBuilder: (_, animation, __, child) {
+        pageBuilder: (_, _, _) => const CameraUi(),
+        transitionsBuilder: (_, animation, _, child) {
           return SlideTransition(
             position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
                 .animate(
@@ -152,10 +146,8 @@ class _AttachmentSheetState extends State<AttachmentSheet>
       ),
     );
 
-    // 3. Handle result (hook in your actual file path logic here)
     if (result == 'captured') {
       debugPrint('📸 Photo captured from CameraUi');
-      // TODO: Use the returned XFile/path to show preview or send
     }
   }
 
@@ -188,7 +180,6 @@ class _AttachmentSheetState extends State<AttachmentSheet>
               ),
               child: Column(
                 children: [
-                  // Drag handle
                   Padding(
                     padding: const EdgeInsets.only(top: 8, bottom: 2),
                     child: Container(
@@ -285,13 +276,12 @@ class _AttachmentSheetState extends State<AttachmentSheet>
       assets: _assets,
       selected: _selected,
       onToggle: _toggleSelect,
-      onCameraTap: _openCamera, // ✅ custom camera passed here
+      onCameraTap: _openCamera,
       scrollController: scrollController,
     );
   }
 }
 
-// ─── Album Header ──────────────────────────────────────────────────────────────
 class _AlbumHeader extends StatelessWidget {
   final AssetPathEntity? currentAlbum;
   final int selectedCount;
@@ -383,7 +373,6 @@ class _AlbumHeader extends StatelessWidget {
   }
 }
 
-// ─── Album Dropdown ────────────────────────────────────────────────────────────
 class _AlbumDropdown extends StatelessWidget {
   final List<AssetPathEntity> albums;
   final AssetPathEntity? currentAlbum;
@@ -424,7 +413,6 @@ class _AlbumDropdown extends StatelessWidget {
   }
 }
 
-// ─── Album Row ─────────────────────────────────────────────────────────────────
 class _AlbumRow extends StatefulWidget {
   final AssetPathEntity album;
   final bool isSelected;
@@ -528,7 +516,6 @@ class _AlbumRowState extends State<_AlbumRow> {
   }
 }
 
-// ─── Media Grid ────────────────────────────────────────────────────────────────
 class _MediaGrid extends StatelessWidget {
   final List<AssetEntity> assets;
   final List<AssetEntity> selected;
@@ -571,7 +558,6 @@ class _MediaGrid extends StatelessWidget {
   }
 }
 
-// ─── Camera Tile ───────────────────────────────────────────────────────────────
 class _CameraTile extends StatelessWidget {
   final VoidCallback onTap;
   const _CameraTile({required this.onTap});
@@ -598,7 +584,6 @@ class _CameraTile extends StatelessWidget {
   }
 }
 
-// ─── Media Tile ────────────────────────────────────────────────────────────────
 class _MediaTile extends StatefulWidget {
   final AssetEntity asset;
   final bool isSelected;

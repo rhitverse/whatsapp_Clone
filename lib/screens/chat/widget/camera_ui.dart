@@ -1,11 +1,11 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:whatsapp_clone/colors.dart';
 
 class CameraUi extends StatefulWidget {
   const CameraUi({super.key});
-
   @override
   State<CameraUi> createState() => _CameraUiState();
 }
@@ -15,16 +15,15 @@ class _CameraUiState extends State<CameraUi>
   bool _gridVisible = false;
   bool _isFrontCamera = false;
   FlashMode _flashMode = FlashMode.off;
-
   late AnimationController _shutterController;
   late Animation<double> _shutterAnimation;
-
   CameraController? _camController;
   List<CameraDescription> _cameras = [];
   bool _camReady = false;
   bool _isTakingPhoto = false;
   bool _isSwitching = false;
-
+  int _cameraInitId = 0;
+  bool _frontFlashActive = false;
   @override
   void initState() {
     super.initState();
@@ -41,48 +40,52 @@ class _CameraUiState extends State<CameraUi>
 
   Future<void> _initCamera({required bool front}) async {
     if (!mounted) return;
+    final initId = ++_cameraInitId;
     setState(() {
       _camReady = false;
+      _camController = null;
     });
-
     final oldController = _camController;
-    _camController = null;
     await oldController?.dispose();
-
+    await Future.delayed(const Duration(milliseconds: 300));
+    if (initId != _cameraInitId || !mounted) return;
     if (_cameras.isEmpty) {
       _cameras = await availableCameras();
     }
     if (_cameras.isEmpty) return;
-
+    if (initId != _cameraInitId || !mounted) return;
     final desc = _cameras.firstWhere(
       (c) =>
           c.lensDirection ==
           (front ? CameraLensDirection.front : CameraLensDirection.back),
       orElse: () => _cameras.first,
     );
-
     final controller = CameraController(
       desc,
       ResolutionPreset.high,
       enableAudio: false,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
-
     try {
       await controller.initialize();
+      if (initId != _cameraInitId || !mounted) {
+        await controller.dispose();
+        return;
+      }
       if (!front) {
-        await controller.setFlashMode(_flashMode);
+        try {
+          await controller.setFlashMode(_flashMode);
+        } catch (_) {}
       }
     } catch (e) {
       debugPrint('Camera init error: $e');
-      return;
-    }
-
-    if (!mounted) {
       await controller.dispose();
       return;
     }
-
+    if (initId != _cameraInitId || !mounted) {
+      await controller.dispose();
+      return;
+    }
     setState(() {
       _camController = controller;
       _isFrontCamera = front;
@@ -90,32 +93,63 @@ class _CameraUiState extends State<CameraUi>
     });
   }
 
+  Future<void> _flipCamera() async {
+    if (_isSwitching) return;
+    _isSwitching = true;
+    _isFrontCamera = !_isFrontCamera;
+    await _initCamera(front: _isFrontCamera);
+    _isSwitching = false;
+  }
+
   Future<void> _toggleFlash() async {
-    if (!_camReady || _isFrontCamera) return;
+    if (!_camReady || _camController == null) return;
+    if (_isFrontCamera) {
+      setState(() => _frontFlashActive = !_frontFlashActive);
+      if (_frontFlashActive) {
+        await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      }
+      return;
+    }
     final next = _flashMode == FlashMode.off ? FlashMode.torch : FlashMode.off;
     try {
-      await _camController?.setFlashMode(next);
-      setState(() => _flashMode = next);
-    } catch (e) {
-      debugPrint('Flash error: $e');
+      await _camController!.setFlashMode(next);
+      if (mounted) {
+        setState(() => _flashMode = next);
+      }
+    } on CameraException catch (_) {
+      _showFlashError("This device flashlight doesn't supported");
+    } catch (_) {
+      _showFlashError("Flash doesn't supported");
     }
   }
 
-  Future<void> _flipCamera() async {
-    setState(() => _isSwitching);
-    _isFrontCamera = !_isFrontCamera;
-    await _initCamera(front: _isFrontCamera);
+  void _showFlashError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.flash_off, color: Colors.black, size: 18),
+            const SizedBox(width: 8),
+            Text(message),
+          ],
+        ),
+        duration: const Duration(seconds: 2),
+        backgroundColor: whiteColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
   }
 
   Future<void> _onShutterTap() async {
     if (_isTakingPhoto || !_camReady || _camController == null) return;
-
     HapticFeedback.mediumImpact();
     setState(() => _isTakingPhoto = true);
-
     await _shutterController.forward();
     await _shutterController.reverse();
-
     try {
       final XFile file = await _camController!.takePicture();
       if (mounted) Navigator.of(context).pop(file.path);
@@ -142,21 +176,22 @@ class _CameraUiState extends State<CameraUi>
         fit: StackFit.expand,
         children: [
           _buildCameraPreview(),
-
+          if (_frontFlashActive)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: AnimatedOpacity(
+                  opacity: _frontFlashActive ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 150),
+                  child: Container(color: whiteColor),
+                ),
+              ),
+            ),
           if (_gridVisible) _buildGridOverlay(),
-
           Positioned(
             top: MediaQuery.of(context).padding.top + 8,
             left: 0,
             right: 0,
             child: _buildTopBar(),
-          ),
-
-          Positioned(
-            right: 16,
-            top: 0,
-            bottom: 0,
-            child: Center(child: _buildRightIcons()),
           ),
 
           Positioned(
@@ -176,7 +211,6 @@ class _CameraUiState extends State<CameraUi>
         child: CircularProgressIndicator(color: Colors.white54, strokeWidth: 2),
       );
     }
-
     return ClipRect(
       child: OverflowBox(
         alignment: Alignment.center,
@@ -195,7 +229,6 @@ class _CameraUiState extends State<CameraUi>
   }
 
   Widget _buildGridOverlay() => CustomPaint(painter: _GridPainter());
-
   Widget _buildTopBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -203,47 +236,24 @@ class _CameraUiState extends State<CameraUi>
         children: [
           GestureDetector(
             onTap: () => Navigator.of(context).maybePop(),
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: const BoxDecoration(
-                color: Colors.black38,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.close, color: whiteColor, size: 20),
-            ),
+            child: const Icon(Icons.close, color: whiteColor, size: 30),
           ),
 
-          const SizedBox(width: 36),
+          const Spacer(),
+
+          _iconButton(
+            icon: _flashMode == FlashMode.torch
+                ? Icons.flash_on
+                : Icons.flash_off,
+            onTap: _toggleFlash,
+            active: _flashMode == FlashMode.torch,
+          ),
+
+          const Spacer(),
+
+          const SizedBox(width: 30),
         ],
       ),
-    );
-  }
-
-  Widget _buildRightIcons() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _iconButton(
-          icon: _flashMode == FlashMode.torch
-              ? Icons.flash_on
-              : Icons.flash_off,
-          onTap: _toggleFlash,
-          active: _flashMode == FlashMode.torch,
-        ),
-        const SizedBox(height: 20),
-        _iconButton(
-          icon: Icons.grid_on,
-          onTap: () => setState(() => _gridVisible = !_gridVisible),
-          active: _gridVisible,
-        ),
-        const SizedBox(height: 20),
-        _iconButton(icon: Icons.flip_camera_ios_outlined, onTap: _flipCamera),
-        const SizedBox(height: 20),
-        _iconButton(icon: Icons.image_outlined, onTap: () {}),
-        const SizedBox(height: 20),
-        _iconButton(icon: Icons.gif_box_outlined, onTap: () {}),
-      ],
     );
   }
 
@@ -275,36 +285,84 @@ class _CameraUiState extends State<CameraUi>
   }
 
   Widget _buildBottomControls() {
-    return Center(
-      child: GestureDetector(
-        onTap: _onShutterTap,
-        child: ScaleTransition(
-          scale: _shutterAnimation,
-          child: Container(
-            width: 68,
-            height: 68,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: whiteColor, width: 3),
-              color: whiteColor.withOpacity(0.15),
-            ),
+    return Container(
+      height: 100,
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: backgroundColor.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(width: 16),
+          GestureDetector(
+            onTap: () {},
             child: Center(
-              child: _isTakingPhoto
-                  ? const CircularProgressIndicator(
-                      color: whiteColor,
-                      strokeWidth: 2,
-                    )
-                  : Container(
-                      width: 54,
-                      height: 54,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: whiteColor,
-                      ),
-                    ),
+              child: SvgPicture.asset(
+                "assets/svg/filter.svg",
+                width: 32,
+                height: 32,
+              ),
             ),
           ),
-        ),
+          const Spacer(),
+          GestureDetector(
+            onTap: _onShutterTap,
+            child: ScaleTransition(
+              scale: _shutterAnimation,
+              child: Container(
+                width: 78,
+                height: 78,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: whiteColor, width: 4),
+                  color: whiteColor.withOpacity(0.15),
+                ),
+                child: Center(
+                  child: _isTakingPhoto
+                      ? const CircularProgressIndicator(
+                          color: whiteColor,
+                          strokeWidth: 2,
+                        )
+                      : Container(
+                          width: 66,
+                          height: 66,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: whiteColor,
+                          ),
+                        ),
+                ),
+              ),
+            ),
+          ),
+          const Spacer(),
+          _isSwitching
+              ? const SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.white54,
+                      strokeWidth: 1.5,
+                    ),
+                  ),
+                )
+              : GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    _flipCamera();
+                  },
+                  child: SvgPicture.asset(
+                    "assets/svg/flip.svg",
+                    width: 32,
+                    height: 32,
+                  ),
+                ),
+          const SizedBox(width: 16),
+        ],
       ),
     );
   }
@@ -316,7 +374,6 @@ class _GridPainter extends CustomPainter {
     final paint = Paint()
       ..color = whiteColor.withOpacity(0.25)
       ..strokeWidth = 0.8;
-
     for (int i = 1; i < 3; i++) {
       final y = size.height * i / 3;
       canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
