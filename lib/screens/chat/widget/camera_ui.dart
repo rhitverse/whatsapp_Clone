@@ -1,8 +1,12 @@
+import 'dart:async';
+
+import 'package:audioplayers/audioplayers.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/screens/chat/widget/filter.dart';
 
 class CameraUi extends StatefulWidget {
   const CameraUi({super.key});
@@ -12,7 +16,7 @@ class CameraUi extends StatefulWidget {
 
 class _CameraUiState extends State<CameraUi>
     with SingleTickerProviderStateMixin {
-  bool _gridVisible = false;
+  final bool _gridVisible = false;
   bool _isFrontCamera = false;
   FlashMode _flashMode = FlashMode.off;
   late AnimationController _shutterController;
@@ -24,6 +28,18 @@ class _CameraUiState extends State<CameraUi>
   bool _isSwitching = false;
   int _cameraInitId = 0;
   bool _frontFlashActive = false;
+  bool _isRecording = false;
+  int _recordSeconds = 0;
+  Timer? _recordTimer;
+
+  double _currentZoom = 1.0;
+  double _baseZoom = 1.0;
+  double _minZoom = 1.0;
+  double _maxZoom = 8.0;
+
+  int _selectedFilterIndex = 0;
+
+  final AudioPlayer _audioPlayer = AudioPlayer();
   @override
   void initState() {
     super.initState();
@@ -63,7 +79,7 @@ class _CameraUiState extends State<CameraUi>
     final controller = CameraController(
       desc,
       ResolutionPreset.high,
-      enableAudio: false,
+      enableAudio: true,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
     try {
@@ -75,6 +91,9 @@ class _CameraUiState extends State<CameraUi>
       if (!front) {
         try {
           await controller.setFlashMode(_flashMode);
+          _minZoom = await controller.getMinZoomLevel();
+          _maxZoom = await controller.getMaxZoomLevel();
+          _currentZoom = _minZoom;
         } catch (_) {}
       }
     } catch (e) {
@@ -94,7 +113,7 @@ class _CameraUiState extends State<CameraUi>
   }
 
   Future<void> _flipCamera() async {
-    if (_isSwitching) return;
+    if (_isSwitching || _isRecording) return;
     _isSwitching = true;
     _isFrontCamera = !_isFrontCamera;
     await _initCamera(front: _isFrontCamera);
@@ -105,22 +124,26 @@ class _CameraUiState extends State<CameraUi>
     if (!_camReady || _camController == null) return;
     if (_isFrontCamera) {
       setState(() => _frontFlashActive = !_frontFlashActive);
-      if (_frontFlashActive) {
-        await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-      }
       return;
     }
     final next = _flashMode == FlashMode.off ? FlashMode.torch : FlashMode.off;
     try {
       await _camController!.setFlashMode(next);
-      if (mounted) {
-        setState(() => _flashMode = next);
-      }
+      if (mounted) setState(() => _flashMode = next);
     } on CameraException catch (_) {
       _showFlashError("This device flashlight doesn't supported");
     } catch (_) {
       _showFlashError("Flash doesn't supported");
     }
+  }
+
+  void _showFilterSheet() {
+    showFilterBottomSheet(
+      context: context,
+      selectedIndex: _selectedFilterIndex,
+      camController: _camController,
+      onFilterSelected: (i) => setState(() => _selectedFilterIndex = i),
+    );
   }
 
   void _showFlashError(String message) {
@@ -144,14 +167,24 @@ class _CameraUiState extends State<CameraUi>
     );
   }
 
+  Future<void> _setZoom(double zoom) async {
+    if (_isFrontCamera || !_camReady || _camController == null) return;
+    final clamped = zoom.clamp(_minZoom, _maxZoom);
+    await _camController!.setZoomLevel(clamped);
+    setState(() => _currentZoom = clamped);
+  }
+
   Future<void> _onShutterTap() async {
-    if (_isTakingPhoto || !_camReady || _camController == null) return;
+    if (_isTakingPhoto || _isRecording || !_camReady || _camController == null)
+      return;
     HapticFeedback.mediumImpact();
     setState(() => _isTakingPhoto = true);
     await _shutterController.forward();
     await _shutterController.reverse();
     try {
       final XFile file = await _camController!.takePicture();
+
+      await _audioPlayer.play(AssetSource('audio/shutter.mp3'));
       if (mounted) Navigator.of(context).pop(file.path);
     } catch (e) {
       debugPrint('Capture error: $e');
@@ -160,18 +193,59 @@ class _CameraUiState extends State<CameraUi>
     }
   }
 
+  Future<void> _startRecording() async {
+    if (_isTakingPhoto || _isRecording || !_camReady || _camController == null)
+      return;
+    HapticFeedback.heavyImpact();
+    try {
+      await _camController!.startVideoRecording();
+      setState(() {
+        _isRecording = true;
+        _recordSeconds = 0;
+      });
+      _recordTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) setState(() => _recordSeconds++);
+      });
+    } catch (e) {
+      debugPrint('Record start error:$e');
+    }
+  }
+
+  Future<void> _stopRecording() async {
+    if (!_isRecording || _camController == null) return;
+    _recordTimer?.cancel();
+    HapticFeedback.mediumImpact();
+    try {
+      final XFile file = await _camController!.stopVideoRecording();
+      setState(() => _isRecording = false);
+      if (mounted)
+        Navigator.of(context).pop({'type': 'video', 'path': file.path});
+    } catch (e) {
+      debugPrint('Record stop error: $e');
+      setState(() => _isRecording = false);
+    }
+  }
+
+  String get _recordDuration {
+    final m = (_recordSeconds ~/ 60).toString().padLeft(2, '0');
+    final s = (_recordSeconds % 60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+
   @override
   void dispose() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _camController?.dispose();
     _shutterController.dispose();
+    _recordTimer?.cancel();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: backgroundColor,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -180,7 +254,7 @@ class _CameraUiState extends State<CameraUi>
             Positioned.fill(
               child: IgnorePointer(
                 child: AnimatedOpacity(
-                  opacity: _frontFlashActive ? 1.0 : 0.0,
+                  opacity: 1.0,
                   duration: const Duration(milliseconds: 150),
                   child: Container(color: whiteColor),
                 ),
@@ -193,6 +267,40 @@ class _CameraUiState extends State<CameraUi>
             right: 0,
             child: _buildTopBar(),
           ),
+
+          if (_isRecording)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 60,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.circle, color: whiteColor, size: 10),
+                      const SizedBox(width: 6),
+                      Text(
+                        _recordDuration,
+                        style: const TextStyle(
+                          color: whiteColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
 
           Positioned(
             bottom: MediaQuery.of(context).padding.bottom + 24,
@@ -211,7 +319,8 @@ class _CameraUiState extends State<CameraUi>
         child: CircularProgressIndicator(color: Colors.white54, strokeWidth: 2),
       );
     }
-    return ClipRect(
+
+    Widget preview = ClipRect(
       child: OverflowBox(
         alignment: Alignment.center,
         child: FittedBox(
@@ -226,6 +335,18 @@ class _CameraUiState extends State<CameraUi>
         ),
       ),
     );
+    final activeFilter = cameraFilters[_selectedFilterIndex].colorFilter;
+    if (activeFilter != null) {
+      preview = ColorFiltered(colorFilter: activeFilter, child: preview);
+    }
+    if (!_isFrontCamera) {
+      preview = GestureDetector(
+        onScaleStart: (_) => _baseZoom = _currentZoom,
+        onScaleUpdate: (details) => _setZoom(_baseZoom * details.scale),
+        child: preview,
+      );
+    }
+    return preview;
   }
 
   Widget _buildGridOverlay() => CustomPaint(painter: _GridPainter());
@@ -278,7 +399,7 @@ class _CameraUiState extends State<CameraUi>
         child: Icon(
           icon,
           color: active ? whiteColor : whiteColor.withOpacity(0.85),
-          size: 24,
+          size: 32,
         ),
       ),
     );
@@ -298,7 +419,7 @@ class _CameraUiState extends State<CameraUi>
         children: [
           const SizedBox(width: 16),
           GestureDetector(
-            onTap: () {},
+            onTap: _showFilterSheet,
             child: Center(
               child: SvgPicture.asset(
                 "assets/svg/filter.svg",
@@ -310,28 +431,38 @@ class _CameraUiState extends State<CameraUi>
           const Spacer(),
           GestureDetector(
             onTap: _onShutterTap,
+            onLongPressStart: (_) => _startRecording(),
+            onLongPressEnd: (details) => _stopRecording(),
             child: ScaleTransition(
               scale: _shutterAnimation,
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
                 width: 78,
                 height: 78,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(color: whiteColor, width: 4),
-                  color: whiteColor.withOpacity(0.15),
+
+                  color: _isRecording
+                      ? Colors.red.withOpacity(0.25)
+                      : whiteColor.withOpacity(0.15),
                 ),
+
                 child: Center(
                   child: _isTakingPhoto
                       ? const CircularProgressIndicator(
                           color: whiteColor,
                           strokeWidth: 2,
                         )
-                      : Container(
-                          width: 66,
-                          height: 66,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: whiteColor,
+                      : AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: _isRecording ? 28 : 66,
+                          height: _isRecording ? 28 : 66,
+                          decoration: BoxDecoration(
+                            borderRadius: _isRecording
+                                ? BorderRadius.circular(6)
+                                : BorderRadius.circular(33),
+                            color: _isRecording ? Colors.red : whiteColor,
                           ),
                         ),
                 ),
@@ -339,29 +470,28 @@ class _CameraUiState extends State<CameraUi>
             ),
           ),
           const Spacer(),
-          _isSwitching
-              ? const SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: Center(
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: _isSwitching
+                ? const Center(
                     child: CircularProgressIndicator(
                       color: Colors.white54,
                       strokeWidth: 1.5,
                     ),
+                  )
+                : GestureDetector(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      _flipCamera();
+                    },
+                    child: SvgPicture.asset(
+                      "assets/svg/flip.svg",
+                      width: 26,
+                      height: 26,
+                    ),
                   ),
-                )
-              : GestureDetector(
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    _flipCamera();
-                  },
-                  child: SvgPicture.asset(
-                    "assets/svg/flip.svg",
-                    width: 32,
-                    height: 32,
-                  ),
-                ),
-          const SizedBox(width: 16),
+          ),
         ],
       ),
     );

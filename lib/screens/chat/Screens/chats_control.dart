@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:whatsapp_clone/models/chat_contact.dart';
-import 'package:whatsapp_clone/screens/chat/contacts_list_screen.dart';
-import 'package:whatsapp_clone/screens/chat/empty_contacts_screen.dart';
+import 'package:whatsapp_clone/screens/chat/Screens/contacts_list_screen.dart';
+import 'package:whatsapp_clone/screens/chat/Screens/empty_contacts_screen.dart';
 
 class ChatControl extends StatelessWidget {
   final String userId;
