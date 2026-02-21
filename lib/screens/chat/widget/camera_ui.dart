@@ -4,8 +4,8 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/screens/chat/widget/camera_bottom_bar.dart';
 import 'package:whatsapp_clone/screens/chat/widget/filter.dart';
 
 class CameraUi extends StatefulWidget {
@@ -303,10 +303,20 @@ class _CameraUiState extends State<CameraUi>
             ),
 
           Positioned(
-            bottom: MediaQuery.of(context).padding.bottom + 24,
+            bottom: MediaQuery.of(context).padding.bottom + 0,
             left: 0,
             right: 0,
-            child: _buildBottomControls(),
+            child: CameraBottomBar(
+              isRecording: _isRecording,
+              isTakingPhoto: _isTakingPhoto,
+              isSwitching: _isSwitching,
+              shutterAnimation: _shutterAnimation,
+              onShutterTap: _onShutterTap,
+              onLongPressStart: _startRecording,
+              onLongPressEnd: _stopRecording,
+              onFilterTap: _showFilterSheet,
+              onFlipTap: _flipCamera,
+            ),
           ),
         ],
       ),
@@ -401,98 +411,6 @@ class _CameraUiState extends State<CameraUi>
           color: active ? whiteColor : whiteColor.withOpacity(0.85),
           size: 32,
         ),
-      ),
-    );
-  }
-
-  Widget _buildBottomControls() {
-    return Container(
-      height: 100,
-      margin: const EdgeInsets.symmetric(horizontal: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: BoxDecoration(
-        color: backgroundColor.withOpacity(0.4),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(width: 16),
-          GestureDetector(
-            onTap: _showFilterSheet,
-            child: Center(
-              child: SvgPicture.asset(
-                "assets/svg/filter.svg",
-                width: 32,
-                height: 32,
-              ),
-            ),
-          ),
-          const Spacer(),
-          GestureDetector(
-            onTap: _onShutterTap,
-            onLongPressStart: (_) => _startRecording(),
-            onLongPressEnd: (details) => _stopRecording(),
-            child: ScaleTransition(
-              scale: _shutterAnimation,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 78,
-                height: 78,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: whiteColor, width: 4),
-
-                  color: _isRecording
-                      ? Colors.red.withOpacity(0.25)
-                      : whiteColor.withOpacity(0.15),
-                ),
-
-                child: Center(
-                  child: _isTakingPhoto
-                      ? const CircularProgressIndicator(
-                          color: whiteColor,
-                          strokeWidth: 2,
-                        )
-                      : AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          width: _isRecording ? 28 : 66,
-                          height: _isRecording ? 28 : 66,
-                          decoration: BoxDecoration(
-                            borderRadius: _isRecording
-                                ? BorderRadius.circular(6)
-                                : BorderRadius.circular(33),
-                            color: _isRecording ? Colors.red : whiteColor,
-                          ),
-                        ),
-                ),
-              ),
-            ),
-          ),
-          const Spacer(),
-          SizedBox(
-            width: 40,
-            height: 40,
-            child: _isSwitching
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.white54,
-                      strokeWidth: 1.5,
-                    ),
-                  )
-                : GestureDetector(
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      _flipCamera();
-                    },
-                    child: SvgPicture.asset(
-                      "assets/svg/flip.svg",
-                      width: 26,
-                      height: 26,
-                    ),
-                  ),
-          ),
-        ],
       ),
     );
   }

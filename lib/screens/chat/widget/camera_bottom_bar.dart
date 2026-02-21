@@ -1,0 +1,150 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:whatsapp_clone/colors.dart';
+
+class CameraBottomBar extends StatelessWidget {
+  final bool isRecording;
+  final bool isTakingPhoto;
+  final bool isSwitching;
+  final Animation<double> shutterAnimation;
+  final VoidCallback onShutterTap;
+  final VoidCallback onLongPressStart;
+  final VoidCallback onLongPressEnd;
+  final VoidCallback onFilterTap;
+  final VoidCallback onFlipTap;
+
+  const CameraBottomBar({
+    super.key,
+    required this.isRecording,
+    required this.isTakingPhoto,
+    required this.isSwitching,
+    required this.shutterAnimation,
+    required this.onShutterTap,
+    required this.onLongPressStart,
+    required this.onLongPressEnd,
+    required this.onFilterTap,
+    required this.onFlipTap,
+  });
+
+  static const double barHeight = 100;
+  static const double shutterSize = 80;
+  static const double shutterRaise = 80;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: barHeight + shutterRaise,
+      child: Stack(
+        alignment: Alignment.bottomCenter,
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Container(
+                  height: barHeight,
+                  color: backgroundColor.withOpacity(0.2),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 28),
+                        child: GestureDetector(
+                          onTap: onFilterTap,
+                          child: SvgPicture.asset(
+                            "assets/svg/filter.svg",
+                            width: 32,
+                            height: 32,
+                          ),
+                        ),
+                      ),
+
+                      const Spacer(),
+
+                      Padding(
+                        padding: const EdgeInsets.only(right: 28),
+                        child: GestureDetector(
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            onFlipTap();
+                          },
+                          child: isSwitching
+                              ? const SizedBox(
+                                  width: 32,
+                                  height: 32,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white38,
+                                    strokeWidth: 1.5,
+                                  ),
+                                )
+                              : SvgPicture.asset(
+                                  'assets/svg/flip.svg',
+                                  width: 32,
+                                  height: 32,
+                                  colorFilter: const ColorFilter.mode(
+                                    Colors.white,
+                                    BlendMode.srcIn,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+
+          Positioned(
+            bottom: barHeight - shutterRaise,
+            child: GestureDetector(
+              onTap: onShutterTap,
+              onLongPressStart: (_) => onLongPressStart(),
+              onLongPressEnd: (_) => onLongPressEnd(),
+              child: ScaleTransition(
+                scale: shutterAnimation,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: shutterSize,
+                  height: shutterSize,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isRecording
+                        ? Colors.red.withOpacity(0.2)
+                        : Colors.white.withOpacity(0.18),
+                    border: Border.all(
+                      color: isRecording ? Colors.red : Colors.white,
+                      width: 3.5,
+                    ),
+                  ),
+                  child: Center(
+                    child: isTakingPhoto
+                        ? const CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          )
+                        : AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            width: isRecording ? 26 : 62,
+                            height: isRecording ? 26 : 62,
+                            decoration: BoxDecoration(
+                              color: isRecording ? Colors.red : Colors.white,
+                              borderRadius: isRecording
+                                  ? BorderRadius.circular(20)
+                                  : BorderRadius.circular(31),
+                            ),
+                          ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
