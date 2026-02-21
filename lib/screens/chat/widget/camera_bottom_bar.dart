@@ -72,24 +72,15 @@ class CameraBottomBar extends StatelessWidget {
                             HapticFeedback.selectionClick();
                             onFlipTap();
                           },
-                          child: isSwitching
-                              ? const SizedBox(
-                                  width: 32,
-                                  height: 32,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white38,
-                                    strokeWidth: 1.5,
-                                  ),
-                                )
-                              : SvgPicture.asset(
-                                  'assets/svg/flip.svg',
-                                  width: 32,
-                                  height: 32,
-                                  colorFilter: const ColorFilter.mode(
-                                    Colors.white,
-                                    BlendMode.srcIn,
-                                  ),
-                                ),
+                          child: SvgPicture.asset(
+                            'assets/svg/flip.svg',
+                            width: 32,
+                            height: 32,
+                            colorFilter: const ColorFilter.mode(
+                              Colors.white,
+                              BlendMode.srcIn,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -117,8 +108,8 @@ class CameraBottomBar extends StatelessWidget {
                         ? Colors.red.withOpacity(0.2)
                         : Colors.white.withOpacity(0.18),
                     border: Border.all(
-                      color: isRecording ? Colors.red : Colors.white,
-                      width: 3.5,
+                      color: isRecording ? Colors.red : whiteColor,
+                      width: 4.4,
                     ),
                   ),
                   child: Center(
@@ -129,8 +120,8 @@ class CameraBottomBar extends StatelessWidget {
                           )
                         : AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
-                            width: isRecording ? 26 : 62,
-                            height: isRecording ? 26 : 62,
+                            width: isRecording ? 26 : 64,
+                            height: isRecording ? 26 : 64,
                             decoration: BoxDecoration(
                               color: isRecording ? Colors.red : Colors.white,
                               borderRadius: isRecording

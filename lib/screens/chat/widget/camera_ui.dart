@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:screen_brightness/screen_brightness.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/screens/chat/widget/camera_bottom_bar.dart';
 import 'package:whatsapp_clone/screens/chat/widget/filter.dart';
@@ -123,10 +124,16 @@ class _CameraUiState extends State<CameraUi>
   Future<void> _toggleFlash() async {
     if (!_camReady || _camController == null) return;
     if (_isFrontCamera) {
-      setState(() => _frontFlashActive = !_frontFlashActive);
+      if (_frontFlashActive) {
+        await ScreenBrightness().resetScreenBrightness();
+        setState(() => _frontFlashActive = false);
+      } else {
+        await ScreenBrightness().setScreenBrightness(1.0);
+        setState(() => _frontFlashActive = true);
+      }
       return;
     }
-    final next = _flashMode == FlashMode.off ? FlashMode.torch : FlashMode.off;
+    final next = _flashMode == FlashMode.off ? FlashMode.always : FlashMode.off;
     try {
       await _camController!.setFlashMode(next);
       if (mounted) setState(() => _flashMode = next);
@@ -138,12 +145,15 @@ class _CameraUiState extends State<CameraUi>
   }
 
   void _showFilterSheet() {
-    showFilterBottomSheet(
-      context: context,
-      selectedIndex: _selectedFilterIndex,
-      camController: _camController,
-      onFilterSelected: (i) => setState(() => _selectedFilterIndex = i),
-    );
+    Future.delayed(const Duration(milliseconds: 50), () {
+      if (!mounted) return;
+      showFilterBottomSheet(
+        context: context,
+        selectedIndex: _selectedFilterIndex,
+        camController: _camController,
+        onFilterSelected: (i) => setState(() => _selectedFilterIndex = i),
+      );
+    });
   }
 
   void _showFlashError(String message) {
@@ -175,6 +185,10 @@ class _CameraUiState extends State<CameraUi>
   }
 
   Future<void> _onShutterTap() async {
+    if (_isRecording) {
+      await _stopRecording();
+      return;
+    }
     if (_isTakingPhoto || _isRecording || !_camReady || _camController == null)
       return;
     HapticFeedback.mediumImpact();
@@ -184,7 +198,7 @@ class _CameraUiState extends State<CameraUi>
     try {
       final XFile file = await _camController!.takePicture();
 
-      await _audioPlayer.play(AssetSource('audio/shutter.mp3'));
+      await _audioPlayer.play(AssetSource('assets/audio/shutter.mp3'));
       if (mounted) Navigator.of(context).pop(file.path);
     } catch (e) {
       debugPrint('Capture error: $e');
@@ -234,6 +248,7 @@ class _CameraUiState extends State<CameraUi>
 
   @override
   void dispose() {
+    ScreenBrightness().resetScreenBrightness();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _camController?.dispose();
     _shutterController.dispose();
@@ -250,16 +265,7 @@ class _CameraUiState extends State<CameraUi>
         fit: StackFit.expand,
         children: [
           _buildCameraPreview(),
-          if (_frontFlashActive)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: AnimatedOpacity(
-                  opacity: 1.0,
-                  duration: const Duration(milliseconds: 150),
-                  child: Container(color: whiteColor),
-                ),
-              ),
-            ),
+
           if (_gridVisible) _buildGridOverlay(),
           Positioned(
             top: MediaQuery.of(context).padding.top + 8,
@@ -313,7 +319,7 @@ class _CameraUiState extends State<CameraUi>
               shutterAnimation: _shutterAnimation,
               onShutterTap: _onShutterTap,
               onLongPressStart: _startRecording,
-              onLongPressEnd: _stopRecording,
+              onLongPressEnd: () {},
               onFilterTap: _showFilterSheet,
               onFlipTap: _flipCamera,
             ),
@@ -366,18 +372,27 @@ class _CameraUiState extends State<CameraUi>
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Navigator.of(context).maybePop(),
+            onTap: () {
+              Future.delayed(const Duration(milliseconds: 50), () {
+                if (mounted) Navigator.of(context).maybePop();
+              });
+            },
             child: const Icon(Icons.close, color: whiteColor, size: 30),
           ),
 
           const Spacer(),
 
           _iconButton(
-            icon: _flashMode == FlashMode.torch
+            icon:
+                (_isFrontCamera
+                    ? _frontFlashActive
+                    : _flashMode == FlashMode.always)
                 ? Icons.flash_on
                 : Icons.flash_off,
             onTap: _toggleFlash,
-            active: _flashMode == FlashMode.torch,
+            active: _isFrontCamera
+                ? _frontFlashActive
+                : _flashMode == FlashMode.always,
           ),
 
           const Spacer(),
