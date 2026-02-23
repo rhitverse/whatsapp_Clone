@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:intl/intl.dart';
 import 'package:whatsapp_clone/screens/chat/widget/bottom_chat_field.dart';
+import 'package:whatsapp_clone/screens/chat/widget/receiver_message.dart';
+import 'package:whatsapp_clone/screens/chat/widget/sender_message.dart';
 
 class MobileChatScreen extends StatefulWidget {
   final String chatId;
@@ -200,13 +202,20 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
                       }
                     }
 
-                    return MessageBubble(
-                      text: text,
-                      isMe: isMe,
-                      time: timeString,
-                      showTail: showTail,
-                      isGrouped: isGrouped,
-                    );
+                    return isMe
+                        ? SenderMessage(
+                            text: text,
+
+                            time: timeString,
+                            showTail: showTail,
+                            isGrouped: isGrouped,
+                          )
+                        : ReceiverMessage(
+                            text: text,
+                            time: timeString,
+                            showTail: showTail,
+                            isGrouped: isGrouped,
+                          );
                   },
                 );
               },
@@ -231,140 +240,4 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
     focusNode.dispose();
     super.dispose();
   }
-}
-
-class MessageBubble extends StatelessWidget {
-  final String text;
-  final bool isMe;
-  final String time;
-  final bool showTail;
-  final bool isGrouped;
-
-  const MessageBubble({
-    super.key,
-    required this.text,
-    required this.isMe,
-    required this.time,
-    this.showTail = true,
-    this.isGrouped = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: isGrouped ? 1 : 5, horizontal: 4),
-      child: Align(
-        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.75,
-              ),
-              child: Container(
-                margin: EdgeInsets.only(
-                  left: isMe ? 40 : 8,
-                  right: isMe ? 8 : 40,
-                  bottom: 2,
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: isMe ? senderMessageColor : const Color(0xFF262626),
-                  borderRadius: BorderRadius.only(
-                    topLeft: const Radius.circular(20),
-                    topRight: const Radius.circular(20),
-                    bottomLeft: isMe
-                        ? const Radius.circular(20)
-                        : (showTail
-                              ? const Radius.circular(5)
-                              : const Radius.circular(20)),
-                    bottomRight: isMe
-                        ? (showTail
-                              ? const Radius.circular(5)
-                              : const Radius.circular(20))
-                        : const Radius.circular(20),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      text,
-                      softWrap: true,
-                      overflow: TextOverflow.visible,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (showTail)
-              Positioned(
-                bottom: 0,
-                left: isMe ? null : -1,
-                right: isMe ? -1 : null,
-                child: CustomPaint(
-                  painter: BubbleTailPainter(
-                    color: isMe ? senderMessageColor : const Color(0xFF262626),
-                    isMe: isMe,
-                  ),
-                  size: const Size(13, 20),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class BubbleTailPainter extends CustomPainter {
-  final Color color;
-  final bool isMe;
-
-  BubbleTailPainter({required this.color, required this.isMe});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    final path = Path();
-
-    if (isMe) {
-      path.moveTo(4, 4);
-      path.quadraticBezierTo(
-        size.width * 0.5,
-        size.height * 0.9,
-        size.width * 1.2,
-        size.height * 1.2,
-      );
-      path.lineTo(0, size.height - 2);
-      path.close();
-    } else {
-      path.moveTo(size.width - 4, 4);
-      path.quadraticBezierTo(
-        size.width * 0.5,
-        size.height * 0.9,
-        -size.width * 0.2,
-        size.height * 1.2,
-      );
-      path.lineTo(size.width, size.height - 2);
-      path.close();
-    }
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

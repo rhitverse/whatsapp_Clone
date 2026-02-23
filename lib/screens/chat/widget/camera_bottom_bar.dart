@@ -46,13 +46,13 @@ class CameraBottomBar extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(left: 28),
+                        padding: const EdgeInsets.only(left: 38),
                         child: GestureDetector(
                           onTap: onFilterTap,
                           child: SvgPicture.asset(
                             "assets/svg/filter.svg",
-                            width: 32,
-                            height: 32,
+                            width: 38,
+                            height: 38,
                           ),
                         ),
                       ),
@@ -68,8 +68,8 @@ class CameraBottomBar extends StatelessWidget {
                           },
                           child: SvgPicture.asset(
                             'assets/svg/flip.svg',
-                            width: 32,
-                            height: 32,
+                            width: 34,
+                            height: 34,
                             colorFilter: const ColorFilter.mode(
                               Colors.white,
                               BlendMode.srcIn,

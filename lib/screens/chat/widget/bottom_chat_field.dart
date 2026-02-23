@@ -46,6 +46,9 @@ class _BottomChatFieldState extends State<BottomChatField>
 
   void _toggleAttachment() {
     setState(() {
+      if (widget.showEmoji) {
+        widget.onEmojiTap();
+      }
       _showAttachment = !_showAttachment;
       if (_showAttachment) {
         widget.focusNode.unfocus();
@@ -82,6 +85,8 @@ class _BottomChatFieldState extends State<BottomChatField>
     required String svgPath,
     required String label,
     Color? svgColor,
+    double iconWidth = 22,
+    double iconHeight = 22,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -90,25 +95,36 @@ class _BottomChatFieldState extends State<BottomChatField>
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 68,
-            height: 64,
+            width: 66,
+            height: 68,
             decoration: BoxDecoration(
               color: attacment,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Color(0xff2A2F33), width: 1.4),
             ),
-            child: SvgPicture.asset(
-              svgPath,
-              width: 32,
-              height: 32,
-              colorFilter: svgColor != null
-                  ? ColorFilter.mode(svgColor, BlendMode.srcIn)
-                  : null,
+            child: Center(
+              child: SizedBox(
+                width: iconWidth,
+                height: iconHeight,
+                child: SvgPicture.asset(
+                  svgPath,
+                  fit: BoxFit.contain,
+                  alignment: Alignment.center,
+                  colorFilter: svgColor != null
+                      ? ColorFilter.mode(svgColor, BlendMode.srcIn)
+                      : null,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 6),
           Text(
             label,
-            style: const TextStyle(color: Colors.white70, fontSize: 11),
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
@@ -133,27 +149,37 @@ class _BottomChatFieldState extends State<BottomChatField>
               _attachmentItem(
                 svgPath: 'assets/svg/photos.svg',
                 label: 'Gallery',
+                iconWidth: 54,
+                iconHeight: 54,
                 onTap: () => showAttachmentSheet(context),
               ),
               _attachmentItem(
                 svgPath: 'assets/svg/file.svg',
                 label: 'File',
+                iconHeight: 42,
+                iconWidth: 42,
                 onTap: () {},
               ),
               _attachmentItem(
                 svgPath: 'assets/svg/location.svg',
                 label: 'Location',
+                iconHeight: 52,
+                iconWidth: 52,
                 onTap: () {},
               ),
               _attachmentItem(
                 svgPath: 'assets/svg/poll.svg',
                 label: 'Poll',
                 svgColor: Color(0xffFF8314),
+                iconHeight: 55,
+                iconWidth: 55,
                 onTap: () {},
               ),
               _attachmentItem(
                 svgPath: 'assets/svg/diary.svg',
                 label: 'Diary',
+                iconHeight: 52,
+                iconWidth: 52,
                 onTap: () {},
               ),
             ],
@@ -235,6 +261,12 @@ class _BottomChatFieldState extends State<BottomChatField>
                         border: InputBorder.none,
                         suffixIcon: GestureDetector(
                           onTap: () {
+                            if (_showAttachment) {
+                              setState(() {
+                                _showAttachment = false;
+                                _animController.reverse();
+                              });
+                            }
                             widget.focusNode.unfocus();
                             widget.onEmojiTap();
                           },
