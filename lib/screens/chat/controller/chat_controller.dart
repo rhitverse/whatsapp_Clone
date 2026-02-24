@@ -36,4 +36,12 @@ class ChatController {
       participants: participants,
     );
   }
+
+  Stream<List<Map<String, dynamic>>> getLocalMessagesStream(String chatId) {
+    return _chatRepository.getLocalMessagesStream(chatId);
+  }
+
+  Future<void> markAsRead(String chatId, String userId) async {
+    await _chatRepository.markAsRead(chatId, userId);
+  }
 }

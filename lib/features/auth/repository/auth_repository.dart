@@ -49,22 +49,17 @@ class AuthRepository {
       final isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
       if (isNewUser) {
         await saveUserToFirestore(uid: user.uid, email: user.email);
-        await EncryptionService().setupKeys(user.uid);
-        if (context.mounted) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const DisplayName()),
-            (_) => false,
-          );
-        }
-      } else {
-        if (context.mounted) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const MobileScreenLayout()),
-            (_) => false,
-          );
-        }
+      }
+      await EncryptionService().setupKeys(user.uid);
+      if (context.mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                isNewUser ? const DisplayName() : const MobileScreenLayout(),
+          ),
+          (_) => false,
+        );
       }
     } catch (e) {
       if (context.mounted) {

@@ -13,7 +13,13 @@ class EncryptionService {
 
   Future<void> setupKeys(String userId) async {
     final existing = await _storage.read(key: 'privateKey_$userId');
-    if (existing != null) return;
+
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .get();
+    final hasPublicKey = userDoc.data()?['publicKey'] != null;
+    if (existing != null && hasPublicKey) return;
 
     final keyPair = _generateKeyPair();
     final privateKey = _encodePrivateKey(keyPair.privateKey as RSAPrivateKey);

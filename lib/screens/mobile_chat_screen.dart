@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:whatsapp_clone/colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/screens/chat/provider/chat_provider.dart';
 import 'package:whatsapp_clone/screens/chat/widget/bottom_chat_field.dart';
 import 'package:whatsapp_clone/screens/chat/widget/receiver_message.dart';
 import 'package:whatsapp_clone/screens/chat/widget/sender_message.dart';
 
-class MobileChatScreen extends StatefulWidget {
+class MobileChatScreen extends ConsumerStatefulWidget {
   final String chatId;
   final String receiverUid;
   final String receiverDisplayName;
@@ -22,10 +23,10 @@ class MobileChatScreen extends StatefulWidget {
   });
 
   @override
-  State<MobileChatScreen> createState() => _MobileChatScreenState();
+  ConsumerState<MobileChatScreen> createState() => _MobileChatScreenState();
 }
 
-class _MobileChatScreenState extends State<MobileChatScreen> {
+class _MobileChatScreenState extends ConsumerState<MobileChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool showEmoji = false;
@@ -44,12 +45,19 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
         setState(() => showEmoji = false);
       }
     });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+      if (currentUserId != null) {
+        ref
+            .read(chatControllerProvider)
+            .markAsRead(widget.chatId, currentUserId);
+      }
+    });
   }
 
   void onEmojiTap() {
-    setState(() {
-      showEmoji = !showEmoji;
-    });
+    setState(() => showEmoji = !showEmoji);
     if (showEmoji) {
       focusNode.unfocus();
     } else {
@@ -66,28 +74,21 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
     final messageText = _messageController.text.trim();
     _messageController.clear();
     focusNode.unfocus();
-
     try {
-      FirebaseFirestore.instance
-          .collection('Chats')
-          .doc(widget.chatId)
-          .collection('messages')
-          .add({
-            'senderId': currentUserId,
-            'text': messageText,
-            'time': FieldValue.serverTimestamp(),
-          });
-
-      FirebaseFirestore.instance.collection('Chats').doc(widget.chatId).update({
-        'lastMessage': messageText,
-        'lastMessageTime': FieldValue.serverTimestamp(),
-        'lastMessageSenderId': currentUserId,
-        'unreadCount_${widget.receiverUid}': FieldValue.increment(1),
-      });
+      await ref
+          .read(chatControllerProvider)
+          .sendMessage(
+            chatId: widget.chatId,
+            senderId: currentUserId,
+            text: messageText,
+            receiverId: widget.receiverUid,
+          );
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to send message')));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Failed to send message')));
+      }
     }
   }
 
@@ -149,15 +150,12 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
       body: Column(
         children: [
           Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('Chats')
-                  .doc(widget.chatId)
-                  .collection('messages')
-                  .orderBy('time', descending: true)
-                  .snapshots(),
+            child: StreamBuilder<List<Map<String, dynamic>>>(
+              stream: ref
+                  .read(chatControllerProvider)
+                  .getLocalMessagesStream(widget.chatId),
               builder: (context, snapshot) {
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Center(
                     child: Text(
                       'No messages yet\nSay hi! 👋',
@@ -167,7 +165,7 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
                   );
                 }
 
-                final messages = snapshot.data!.docs;
+                final messages = snapshot.data!;
 
                 return ListView.builder(
                   controller: _scrollController,
@@ -178,25 +176,26 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
                   ),
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
-                    final messageData =
-                        messages[index].data() as Map<String, dynamic>;
+                    final messageData = messages[index];
                     final senderId = messageData['senderId'] ?? '';
                     final text = messageData['text'] ?? '';
-                    final timestamp = messageData['time'] as Timestamp?;
+                    final timeStr = messageData['time'];
 
                     final isMe = senderId == currentUserId;
-                    final timeString = timestamp != null
-                        ? DateFormat('h:mm a').format(timestamp.toDate())
-                        : '';
+                    String timeString = '';
+                    try {
+                      if (timeStr is String) {
+                        timeString = DateFormat(
+                          'h:mm a',
+                        ).format(DateTime.parse(timeStr));
+                      }
+                    } catch (_) {}
 
                     bool showTail = true;
                     bool isGrouped = false;
                     if (index > 0) {
-                      final prevMessageData =
-                          messages[index - 1].data() as Map<String, dynamic>;
-                      final prevSenderId = prevMessageData['senderId'] ?? '';
-
-                      if (senderId == prevSenderId) {
+                      final prev = messages[index - 1];
+                      if (prev['senderId'] == senderId) {
                         showTail = false;
                         isGrouped = true;
                       }
@@ -205,7 +204,6 @@ class _MobileChatScreenState extends State<MobileChatScreen> {
                     return isMe
                         ? SenderMessage(
                             text: text,
-
                             time: timeString,
                             showTail: showTail,
                             isGrouped: isGrouped,
