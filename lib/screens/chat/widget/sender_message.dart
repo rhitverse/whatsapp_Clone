@@ -16,10 +16,27 @@ class SenderMessage extends StatelessWidget {
     this.isGrouped = false,
   });
 
+  static const double _fontSize = 15.0;
+  static const double _timeFontSize = 11.0;
+
+  double _getTimeWidth(BuildContext context) {
+    final tp = TextPainter(
+      text: TextSpan(
+        text: time,
+        style: const TextStyle(fontSize: _timeFontSize),
+      ),
+      maxLines: 1,
+      textDirection: TextDirection.ltr,
+    )..layout();
+    return tp.width + 6;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final timeWidth = _getTimeWidth(context);
+    const double spacerHeight = _timeFontSize;
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: isGrouped ? 1 : 4, horizontal: 1),
+      padding: EdgeInsets.symmetric(vertical: isGrouped ? 1 : 5, horizontal: 1),
       child: Align(
         alignment: Alignment.centerRight,
         child: Stack(
@@ -27,13 +44,15 @@ class SenderMessage extends StatelessWidget {
           children: [
             ConstrainedBox(
               constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.72,
+                maxWidth: MediaQuery.of(context).size.width * 0.75,
               ),
               child: Container(
                 margin: const EdgeInsets.only(left: 40, right: 8, bottom: 2),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
+                padding: const EdgeInsets.only(
+                  left: 13,
+                  right: 13,
+                  top: 9,
+                  bottom: 9,
                 ),
                 decoration: BoxDecoration(
                   color: senderMessageColor,
@@ -46,9 +65,40 @@ class SenderMessage extends StatelessWidget {
                         : const Radius.circular(20),
                   ),
                 ),
-                child: Text(
-                  text,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    RichText(
+                      text: TextSpan(
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: _fontSize,
+                        ),
+                        children: [
+                          TextSpan(text: text),
+
+                          WidgetSpan(
+                            alignment: PlaceholderAlignment.bottom,
+                            child: SizedBox(
+                              width: timeWidth,
+                              height: spacerHeight,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Text(
+                        time,
+                        style: TextStyle(
+                          color: whiteColor,
+                          fontSize: _timeFontSize,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

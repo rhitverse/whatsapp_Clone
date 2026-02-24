@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:whatsapp_clone/common/encryption/encryption_service.dart';
 import 'package:whatsapp_clone/common/enum/username_result.dart';
 import 'package:whatsapp_clone/common/utils/common_cloudinary_repository.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
@@ -48,7 +49,7 @@ class AuthRepository {
       final isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
       if (isNewUser) {
         await saveUserToFirestore(uid: user.uid, email: user.email);
-
+        await EncryptionService().setupKeys(user.uid);
         if (context.mounted) {
           Navigator.pushAndRemoveUntil(
             context,
@@ -142,6 +143,8 @@ class AuthRepository {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
 
+      final uid = _auth.currentUser?.uid;
+      if (uid != null) await EncryptionService().setupKeys(uid);
       if (!context.mounted) return;
       Navigator.pushReplacement(
         context,
@@ -190,6 +193,7 @@ class AuthRepository {
     await user.sendEmailVerification();
 
     await saveUserToFirestore(uid: user.uid, email: user.email);
+    await EncryptionService().setupKeys(user.uid);
   }
 
   Future<bool> isEmailVerified() async {

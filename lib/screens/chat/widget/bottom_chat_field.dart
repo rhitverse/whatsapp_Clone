@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/screens/chat/widget/attachment_sheet.dart';
 import 'package:whatsapp_clone/screens/chat/widget/custom_emoji_picker.dart';
@@ -73,6 +74,16 @@ class _BottomChatFieldState extends State<BottomChatField>
         chatFieldHeight;
 
     return available.clamp(200.0, 450.0);
+  }
+
+  Future<void> _openGoogleMaps() async {
+    final Uri googleMapUrl = Uri.parse("geo:0,0?q=my+location");
+
+    if (await canLaunchUrl(googleMapUrl)) {
+      await launchUrl(googleMapUrl, mode: LaunchMode.externalApplication);
+    } else {
+      debugPrint("Could not Open Google Maps");
+    }
   }
 
   @override
@@ -165,8 +176,15 @@ class _BottomChatFieldState extends State<BottomChatField>
                 label: 'Location',
                 iconHeight: 52,
                 iconWidth: 52,
-                onTap: () {},
+                onTap: () async {
+                  setState(() {
+                    _showAttachment = false;
+                    _animController.reverse();
+                  });
+                  await _openGoogleMaps();
+                },
               ),
+
               _attachmentItem(
                 svgPath: 'assets/svg/poll.svg',
                 label: 'Poll',

@@ -42,6 +42,12 @@ dependencies:
   camera: ^0.11.4
   audioplayers: ^6.5.1
   screen_brightness: ^2.1.7
+  geolocator: ^14.0.2
+  permission_handler: ^12.0.1
+  google_maps_flutter: ^2.14.2
+  url_launcher: ^6.3.2
+  pointycastle: ^4.0.0
+  flutter_secure_storage: ^10.0.0
 
 dev_dependencies:
   flutter_test:
@@ -76,7 +82,6 @@ dev_dependencies:
   share_plus: ^12.0.1
   path_provider: ^2.1.5
   screenshot: ^3.0.0
-  permission_handler: ^12.0.1
   vision_gallery_saver: ^3.1.1
   
 

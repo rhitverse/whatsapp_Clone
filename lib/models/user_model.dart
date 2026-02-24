@@ -6,6 +6,7 @@ class UserModel {
   final String? username;
   final String? birthday;
   final List<String> groupId;
+  final String? publicKey;
 
   UserModel({
     required this.displayname,
@@ -15,6 +16,7 @@ class UserModel {
     required this.groupId,
     this.username,
     this.birthday,
+    this.publicKey,
   });
 
   Map<String, dynamic> toMap() {
@@ -26,6 +28,7 @@ class UserModel {
       'username': username,
       'birthday': birthday,
       'groupId': groupId,
+      'publicKey': publicKey,
     };
   }
 
@@ -38,6 +41,7 @@ class UserModel {
       username: map['username'],
       birthday: map['birthday'],
       groupId: map['groupId'] != null ? List<String>.from(map['groupId']) : [],
+      publicKey: map['publicKey'],
     );
   }
 }
