@@ -13,6 +13,10 @@ class ChatRepository {
 
   final Map<String, StreamController<List<Map<String, dynamic>>>> _controllers =
       {};
+
+  final StreamController<List<Map<String, dynamic>>> _contactsController =
+      StreamController<List<Map<String, dynamic>>>.broadcast();
+
   ChatRepository({required FirebaseFirestore firestore})
     : _firestore = firestore;
 
@@ -36,6 +40,13 @@ class ChatRepository {
     final folder = Directory('${dir.path}/chats');
     if (!await folder.exists()) await folder.create(recursive: true);
     return File('${folder.path}/$chatId.json');
+  }
+
+  Future<File> _getContactsFile() async {
+    final dir = await getApplicationDocumentsDirectory();
+    final folder = Directory('${dir.path}/chats');
+    if (!await folder.exists()) await folder.create(recursive: true);
+    return File('${folder.path}/contacts.json');
   }
 
   Future<List<Map<String, dynamic>>> loadLocalMessages(String chatId) async {
@@ -75,6 +86,110 @@ class ChatRepository {
 
     final file = await _getChatFile(chatId);
     await file.writeAsString(jsonEncode(messages));
+  }
+
+  Future<List<Map<String, dynamic>>> loadLocalContacts() async {
+    try {
+      final file = await _getContactsFile();
+      if (!await file.exists()) return [];
+      final content = await file.readAsString();
+      return List<Map<String, dynamic>>.from(jsonDecode(content));
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<void> _updateLocalContact({
+    required String chatId,
+    required String receiverUid,
+    required String receiverDisplayName,
+    required String receiverProfilePic,
+    required String lastMessage,
+    required String lastMessageSenderId,
+    required DateTime lastMessageTime,
+    int? unreadCount,
+  }) async {
+    final contacts = await loadLocalContacts();
+    final idx = contacts.indexWhere((c) => c['chatId'] == chatId);
+    final updated = {
+      'chatId': chatId,
+      'receiverUid': receiverUid,
+      'receiverDisplayName': receiverDisplayName,
+      'receiverProfilePic': receiverProfilePic,
+      'lastMessage': lastMessage,
+      'lastMessageSenderId': lastMessageSenderId,
+      'lastMessageTime': lastMessageTime.toIso8601String(),
+      'unreadCount':
+          unreadCount ?? (idx != -1 ? contacts[idx]['unreadCount'] ?? 0 : 0),
+    };
+    if (idx != -1) {
+      contacts[idx] = updated;
+    } else {
+      contacts.add(updated);
+    }
+    contacts.sort(
+      (a, b) => b['lastMessageTime'].compareTo(a['lastMessageTime']),
+    );
+    final file = await _getContactsFile();
+    await file.writeAsString(jsonEncode(contacts));
+    _contactsController.add(contacts);
+  }
+
+  Future<void> _refreshContactsStream() async {
+    final contacts = await loadLocalContacts();
+    _contactsController.add(contacts);
+  }
+
+  Stream<List<Map<String, dynamic>>> getLocalContactsStream(String currentUid) {
+    Future.microtask(() async {
+      await _refreshContactsStream();
+    });
+
+    _firestore
+        .collection('Chats')
+        .where('participants', arrayContains: currentUid)
+        .orderBy('lastMessageTime', descending: true)
+        .snapshots()
+        .listen((snapshot) async {
+          for (final doc in snapshot.docs) {
+            final data = doc.data();
+            final participants = List<String>.from(data['participants'] ?? []);
+            final receiverUid = participants.firstWhere(
+              (uid) => uid != currentUid,
+              orElse: () => '',
+            );
+            if (receiverUid.isEmpty) continue;
+
+            try {
+              final userDoc = await _firestore
+                  .collection('users')
+                  .doc(receiverUid)
+                  .get();
+              final userData = userDoc.data() ?? {};
+
+              DateTime msgTime;
+              try {
+                msgTime = (data['lastMessageTime'] as Timestamp).toDate();
+              } catch (_) {
+                msgTime = DateTime.now();
+              }
+              await _updateLocalContact(
+                chatId: doc.id,
+                receiverUid: receiverUid,
+                receiverDisplayName:
+                    userData['displayname'] ?? userData['username'] ?? '',
+                receiverProfilePic: userData['profilePic'] ?? '',
+                lastMessage: data['lastMessage'] ?? '',
+                lastMessageSenderId: data['lastMessageSenderId'] ?? '',
+                lastMessageTime: msgTime,
+                unreadCount: data['unreadCount_$currentUid'] ?? 0,
+              );
+            } catch (e) {
+              debugPrint('Contact sync error: $e');
+            }
+          }
+        });
+    return _contactsController.stream;
   }
 
   Future<void> _saveLastMessageLocally({
@@ -165,6 +280,22 @@ class ChatRepository {
         text: lastText,
         senderId: lastSenderId,
       );
+      final contacts = await loadLocalContacts();
+      final contact = contacts.firstWhere(
+        (c) => c['chatId'] == chatId,
+        orElse: () => {},
+      );
+      if (contact.isNotEmpty) {
+        await _updateLocalContact(
+          chatId: chatId,
+          receiverUid: contact['receiverUid'] ?? '',
+          receiverDisplayName: contact['receiverDisplayName'] ?? '',
+          receiverProfilePic: contact['receiverProflePic'] ?? '',
+          lastMessage: lastText,
+          lastMessageSenderId: lastSenderId,
+          lastMessageTime: DateTime.now(),
+        );
+      }
     }
     await _refreshStream(chatId);
   }
@@ -174,6 +305,8 @@ class ChatRepository {
     required String senderId,
     required String text,
     required String receiverId,
+    String receiverDispalyName = '',
+    String receiverProfilePic = '',
   }) async {
     final tempId = DateTime.now().millisecondsSinceEpoch.toString();
     await _saveMessageLocally(
@@ -184,6 +317,11 @@ class ChatRepository {
       receiverId: receiverId,
       isRead: true,
       time: DateTime.now(),
+    );
+    await _saveLastMessageLocally(
+      chatId: chatId,
+      text: text,
+      senderId: senderId,
     );
     await _saveLastMessageLocally(
       chatId: chatId,
@@ -278,7 +416,15 @@ class ChatRepository {
   }
 
   Future<void> markAsRead(String chatId, String userId) async {
-    await _firestore.collection('Chats').doc(chatId).update({
+    final contacts = await loadLocalContacts();
+    final idx = contacts.indexWhere((c) => c['chatId'] == chatId);
+    if (idx != -1) {
+      contacts[idx]['unreadCount'] = 0;
+      final file = await _getContactsFile();
+      await file.writeAsString(jsonEncode(contacts));
+      _contactsController.add(contacts);
+    }
+    _firestore.collection('Chats').doc(chatId).update({
       'unreadCount_$userId': 0,
     });
   }
@@ -314,6 +460,11 @@ class ChatRepository {
     final dir = await getApplicationDocumentsDirectory();
     final lastMsgFile = File('${dir.path}/chats/lastmsg_$chatId.json');
     if (await lastMsgFile.exists()) await lastMsgFile.delete();
+    final contacts = await loadLocalContacts();
+    contacts.removeWhere((c) => c['chatId'] == chatId);
+    final contactsFile = await _getContactsFile();
+    await contactsFile.writeAsString(jsonEncode(contacts));
+    _contactsController.add(contacts);
     _controllers[chatId]?.close();
     _controllers.remove(chatId);
   }

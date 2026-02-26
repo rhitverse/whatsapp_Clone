@@ -9,6 +9,10 @@ class ChatController {
   ChatController({required ChatRepository chatRepository, required this.ref})
     : _chatRepository = chatRepository;
 
+  Stream<List<Map<String, dynamic>>> getLocalContactsStream(String uid) {
+    return _chatRepository.getLocalContactsStream(uid);
+  }
+
   Stream<QuerySnapshot> getUserChats(String uid) {
     return _chatRepository.getUserChats(uid);
   }
@@ -18,12 +22,16 @@ class ChatController {
     required String senderId,
     required String text,
     required String receiverId,
+    String receiverDisplayName = '',
+    String receiverProfilePic = '',
   }) async {
     await _chatRepository.sendMessage(
       chatId: chatId,
       senderId: senderId,
       text: text,
       receiverId: receiverId,
+      receiverDispalyName: receiverDisplayName,
+      receiverProfilePic: receiverProfilePic,
     );
   }
 
