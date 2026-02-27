@@ -19,3 +19,4 @@ const uiColor = Color(0xFF00C357);
 const container = Color(0xff1c1e24);
 const attacment = Color(0xff14171E);
 const receiverMessageColor = Color(0xFF262626);
+const userSearchContainerColor = Color(0xff141318);

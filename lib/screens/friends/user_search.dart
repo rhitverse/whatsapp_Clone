@@ -31,9 +31,7 @@ class _UserSearchState extends State<UserSearch> {
       appBar: AppBar(
         backgroundColor: backgroundColor,
         leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
           icon: Icon(Icons.arrow_back_ios, color: whiteColor),
         ),
         title: Text("Add friends", style: TextStyle(color: whiteColor)),
@@ -75,6 +73,7 @@ class _UserSearchState extends State<UserSearch> {
               ),
             ),
           ),
+
           Expanded(
             child: searchText.length < 4
                 ? Center(
@@ -102,50 +101,40 @@ class _UserSearchState extends State<UserSearch> {
                           ),
                         );
                       }
+
                       final user = users.first.data() as Map<String, dynamic>;
                       final receiverUid = users.first.id;
 
-                      return SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 30),
-                          child: Column(
-                            children: [
-                              CircleAvatar(
-                                radius: 50,
-                                backgroundColor: Colors.grey.shade800,
-                                backgroundImage:
-                                    user["profilePic"] != null &&
-                                        user["profilePic"] != ""
-                                    ? NetworkImage(user["profilePic"])
-                                    : null,
-                                child:
-                                    user["profilePic"] == null ||
-                                        user["profilePic"] == ""
-                                    ? Icon(
-                                        Icons.person,
-                                        color: whiteColor,
-                                        size: 50,
-                                      )
-                                    : null,
+                      return Column(
+                        children: [
+                          SizedBox(height: 10),
+                          _buildUserTile(user: user, receiverUid: receiverUid),
+
+                          if (_buttonState == AddButtonState.sent)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 6,
                               ),
-                              SizedBox(height: 16),
-                              Text(
-                                user["displayname"] ?? "",
-                                style: TextStyle(
-                                  color: whiteColor,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.check_circle_outline_rounded,
+                                    color: uiColor,
+                                    size: 16,
+                                  ),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    "Friend request sent",
+                                    style: TextStyle(
+                                      color: uiColor,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              SizedBox(height: 24),
-                              _buildActionButton(
-                                receiverUid: receiverUid,
-                                displayName: user["displayname"] ?? "",
-                                profilePic: user["profilePic"] ?? "",
-                              ),
-                            ],
-                          ),
-                        ),
+                            ),
+                        ],
                       );
                     },
                   ),
@@ -155,137 +144,94 @@ class _UserSearchState extends State<UserSearch> {
     );
   }
 
-  Widget _buildActionButton({
+  Widget _buildUserTile({
+    required Map<String, dynamic> user,
+    required String receiverUid,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: userSearchContainerColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundImage:
+                user["profilePic"] != null && user["profilePic"] != ""
+                ? NetworkImage(user["profilePic"])
+                : null,
+            child: user["profilePic"] == null || user["profilePic"] == ""
+                ? Icon(Icons.person, color: whiteColor, size: 24)
+                : null,
+          ),
+          SizedBox(width: 12),
+
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Text(
+                user["displayname"] ?? "",
+                style: TextStyle(
+                  color: whiteColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+
+          _buildIconButton(
+            receiverUid: receiverUid,
+            displayName: user["displayname"] ?? "",
+            profilePic: user["profilePic"] ?? "",
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIconButton({
     required String receiverUid,
     required String displayName,
     required String profilePic,
   }) {
-    switch (_buttonState) {
-      case AddButtonState.idle:
-        return GestureDetector(
-          onTap: () => _onAddPressed(
-            receiverUid: receiverUid,
-            displayName: displayName,
-            profilePic: profilePic,
-          ),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
-            decoration: BoxDecoration(
-              border: Border.all(color: uiColor, width: 1.5),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              "Add",
-              style: TextStyle(
-                color: uiColor,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        );
-      case AddButtonState.loading:
-        return Container(
-          padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
-          decoration: BoxDecoration(
-            border: Border.all(color: uiColor, width: 1.5),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(color: uiColor, strokeWidth: 2),
-          ),
-        );
-      case AddButtonState.sent:
-        return Column(
-          children: [
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
-              decoration: BoxDecoration(
-                color: uiColor.withOpacity(0.15),
-                border: Border.all(color: uiColor, width: 1.5),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.check, color: uiColor, size: 20),
-                  SizedBox(width: 8),
-                  Text(
-                    "Request Sent",
-                    style: TextStyle(
-                      color: uiColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 12),
-            GestureDetector(
-              onTap: () => _navigateToChatScreen(),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
-                decoration: BoxDecoration(
-                  color: uiColor,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.chat_bubble_outline,
-                      color: backgroundColor,
-                      size: 18,
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      "Open Chat",
-                      style: TextStyle(
-                        color: backgroundColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        );
-      case AddButtonState.chat:
-        return GestureDetector(
-          onTap: () => _navigateToChatScreen(),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
-            decoration: BoxDecoration(
-              color: uiColor,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.chat_bubble_outline,
-                  color: backgroundColor,
-                  size: 18,
-                ),
-                SizedBox(width: 8),
-                Text(
-                  "Open Chat",
-                  style: TextStyle(
-                    color: backgroundColor,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+    if (_buttonState == AddButtonState.loading) {
+      return SizedBox(
+        width: 28,
+        height: 28,
+        child: CircularProgressIndicator(color: uiColor, strokeWidth: 2),
+      );
     }
+
+    if (_buttonState == AddButtonState.sent ||
+        _buttonState == AddButtonState.chat) {
+      return GestureDetector(
+        onTap: _navigateToChatScreen,
+        child: SvgPicture.asset(
+          "assets/svg/chat1.svg",
+          width: 26,
+          height: 26,
+          colorFilter: ColorFilter.mode(whiteColor, BlendMode.srcIn),
+        ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: () => _onAddPressed(
+        receiverUid: receiverUid,
+        displayName: displayName,
+        profilePic: profilePic,
+      ),
+      child: SvgPicture.asset(
+        "assets/svg/addfriends.svg",
+        width: 28,
+        height: 28,
+        colorFilter: ColorFilter.mode(whiteColor, BlendMode.srcIn),
+      ),
+    );
   }
 
   Future<void> _onAddPressed({
@@ -305,8 +251,7 @@ class _UserSearchState extends State<UserSearch> {
 
     try {
       final currentUid = currentUser.uid;
-      final uids = [currentUid, receiverUid];
-      uids.sort();
+      final uids = [currentUid, receiverUid]..sort();
       final chatId = "${uids[0]}_${uids[1]}";
 
       final chatRef = FirebaseFirestore.instance
@@ -319,6 +264,9 @@ class _UserSearchState extends State<UserSearch> {
           "createdAt": FieldValue.serverTimestamp(),
           "lastMessage": "",
           "lastMessageTime": FieldValue.serverTimestamp(),
+          "lastMessageSenderId": "",
+          "unreadCount_$currentUid": 0,
+          "unreadCount_$receiverUid": 0,
         });
       }
 
@@ -347,9 +295,7 @@ class _UserSearchState extends State<UserSearch> {
       _foundProfilePic = profilePic;
       _foundChatId = chatId;
 
-      if (mounted) {
-        setState(() => _buttonState = AddButtonState.sent);
-      }
+      if (mounted) setState(() => _buttonState = AddButtonState.sent);
     } catch (e) {
       if (mounted) {
         setState(() => _buttonState = AddButtonState.idle);
