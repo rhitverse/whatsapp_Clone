@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:whatsapp_clone/screens/Notifications/controller/notification_controller.dart';
 import 'package:whatsapp_clone/screens/mobile_chat_screen.dart';
 
-class NotificaionScreen extends StatelessWidget {
+class NotificaionScreen extends ConsumerWidget {
   const NotificaionScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    final notifStream = ref.watch(notificationsStreamProvider);
+
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -19,6 +24,17 @@ class NotificaionScreen extends StatelessWidget {
           "Notifications",
           style: TextStyle(color: whiteColor, fontWeight: FontWeight.bold),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => ref
+                .read(notificationControllerProvider.notifier)
+                .markAllAsRead(),
+            child: Text(
+              "Mark all read",
+              style: TextStyle(color: uiColor, fontSize: 13),
+            ),
+          ),
+        ],
       ),
       body: currentUid == null
           ? const Center(
@@ -27,38 +43,43 @@ class NotificaionScreen extends StatelessWidget {
                 style: TextStyle(color: Colors.grey),
               ),
             )
-          : StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(currentUid)
-                  .collection('notifications')
-                  .orderBy('timestamp', descending: true)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(
+          : notifStream.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(
+                child: Text(
+                  "Error: $e",
+                  style: const TextStyle(color: Colors.grey),
+                ),
+              ),
+              data: (snapshot) {
+                if (snapshot.docs.isEmpty) {
+                  return Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.notifications_none,
-                          color: Colors.grey,
-                          size: 52,
+                        SvgPicture.asset(
+                          "assets/svg/notification1.svg",
+                          height: 140,
+                          colorFilter: const ColorFilter.mode(
+                            whiteColor,
+                            BlendMode.srcIn,
+                          ),
                         ),
-                        SizedBox(height: 12),
-                        Text(
+                        const SizedBox(height: 22),
+                        const Text(
                           "No notifications yet",
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(
+                            color: whiteColor,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ],
                     ),
                   );
                 }
 
-                final docs = snapshot.data!.docs;
+                final docs = snapshot.docs;
                 final seenAccepted = <String>{};
 
                 return ListView.builder(
@@ -92,13 +113,9 @@ class NotificaionScreen extends StatelessWidget {
 
                     if (type == 'friend_request_accepted') {
                       if (seenAccepted.contains(chatId)) {
-                        FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(currentUid)
-                            .collection('notifications')
-                            .doc(notifId)
-                            .delete()
-                            .catchError((_) {});
+                        ref
+                            .read(notificationControllerProvider.notifier)
+                            .deleteNotification(notifId);
                         return const SizedBox.shrink();
                       }
                       seenAccepted.add(chatId);
@@ -134,7 +151,7 @@ class NotificaionScreen extends StatelessWidget {
   }
 }
 
-class _FriendRequestTile extends StatefulWidget {
+class _FriendRequestTile extends ConsumerStatefulWidget {
   final String notifId, currentUid, fromUid, fromName, chatId, time;
   final bool isRead;
 
@@ -149,10 +166,10 @@ class _FriendRequestTile extends StatefulWidget {
   });
 
   @override
-  State<_FriendRequestTile> createState() => _FriendRequestTileState();
+  ConsumerState<_FriendRequestTile> createState() => _FriendRequestTileState();
 }
 
-class _FriendRequestTileState extends State<_FriendRequestTile> {
+class _FriendRequestTileState extends ConsumerState<_FriendRequestTile> {
   bool _loading = false;
   bool _accepted = false;
   bool _ignored = false;
@@ -163,13 +180,9 @@ class _FriendRequestTileState extends State<_FriendRequestTile> {
     super.initState();
     _loadSenderPic();
     if (!widget.isRead) {
-      FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.currentUid)
-          .collection('notifications')
-          .doc(widget.notifId)
-          .set({'isRead': true}, SetOptions(merge: true))
-          .catchError((_) {});
+      ref
+          .read(notificationControllerProvider.notifier)
+          .markAsRead(widget.notifId);
     }
   }
 
@@ -179,83 +192,33 @@ class _FriendRequestTileState extends State<_FriendRequestTile> {
           .collection('users')
           .doc(widget.fromUid)
           .get();
-      if (mounted)
+      if (mounted) {
         setState(() => _profilePic = doc.data()?['profilePic'] ?? '');
+      }
     } catch (_) {}
   }
 
   Future<void> _accept() async {
     setState(() => _loading = true);
-    try {
-      await FirebaseFirestore.instance
-          .collection('Chats')
-          .doc(widget.chatId)
-          .set({
-            'participants': [widget.currentUid, widget.fromUid],
-            'lastMessage': '',
-            'lastMessageTime': FieldValue.serverTimestamp(),
-            'lastMessageSenderId': '',
-            'unreadCount_${widget.currentUid}': 0,
-            'unreadCount_${widget.fromUid}': 0,
-            'status': 'accepted',
-          }, SetOptions(merge: true));
-
-      final myDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.currentUid)
-          .get();
-      final myName = myDoc.data()?['displayname'] ?? 'Someone';
-
-      final existingNotifs = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.fromUid)
-          .collection('notifications')
-          .where('type', isEqualTo: 'friend_request_accepted')
-          .where('chatId', isEqualTo: widget.chatId)
-          .get();
-      for (final doc in existingNotifs.docs) {
-        await doc.reference.delete();
-      }
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.fromUid)
-          .collection('notifications')
-          .add({
-            'type': 'friend_request_accepted',
-            'fromUid': widget.currentUid,
-            'fromName': myName,
-            'chatId': widget.chatId,
-            'timestamp': FieldValue.serverTimestamp(),
-            'isRead': false,
-          });
-
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.currentUid)
-          .collection('notifications')
-          .doc(widget.notifId)
-          .delete();
-
-      if (mounted) setState(() => _accepted = true);
-    } catch (e) {
-      if (mounted) setState(() => _loading = false);
-    }
+    await ref
+        .read(notificationControllerProvider.notifier)
+        .acceptFriendRequest(
+          currentUid: widget.currentUid,
+          fromUid: widget.fromUid,
+          chatId: widget.chatId,
+          notifId: widget.notifId,
+        );
+    if (mounted) setState(() => _accepted = true);
   }
 
   Future<void> _ignore() async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('Chats')
-          .doc(widget.chatId)
-          .delete();
-
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.currentUid)
-          .collection('notifications')
-          .doc(widget.notifId)
-          .delete();
-    } catch (_) {}
+    await ref
+        .read(notificationControllerProvider.notifier)
+        .ignoreFriendRequest(
+          currentUid: widget.currentUid,
+          chatId: widget.chatId,
+          notifId: widget.notifId,
+        );
     if (mounted) setState(() => _ignored = true);
   }
 
@@ -368,7 +331,7 @@ class _FriendRequestTileState extends State<_FriendRequestTile> {
   }
 }
 
-class _GeneralNotifTile extends StatefulWidget {
+class _GeneralNotifTile extends ConsumerStatefulWidget {
   final String notifId, currentUid, fromUid, displayName, message, time, chatId;
   final bool isRead;
 
@@ -384,35 +347,37 @@ class _GeneralNotifTile extends StatefulWidget {
   });
 
   @override
-  State<_GeneralNotifTile> createState() => _GeneralNotifTileState();
+  ConsumerState<_GeneralNotifTile> createState() => _GeneralNotifTileState();
 }
 
-class _GeneralNotifTileState extends State<_GeneralNotifTile> {
+class _GeneralNotifTileState extends ConsumerState<_GeneralNotifTile> {
   String _profilePic = '';
+  String _displayName = '';
 
   @override
   void initState() {
     super.initState();
-    _loadPic();
+    _loadUserData();
     if (!widget.isRead) {
-      FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.currentUid)
-          .collection('notifications')
-          .doc(widget.notifId)
-          .set({'isRead': true}, SetOptions(merge: true))
-          .catchError((_) {});
+      ref
+          .read(notificationControllerProvider.notifier)
+          .markAsRead(widget.notifId);
     }
   }
 
-  Future<void> _loadPic() async {
+  Future<void> _loadUserData() async {
+    if (widget.fromUid.isEmpty || widget.fromUid == widget.currentUid) return;
     try {
       final doc = await FirebaseFirestore.instance
           .collection('users')
           .doc(widget.fromUid)
           .get();
-      if (mounted)
-        setState(() => _profilePic = doc.data()?['profilePic'] ?? '');
+      if (mounted) {
+        setState(() {
+          _profilePic = doc.data()?['profilePic'] ?? '';
+          _displayName = doc.data()?['displayname'] ?? widget.displayName;
+        });
+      }
     } catch (_) {}
   }
 
@@ -434,7 +399,7 @@ class _GeneralNotifTileState extends State<_GeneralNotifTile> {
                       chatId: widget.chatId,
                       receiverUid: widget.fromUid,
                       receiverDisplayName:
-                          receiverData['displayname'] ?? widget.displayName,
+                          receiverData['displayname'] ?? _displayName,
                       receiverProfilePic: receiverData['profilePic'] ?? '',
                     ),
                   ),
@@ -453,6 +418,9 @@ class _GeneralNotifTileState extends State<_GeneralNotifTile> {
               backgroundImage: _profilePic.isNotEmpty
                   ? NetworkImage(_profilePic)
                   : null,
+              child: _profilePic.isEmpty
+                  ? const Icon(Icons.person, color: whiteColor)
+                  : null,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -462,7 +430,9 @@ class _GeneralNotifTileState extends State<_GeneralNotifTile> {
                   text: TextSpan(
                     children: [
                       TextSpan(
-                        text: widget.displayName,
+                        text: _displayName.isNotEmpty
+                            ? _displayName
+                            : widget.displayName,
                         style: const TextStyle(
                           color: whiteColor,
                           fontWeight: FontWeight.w600,
