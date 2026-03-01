@@ -104,6 +104,7 @@ class NotificationRepository {
         .doc(toUid)
         .collection('notifications')
         .where('type', isEqualTo: 'friend_request_accepted')
+        .where('chatId', isEqualTo: chatId)
         .get();
 
     for (final doc in existing.docs) {

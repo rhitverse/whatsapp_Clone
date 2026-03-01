@@ -9,6 +9,7 @@ import 'package:whatsapp_clone/screens/chat/provider/chat_provider.dart';
 class ChatControl extends ConsumerWidget {
   final String userId;
   const ChatControl({super.key, required this.userId});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final chatRepo = ref.read(chatRepositoryProvider);
@@ -17,6 +18,7 @@ class ChatControl extends ConsumerWidget {
       stream: FirebaseFirestore.instance
           .collection('Chats')
           .where('participants', arrayContains: userId)
+          .where('status', isEqualTo: 'accepted')
           .orderBy('lastMessageTime', descending: true)
           .snapshots(),
       builder: (context, snapshot) {
@@ -24,17 +26,19 @@ class ChatControl extends ConsumerWidget {
           return Center(
             child: Text(
               'Error: ${snapshot.error}',
-              style: TextStyle(color: Colors.red),
+              style: const TextStyle(color: Colors.red),
             ),
           );
         }
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
+
         final docs = snapshot.data!.docs;
         if (docs.isEmpty) {
           return const EmptyContactsScreen();
         }
+
         return FutureBuilder<List<ChatContact>>(
           future: Future.wait(
             docs.map((doc) async {
@@ -55,9 +59,9 @@ class ChatControl extends ConsumerWidget {
               if (!otherUserDoc.exists) return null;
 
               final otherUserData = otherUserDoc.data() ?? {};
+              final modifiedData = Map<String, dynamic>.from(data);
 
               final localLastMsg = await chatRepo.getLocalLastMessage(doc.id);
-              final modifiedData = Map<String, dynamic>.from(data);
               if (localLastMsg != null &&
                   localLastMsg['text'] != null &&
                   localLastMsg['text'].toString().isNotEmpty) {
@@ -65,9 +69,9 @@ class ChatControl extends ConsumerWidget {
                 modifiedData['lastMessageSenderId'] =
                     localLastMsg['senderId'] ?? '';
               } else {
-                modifiedData['lastMessage'] = '';
-                modifiedData['lastMessageSenderId'] = '';
+                return null;
               }
+
               return ChatContact.fromMap(
                 modifiedData,
                 doc.id,
@@ -90,6 +94,7 @@ class ChatControl extends ConsumerWidget {
             }
 
             final chats = chatSnapshot.data!;
+
             if (chats.isEmpty) return const EmptyContactsScreen();
 
             return ContactsListScreen(contacts: chats);

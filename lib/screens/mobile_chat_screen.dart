@@ -155,13 +155,7 @@ class _MobileChatScreenState extends ConsumerState<MobileChatScreen> {
                   .getLocalMessagesStream(widget.chatId),
               builder: (context, snapshot) {
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'No messages yet\nSay hi! 👋',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey, fontSize: 16),
-                    ),
-                  );
+                  return const SizedBox();
                 }
 
                 final messages = snapshot.data!;
