@@ -141,7 +141,7 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
               width: 60,
               child: CircularProgressIndicator(
                 strokeWidth: 3,
-                valueColor: const AlwaysStoppedAnimation(Colors.cyan),
+                valueColor: const AlwaysStoppedAnimation(uiColor),
               ),
             ),
           ),
@@ -294,7 +294,7 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: widget.isMe ? Colors.green[800]! : Colors.grey[700]!,
-            width: 3,
+            width: 1,
           ),
           boxShadow: [
             BoxShadow(
@@ -420,17 +420,30 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
                             },
                           ),
                         ),
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.3),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.play_arrow,
-                            color: whiteColor,
-                            size: 40,
+                        GestureDetector(
+                          onTap: () async {
+                            final uri = Uri.parse(widget.url);
+                            if (await canLaunchUrl(uri)) {
+                              _showLoadingDialog(context);
+                              await launchUrl(
+                                uri,
+                                mode: LaunchMode.externalApplication,
+                              );
+                            }
+                          },
+
+                          child: Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.3),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.play_arrow,
+                              color: whiteColor,
+                              size: 40,
+                            ),
                           ),
                         ),
                       ],
@@ -542,16 +555,7 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
               width: 50,
               child: CircularProgressIndicator(
                 strokeWidth: 3,
-                valueColor: const AlwaysStoppedAnimation(Colors.cyan),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Loading preview...',
-              style: TextStyle(
-                color: Colors.grey[500],
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
+                valueColor: const AlwaysStoppedAnimation(uiColor),
               ),
             ),
           ],

@@ -9,12 +9,14 @@ class ReceiverMessage extends StatelessWidget {
   final String time;
   final bool showTail;
   final bool isGrouped;
+  final bool showTime;
   const ReceiverMessage({
     super.key,
     required this.text,
     required this.time,
     this.showTail = true,
     this.isGrouped = false,
+    this.showTime = true,
   });
 
   static const double _fontSize = 16.0;
@@ -34,7 +36,7 @@ class ReceiverMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeWidth = _getTimeWidth(context);
+    final timeWidth = showTime ? _getTimeWidth(context) : 0.0;
     const double spacerHeight = _timeFontSize;
 
     final hasUrl = isUri(text);
@@ -55,17 +57,19 @@ class ReceiverMessage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: LinkPreviewCard(url: url, isMe: false),
               ),
-              const SizedBox(height: 4),
-              Padding(
-                padding: const EdgeInsets.only(left: 10),
-                child: Text(
-                  time,
-                  style: const TextStyle(
-                    color: whiteColor,
-                    fontSize: _timeFontSize,
+              if (showTime) ...[
+                const SizedBox(height: 4),
+                Padding(
+                  padding: const EdgeInsets.only(left: 10),
+                  child: Text(
+                    time,
+                    style: const TextStyle(
+                      color: whiteColor,
+                      fontSize: _timeFontSize,
+                    ),
                   ),
                 ),
-              ),
+              ],
             ],
           ),
         ),
@@ -112,27 +116,29 @@ class ReceiverMessage extends StatelessWidget {
                         ),
                         children: [
                           TextSpan(text: text),
-                          WidgetSpan(
-                            alignment: PlaceholderAlignment.bottom,
-                            child: SizedBox(
-                              width: timeWidth,
-                              height: spacerHeight,
+                          if (showTime)
+                            WidgetSpan(
+                              alignment: PlaceholderAlignment.bottom,
+                              child: SizedBox(
+                                width: timeWidth,
+                                height: spacerHeight,
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Text(
-                        time,
-                        style: TextStyle(
-                          color: whiteColor,
-                          fontSize: _timeFontSize,
+                    if (showTime)
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Text(
+                          time,
+                          style: TextStyle(
+                            color: whiteColor,
+                            fontSize: _timeFontSize,
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),

@@ -173,7 +173,6 @@ class _MobileChatScreenState extends ConsumerState<MobileChatScreen> {
                     final senderId = messageData['senderId'] ?? '';
                     final text = messageData['text'] ?? '';
                     final timeStr = messageData['time'];
-
                     final isMe = senderId == currentUserId;
                     String timeString = '';
                     try {
@@ -186,11 +185,27 @@ class _MobileChatScreenState extends ConsumerState<MobileChatScreen> {
 
                     bool showTail = true;
                     bool isGrouped = false;
+                    bool showTime = true;
+
                     if (index > 0) {
                       final prev = messages[index - 1];
                       if (prev['senderId'] == senderId) {
                         showTail = false;
                         isGrouped = true;
+                      }
+
+                      String prevTimeString = '';
+                      try {
+                        final prevTimeStr = prev['time'];
+                        if (prevTimeStr is String) {
+                          prevTimeString = DateFormat(
+                            'h:mm a',
+                          ).format(DateTime.parse(prevTimeStr));
+                        }
+                      } catch (_) {}
+                      if (prev['senderId'] == senderId &&
+                          prevTimeString == timeString) {
+                        showTime = false;
                       }
                     }
 
@@ -200,12 +215,14 @@ class _MobileChatScreenState extends ConsumerState<MobileChatScreen> {
                             time: timeString,
                             showTail: showTail,
                             isGrouped: isGrouped,
+                            showTime: showTime,
                           )
                         : ReceiverMessage(
                             text: text,
                             time: timeString,
                             showTail: showTail,
                             isGrouped: isGrouped,
+                            showTime: showTime,
                           );
                   },
                 );
