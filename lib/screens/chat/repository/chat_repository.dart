@@ -1,11 +1,14 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:whatsapp_clone/common/encryption/encryption_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:whatsapp_clone/common/utils/common_cloudinary_repository.dart';
 
 class ChatRepository {
   final FirebaseFirestore _firestore;
   final _encryption = EncryptionService();
+  final _cloudinaryRepository = CommonCloudinaryRepository();
 
   ChatRepository({required FirebaseFirestore firestore})
     : _firestore = firestore;
@@ -67,6 +70,10 @@ class ChatRepository {
               'receiverId': data['receiverId'] ?? '',
               'isRead': data['isRead'] ?? false,
               'time': time.toIso8601String(),
+              'mediaUrl': data['mediaUrl'],
+              'mediaType': data['mediaType'],
+              'fileName': data['fileName'],
+              'fileSize': data['fileSize'],
             });
           }
           return messages;
@@ -82,18 +89,7 @@ class ChatRepository {
     String receiverProfilePic = '',
   }) async {
     try {
-      final chatDoc = await _firestore.collection('Chats').doc(chatId).get();
-      if (!chatDoc.exists) {
-        await _firestore.collection('Chats').doc(chatId).set({
-          'participants': [senderId, receiverId],
-          'lastMessage': '',
-          'lastMessageTime': FieldValue.serverTimestamp(),
-          'lastMessageSenderId': '',
-          'status': 'accepted',
-          'unreadCount_$senderId': 0,
-          'unreadCount_$receiverId': 0,
-        });
-      }
+      await _createChatIfNotExists(chatId, senderId, receiverId);
 
       final results = await Future.wait([
         _firestore.collection('users').doc(receiverId).get(),
@@ -132,15 +128,356 @@ class ChatRepository {
             'time': FieldValue.serverTimestamp(),
           });
 
-      await _firestore.collection('Chats').doc(chatId).update({
-        'lastMessage': 'Message',
-        'lastMessageTime': FieldValue.serverTimestamp(),
-        'lastMessageSenderId': senderId,
-        'unreadCount_$receiverId': FieldValue.increment(1),
-        'status': 'accepted',
-      });
+      await _updateLastMessage(chatId, senderId, receiverId, 'Message');
     } catch (e) {
       debugPrint('Send message error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> sendImage({
+    required String chatId,
+    required String senderId,
+    required File imageFile,
+    required String receiverId,
+  }) async {
+    try {
+      debugPrint('Starting image upload...');
+
+      await _createChatIfNotExists(chatId, senderId, receiverId);
+
+      final mediaUrl = await _cloudinaryRepository.storeFileToCloudinary(
+        imageFile,
+      );
+
+      if (mediaUrl == null) {
+        throw Exception('Failed to upload image to Cloudinary');
+      }
+
+      debugPrint('Image uploaded: $mediaUrl');
+
+      final fileSize = await imageFile.length();
+      final fileName = imageFile.path.split('/').last;
+
+      final results = await Future.wait([
+        _firestore.collection('users').doc(receiverId).get(),
+        _firestore.collection('users').doc(senderId).get(),
+      ]);
+
+      final receiverPublicKey = results[0].data()?['publicKey'];
+      final senderPublicKey = results[1].data()?['publicKey'];
+
+      String encryptedUrlForReceiver = mediaUrl;
+      String encryptedUrlForSender = mediaUrl;
+
+      if (receiverPublicKey != null) {
+        encryptedUrlForReceiver = await _encryption.encryptMessage(
+          mediaUrl,
+          receiverPublicKey,
+        );
+      }
+
+      if (senderPublicKey != null) {
+        encryptedUrlForSender = await _encryption.encryptMessage(
+          mediaUrl,
+          senderPublicKey,
+        );
+      }
+
+      await _firestore
+          .collection('Chats')
+          .doc(chatId)
+          .collection('messages')
+          .add({
+            'senderId': senderId,
+            'receiverId': receiverId,
+            'mediaUrl': encryptedUrlForReceiver,
+            'mediaUrlSenderCopy': encryptedUrlForSender,
+            'mediaType': 'image',
+            'fileName': fileName,
+            'fileSize': fileSize,
+            'isRead': false,
+            'time': FieldValue.serverTimestamp(),
+          });
+
+      await _updateLastMessage(chatId, senderId, receiverId, '🖼️ Photo');
+
+      debugPrint('Image message sent successfully');
+    } catch (e) {
+      debugPrint('Send image error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> sendVideo({
+    required String chatId,
+    required String senderId,
+    required File videoFile,
+    required String receiverId,
+    required int duration,
+  }) async {
+    try {
+      debugPrint('Starting video upload...');
+
+      await _createChatIfNotExists(chatId, senderId, receiverId);
+
+      final mediaUrl = await _cloudinaryRepository.storeFileToCloudinary(
+        videoFile,
+      );
+
+      if (mediaUrl == null) {
+        throw Exception('Failed to upload video to Cloudinary');
+      }
+
+      debugPrint('Video uploaded: $mediaUrl');
+
+      final fileSize = await videoFile.length();
+      final fileName = videoFile.path.split('/').last;
+
+      final results = await Future.wait([
+        _firestore.collection('users').doc(receiverId).get(),
+        _firestore.collection('users').doc(senderId).get(),
+      ]);
+
+      final receiverPublicKey = results[0].data()?['publicKey'];
+      final senderPublicKey = results[1].data()?['publicKey'];
+
+      String encryptedUrlForReceiver = mediaUrl;
+      String encryptedUrlForSender = mediaUrl;
+
+      if (receiverPublicKey != null) {
+        encryptedUrlForReceiver = await _encryption.encryptMessage(
+          mediaUrl,
+          receiverPublicKey,
+        );
+      }
+
+      if (senderPublicKey != null) {
+        encryptedUrlForSender = await _encryption.encryptMessage(
+          mediaUrl,
+          senderPublicKey,
+        );
+      }
+
+      await _firestore
+          .collection('Chats')
+          .doc(chatId)
+          .collection('messages')
+          .add({
+            'senderId': senderId,
+            'receiverId': receiverId,
+            'mediaUrl': encryptedUrlForReceiver,
+            'mediaUrlSenderCopy': encryptedUrlForSender,
+            'mediaType': 'video',
+            'fileName': fileName,
+            'fileSize': fileSize,
+            'duration': duration,
+            'isRead': false,
+            'time': FieldValue.serverTimestamp(),
+          });
+
+      await _updateLastMessage(chatId, senderId, receiverId, '🎥 Video');
+
+      debugPrint('Video message sent successfully');
+    } catch (e) {
+      debugPrint('Send video error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> sendMultipleMedia({
+    required String chatId,
+    required String senderId,
+    required List<File> files,
+    required String receiverId,
+    required List<String> mediaTypes,
+  }) async {
+    try {
+      debugPrint('Starting batch media upload...');
+
+      await _createChatIfNotExists(chatId, senderId, receiverId);
+
+      final results = await Future.wait([
+        _firestore.collection('users').doc(receiverId).get(),
+        _firestore.collection('users').doc(senderId).get(),
+      ]);
+
+      final receiverPublicKey = results[0].data()?['publicKey'];
+      final senderPublicKey = results[1].data()?['publicKey'];
+
+      final uploadTasks = <Future<String?>>[];
+      for (final file in files) {
+        uploadTasks.add(_cloudinaryRepository.storeFileToCloudinary(file));
+      }
+
+      final mediaUrls = await Future.wait(uploadTasks);
+
+      if (mediaUrls.any((url) => url == null)) {
+        throw Exception('Failed to upload one or more files to Cloudinary');
+      }
+
+      debugPrint('All files uploaded successfully');
+
+      final batch = _firestore.batch();
+      final messagesRef = _firestore
+          .collection('Chats')
+          .doc(chatId)
+          .collection('messages');
+
+      for (int i = 0; i < files.length; i++) {
+        final mediaUrl = mediaUrls[i]!;
+        final file = files[i];
+        final mediaType = mediaTypes[i];
+
+        String encryptedUrlForReceiver = mediaUrl;
+        String encryptedUrlForSender = mediaUrl;
+
+        if (receiverPublicKey != null) {
+          encryptedUrlForReceiver = await _encryption.encryptMessage(
+            mediaUrl,
+            receiverPublicKey,
+          );
+        }
+
+        if (senderPublicKey != null) {
+          encryptedUrlForSender = await _encryption.encryptMessage(
+            mediaUrl,
+            senderPublicKey,
+          );
+        }
+
+        final fileSize = await file.length();
+        final fileName = file.path.split('/').last;
+
+        final newDoc = messagesRef.doc();
+        batch.set(newDoc, {
+          'senderId': senderId,
+          'receiverId': receiverId,
+          'mediaUrl': encryptedUrlForReceiver,
+          'mediaUrlSenderCopy': encryptedUrlForSender,
+          'mediaType': mediaType,
+          'fileName': fileName,
+          'fileSize': fileSize,
+          'isRead': false,
+          'time': FieldValue.serverTimestamp(),
+        });
+      }
+
+      await batch.commit();
+
+      await _updateLastMessage(
+        chatId,
+        senderId,
+        receiverId,
+        '📦 ${files.length} file${files.length > 1 ? 's' : ''}',
+      );
+
+      debugPrint('Batch media sent successfully (${files.length} files)');
+    } catch (e) {
+      debugPrint('Send multiple media error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> sendFile({
+    required String chatId,
+    required String senderId,
+    required File file,
+    required String receiverId,
+    required String fileType,
+  }) async {
+    try {
+      debugPrint('📤 Starting file upload...');
+
+      await _createChatIfNotExists(chatId, senderId, receiverId);
+
+      final fileUrl = await _cloudinaryRepository.storeFileToCloudinary(file);
+
+      if (fileUrl == null) {
+        throw Exception('Failed to upload file to Cloudinary');
+      }
+
+      debugPrint('File uploaded: $fileUrl');
+
+      final fileSize = await file.length();
+      final fileName = file.path.split('/').last;
+
+      final results = await Future.wait([
+        _firestore.collection('users').doc(receiverId).get(),
+        _firestore.collection('users').doc(senderId).get(),
+      ]);
+
+      final receiverPublicKey = results[0].data()?['publicKey'];
+      final senderPublicKey = results[1].data()?['publicKey'];
+
+      String encryptedUrlForReceiver = fileUrl;
+      String encryptedUrlForSender = fileUrl;
+
+      if (receiverPublicKey != null) {
+        encryptedUrlForReceiver = await _encryption.encryptMessage(
+          fileUrl,
+          receiverPublicKey,
+        );
+      }
+
+      if (senderPublicKey != null) {
+        encryptedUrlForSender = await _encryption.encryptMessage(
+          fileUrl,
+          senderPublicKey,
+        );
+      }
+
+      await _firestore
+          .collection('Chats')
+          .doc(chatId)
+          .collection('messages')
+          .add({
+            'senderId': senderId,
+            'receiverId': receiverId,
+            'mediaUrl': encryptedUrlForReceiver,
+            'mediaUrlSenderCopy': encryptedUrlForSender,
+            'mediaType': fileType,
+            'fileName': fileName,
+            'fileSize': fileSize,
+            'isRead': false,
+            'time': FieldValue.serverTimestamp(),
+          });
+
+      await _updateLastMessage(
+        chatId,
+        senderId,
+        receiverId,
+        '📄 ${fileType.toUpperCase()}',
+      );
+
+      debugPrint('File message sent successfully');
+    } catch (e) {
+      debugPrint('Send file error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteMediaMessage({
+    required String chatId,
+    required String messageId,
+    required String mediaUrl,
+  }) async {
+    try {
+      debugPrint('🗑️ Deleting media...');
+
+      await _cloudinaryRepository.deleteFileFromCloudinary(mediaUrl);
+
+      await _firestore
+          .collection('Chats')
+          .doc(chatId)
+          .collection('messages')
+          .doc(messageId)
+          .delete();
+
+      debugPrint('Media deleted successfully');
+    } catch (e) {
+      debugPrint('Delete media error: $e');
+      rethrow;
     }
   }
 
@@ -195,6 +532,32 @@ class ChatRepository {
     await _firestore.collection('users').doc(uid).update({
       'isOnline': isOnline,
       'lastSeen': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> _createChatIfNotExists(
+    String chatId,
+    String senderId,
+    String receiverId,
+  ) async {
+    final chatDoc = await _firestore.collection('Chats').doc(chatId).get();
+    if (!chatDoc.exists) {
+      await createChat(chatId: chatId, participants: [senderId, receiverId]);
+    }
+  }
+
+  Future<void> _updateLastMessage(
+    String chatId,
+    String senderId,
+    String receiverId,
+    String message,
+  ) async {
+    await _firestore.collection('Chats').doc(chatId).update({
+      'lastMessage': message,
+      'lastMessageTime': FieldValue.serverTimestamp(),
+      'lastMessageSenderId': senderId,
+      'unreadCount_$receiverId': FieldValue.increment(1),
+      'status': 'accepted',
     });
   }
 }

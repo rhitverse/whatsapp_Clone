@@ -235,6 +235,8 @@ class _MobileChatScreenState extends ConsumerState<MobileChatScreen> {
             showEmoji: showEmoji,
             onEmojiTap: onEmojiTap,
             onSend: _sendMessage,
+            chatId: widget.chatId,
+            receiverUid: widget.receiverUid,
           ),
         ],
       ),

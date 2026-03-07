@@ -57,6 +57,7 @@ dependencies:
   webview_flutter: ^4.13.1
   http: ^1.6.0
   html: ^0.15.6
+  file_picker: ^10.3.10
 
 dev_dependencies:
   flutter_test:

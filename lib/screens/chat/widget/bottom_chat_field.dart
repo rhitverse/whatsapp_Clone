@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/screens/chat/widget/attachment_send_screen.dart';
 import 'package:whatsapp_clone/screens/chat/widget/attachment_sheet.dart';
 import 'package:whatsapp_clone/screens/chat/widget/custom_emoji_picker.dart';
 
@@ -11,6 +13,8 @@ class BottomChatField extends StatefulWidget {
   final bool showEmoji;
   final VoidCallback onEmojiTap;
   final VoidCallback onSend;
+  final String chatId;
+  final String receiverUid;
 
   const BottomChatField({
     super.key,
@@ -19,6 +23,8 @@ class BottomChatField extends StatefulWidget {
     required this.showEmoji,
     required this.onEmojiTap,
     required this.onSend,
+    required this.chatId,
+    required this.receiverUid,
   });
 
   @override
@@ -84,6 +90,44 @@ class _BottomChatFieldState extends State<BottomChatField>
     } else {
       debugPrint("Could not Open Google Maps");
     }
+  }
+
+  Future<void> _openAttachmentScreen() async {
+    setState(() {
+      _showAttachment = false;
+      _animController.reverse();
+    });
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AttachmentSendScreen(
+          chatId: widget.chatId,
+          receiverUid: widget.receiverUid,
+        ),
+      ),
+    );
+  }
+
+  void _openGalleryAttachment() {
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+
+    if (currentUid == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('User not authenticated'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    showAttachmentSheet(
+      context,
+      chatId: widget.chatId,
+      receiverUid: widget.receiverUid,
+      currentUid: currentUid,
+    );
   }
 
   @override
@@ -162,14 +206,20 @@ class _BottomChatFieldState extends State<BottomChatField>
                 label: 'Gallery',
                 iconWidth: 54,
                 iconHeight: 54,
-                onTap: () => showAttachmentSheet(context),
+                onTap: () {
+                  setState(() {
+                    _showAttachment = false;
+                    _animController.reverse();
+                  });
+                  _openGalleryAttachment();
+                },
               ),
               _attachmentItem(
                 svgPath: 'assets/svg/file.svg',
                 label: 'File',
                 iconHeight: 42,
                 iconWidth: 42,
-                onTap: () {},
+                onTap: _openAttachmentScreen,
               ),
               _attachmentItem(
                 svgPath: 'assets/svg/location.svg',

@@ -1,27 +1,47 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/screens/chat/provider/chat_provider.dart';
 import 'package:whatsapp_clone/screens/chat/widget/camera_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-void showAttachmentSheet(BuildContext context) {
+void showAttachmentSheet(
+  BuildContext context, {
+  required String chatId,
+  required String receiverUid,
+  required String currentUid,
+}) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withValues(alpha: 0.6),
-    builder: (_) => const AttachmentSheet(),
+    builder: (_) => AttachmentSheet(
+      chatId: chatId,
+      receiverUid: receiverUid,
+      currentUid: currentUid,
+    ),
   );
 }
 
-class AttachmentSheet extends StatefulWidget {
-  const AttachmentSheet({super.key});
+class AttachmentSheet extends ConsumerStatefulWidget {
+  final String chatId;
+  final String receiverUid;
+  final String currentUid;
+  const AttachmentSheet({
+    super.key,
+    required this.chatId,
+    required this.receiverUid,
+    required this.currentUid,
+  });
 
   @override
-  State<AttachmentSheet> createState() => _AttachmentSheetState();
+  ConsumerState<AttachmentSheet> createState() => _AttachmentSheetState();
 }
 
-class _AttachmentSheetState extends State<AttachmentSheet>
+class _AttachmentSheetState extends ConsumerState<AttachmentSheet>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   late final Animation<Offset> _slideAnim;
@@ -33,6 +53,7 @@ class _AttachmentSheetState extends State<AttachmentSheet>
   bool _loading = true;
   bool _showAlbumDropdown = false;
   String _permissionError = '';
+  bool _isSending = false;
 
   final List<AssetEntity> _selected = [];
 
@@ -73,7 +94,9 @@ class _AttachmentSheetState extends State<AttachmentSheet>
     );
 
     if (albums.isEmpty) {
-      setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
       return;
     }
 
@@ -122,7 +145,113 @@ class _AttachmentSheetState extends State<AttachmentSheet>
     });
   }
 
-  void _sendSelected() => Navigator.pop(context, _selected);
+  Future<void> _sendSelected() async {
+    if (_selected.isEmpty || _isSending) return;
+
+    try {
+      setState(() => _isSending = true);
+
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => AlertDialog(
+            backgroundColor: backgroundColor,
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: uiColor),
+                const SizedBox(height: 16),
+                Text(
+                  'Uploading ${_selected.length} file${_selected.length > 1 ? 's' : ''}...',
+                  style: const TextStyle(color: whiteColor),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      final chatController = ref.read(chatControllerProvider);
+
+      final files = <File>[];
+      final mediaTypes = <String>[];
+
+      for (final asset in _selected) {
+        try {
+          final file = await asset.file;
+          if (file != null) {
+            files.add(file);
+
+            if (asset.type == AssetType.image) {
+              mediaTypes.add('image');
+            } else if (asset.type == AssetType.video) {
+              mediaTypes.add('video');
+            }
+          }
+        } catch (e) {
+          debugPrint('Error getting file for asset: $e');
+        }
+      }
+      if (files.length == 1) {
+        if (mediaTypes.first == 'image') {
+          await chatController.sendImage(
+            chatId: widget.chatId,
+            senderId: widget.currentUid,
+            imageFile: files.first,
+            receiverId: widget.receiverUid,
+          );
+        } else {
+          final asset = _selected.first;
+          await chatController.sendVideo(
+            chatId: widget.chatId,
+            senderId: widget.currentUid,
+            videoFile: files.first,
+            receiverId: widget.receiverUid,
+            duration: asset.duration,
+          );
+        }
+      } else {
+        await chatController.sendMultipleMedia(
+          chatId: widget.chatId,
+          senderId: widget.currentUid,
+          files: files,
+          receiverId: widget.receiverUid,
+          mediaTypes: mediaTypes,
+        );
+      }
+
+      if (mounted) {
+        Navigator.pop(context);
+        Navigator.pop(context);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${_selected.length} file${_selected.length > 1 ? 's' : ''} sent!',
+            ),
+            backgroundColor: uiColor,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error sending files: $e');
+      if (mounted) {
+        Navigator.pop(context);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send files: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSending = false);
+      }
+    }
+  }
 
   Future<void> _openCamera() async {
     Navigator.of(context).pop();
@@ -196,7 +325,10 @@ class _AttachmentSheetState extends State<AttachmentSheet>
                     currentAlbum: _currentAlbum,
                     selectedCount: _selected.length,
                     showDropdown: _showAlbumDropdown,
-                    onSend: _selected.isNotEmpty ? _sendSelected : null,
+                    isLoading: _isSending,
+                    onSend: _selected.isNotEmpty && !_isSending
+                        ? _sendSelected
+                        : null,
                     onToggleDropdown: () => setState(
                       () => _showAlbumDropdown = !_showAlbumDropdown,
                     ),
@@ -286,6 +418,7 @@ class _AlbumHeader extends StatelessWidget {
   final AssetPathEntity? currentAlbum;
   final int selectedCount;
   final bool showDropdown;
+  final bool isLoading;
   final VoidCallback? onSend;
   final VoidCallback onToggleDropdown;
 
@@ -293,6 +426,7 @@ class _AlbumHeader extends StatelessWidget {
     required this.currentAlbum,
     required this.selectedCount,
     required this.showDropdown,
+    required this.isLoading,
     required this.onToggleDropdown,
     this.onSend,
   });
@@ -304,7 +438,7 @@ class _AlbumHeader extends StatelessWidget {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Navigator.pop(context),
+            onTap: isLoading ? null : () => Navigator.pop(context),
             child: const Icon(
               Icons.close_rounded,
               color: Colors.white70,
@@ -313,7 +447,7 @@ class _AlbumHeader extends StatelessWidget {
           ),
           Expanded(
             child: GestureDetector(
-              onTap: onToggleDropdown,
+              onTap: isLoading ? null : onToggleDropdown,
               behavior: HitTestBehavior.opaque,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -345,24 +479,35 @@ class _AlbumHeader extends StatelessWidget {
           ),
           if (selectedCount > 0)
             GestureDetector(
-              onTap: onSend,
+              onTap: isLoading ? null : onSend,
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: uiColor,
+                  color: isLoading ? Colors.grey[800] : uiColor,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Text(
-                  'Send',
-                  style: TextStyle(
-                    color: whiteColor,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                child: isLoading
+                    ? SizedBox(
+                        width: 12,
+                        height: 12,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.grey[400]!,
+                          ),
+                        ),
+                      )
+                    : const Text(
+                        'Send',
+                        style: TextStyle(
+                          color: whiteColor,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
             )
           else
