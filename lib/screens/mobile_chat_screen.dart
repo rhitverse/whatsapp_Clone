@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/screens/chat/provider/chat_provider.dart';
@@ -132,17 +133,28 @@ class _MobileChatScreenState extends ConsumerState<MobileChatScreen> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.videocam, color: whiteColor),
-            onPressed: () {},
+          GestureDetector(
+            onTap: () {},
+            child: SvgPicture.asset(
+              'assets/svg/videocall.svg',
+              width: 27,
+              height: 27,
+              color: whiteColor,
+            ),
+          ),
+          SizedBox(width: 16),
+          GestureDetector(
+            onTap: () {},
+            child: SvgPicture.asset(
+              'assets/svg/call1.svg',
+              width: 27,
+              height: 27,
+              color: whiteColor,
+            ),
           ),
           IconButton(
-            icon: const Icon(Icons.call, color: whiteColor),
             onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: whiteColor),
-            onPressed: () {},
+            icon: Icon(Icons.more_vert_outlined, size: 26, color: whiteColor),
           ),
         ],
       ),
