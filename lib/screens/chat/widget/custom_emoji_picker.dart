@@ -430,9 +430,8 @@ class _GifGridTabState extends State<_GifGridTab>
                       );
                     }
                     return GestureDetector(
-                      onTap: () => widget.onGifSelected?.call(
-                        _gifs[i].originalUrl,
-                      ), // ✅ originalUrl use karo
+                      onTap: () =>
+                          widget.onGifSelected?.call(_gifs[i].originalUrl),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: CachedNetworkImage(

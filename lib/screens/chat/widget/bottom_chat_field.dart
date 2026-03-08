@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/screens/chat/provider/chat_provider.dart';
 import 'package:whatsapp_clone/screens/chat/widget/attachment_send_screen.dart';
 import 'package:whatsapp_clone/screens/chat/widget/attachment_sheet.dart';
 import 'package:whatsapp_clone/screens/chat/widget/custom_emoji_picker.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class BottomChatField extends StatefulWidget {
+class BottomChatField extends ConsumerStatefulWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
   final bool showEmoji;
@@ -28,10 +30,10 @@ class BottomChatField extends StatefulWidget {
   });
 
   @override
-  State<BottomChatField> createState() => _BottomChatFieldState();
+  ConsumerState<BottomChatField> createState() => _BottomChatFieldState();
 }
 
-class _BottomChatFieldState extends State<BottomChatField>
+class _BottomChatFieldState extends ConsumerState<BottomChatField>
     with SingleTickerProviderStateMixin {
   final ScrollController _emojiScrollController = ScrollController();
   bool _showAttachment = false;
@@ -128,6 +130,27 @@ class _BottomChatFieldState extends State<BottomChatField>
       receiverUid: widget.receiverUid,
       currentUid: currentUid,
     );
+  }
+
+  Future<void> _sendGif(String gifUrl) async {
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUid == null) return;
+    try {
+      await ref
+          .read(chatControllerProvider)
+          .sendGif(
+            chatId: widget.chatId,
+            senderId: currentUid,
+            gifUrl: gifUrl,
+            receiverId: widget.receiverUid,
+          );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Failed to send GIF')));
+      }
+    }
   }
 
   @override
@@ -392,6 +415,7 @@ class _BottomChatFieldState extends State<BottomChatField>
             child: CustomEmojiPicker(
               controller: widget.controller,
               scrollController: _emojiScrollController,
+              onGiftSelected: _sendGif,
             ),
           ),
       ],

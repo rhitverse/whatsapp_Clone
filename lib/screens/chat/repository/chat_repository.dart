@@ -510,6 +510,60 @@ class ChatRepository {
     }
   }
 
+  Future<void> sendGif({
+    required String chatId,
+    required String senderId,
+    required String gifUrl,
+    required String receiverId,
+  }) async {
+    try {
+      debugPrint('Sending GIF...');
+      await _createChatIfNotExists(chatId, senderId, receiverId);
+      final results = await Future.wait([
+        _firestore.collection('users').doc(receiverId).get(),
+        _firestore.collection('users').doc(senderId).get(),
+      ]);
+
+      final receiverPublicKey = results[0].data()?['publicKey'];
+      final senderPublicKey = results[1].data()?['publicKey'];
+
+      String encryptedUrlForReceiver = gifUrl;
+      String encryptedUrlForSender = gifUrl;
+
+      if (receiverPublicKey != null) {
+        encryptedUrlForReceiver = await _encryption.encryptMessage(
+          gifUrl,
+          receiverPublicKey,
+        );
+      }
+      if (senderPublicKey != null) {
+        encryptedUrlForSender = await _encryption.encryptMessage(
+          gifUrl,
+          senderPublicKey,
+        );
+      }
+      await _firestore
+          .collection('Chats')
+          .doc(chatId)
+          .collection('messages')
+          .add({
+            'senderId': senderId,
+            'receiverId': receiverId,
+            'mediaUrl': encryptedUrlForReceiver,
+            'mediaUrlSenderCopy': encryptedUrlForSender,
+            'mediaType': 'gif',
+            'fileName': 'GIF',
+            'isRead': false,
+            'time': FieldValue.serverTimestamp(),
+          });
+      await _updateLastMessage(chatId, senderId, receiverId, 'GIF');
+      debugPrint('GiF send succesfully');
+    } catch (e) {
+      debugPrint('Send GIF error: $e');
+      rethrow;
+    }
+  }
+
   Future<void> markAsRead(String chatId, String userId) async {
     try {
       await _firestore.collection('Chats').doc(chatId).update({

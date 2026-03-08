@@ -50,7 +50,7 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
 
   Future<void> _generateThumbnail() async {
     try {
-      final Uint8List = await VideoThumbnail.thumbnailData(
+      final uint8list = await VideoThumbnail.thumbnailData(
         video: widget.mediaUrl,
         imageFormat: ImageFormat.PNG,
         maxHeight: 300,
@@ -58,7 +58,7 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
       );
       if (mounted) {
         setState(() {
-          _thumbnailData = Uint8List;
+          _thumbnailData = uint8list;
           _isLoadingThumbnail = false;
         });
       }
@@ -123,7 +123,7 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(
-        vertical: widget.isGrouped ? 1 : 5,
+        vertical: widget.isGrouped ? 3 : 8,
         horizontal: 1,
       ),
       child: Align(
@@ -167,12 +167,59 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
       case 'image':
         return _buildImageContent(context, maxWidth);
 
+      case 'gif':
+        return _buildGifContent(maxWidth);
+
       case 'video':
         return _buildVideoContent(context, maxWidth);
 
       default:
         return _buildFileContent(maxWidth);
     }
+  }
+
+  Widget _buildGifContent(double maxWidth) {
+    return GestureDetector(
+      onTap: () => _openFullScreenImage(context),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxWidth),
+          child: Image.network(
+            widget.mediaUrl,
+            fit: BoxFit.fitWidth,
+            loadingBuilder: (context, child, progress) {
+              return progress == null
+                  ? child
+                  : Container(
+                      constraints: BoxConstraints(
+                        maxWidth: maxWidth,
+                        minHeight: 200,
+                      ),
+                      color: Colors.grey[800],
+                      child: const Center(
+                        child: CircularProgressIndicator(color: uiColor),
+                      ),
+                    );
+            },
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                constraints: BoxConstraints(maxWidth: maxWidth),
+                color: Colors.grey[800],
+                padding: const EdgeInsets.all(20),
+                child: const Center(
+                  child: Icon(
+                    Icons.broken_image,
+                    color: Colors.white54,
+                    size: 50,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildImageContent(BuildContext context, double maxWidth) {
@@ -184,7 +231,7 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
           widget.mediaUrl,
           fit: BoxFit.cover,
           width: maxWidth,
-          height: 420,
+          height: MediaQuery.of(context).size.height * 0.42,
           loadingBuilder: (context, child, progress) {
             return progress == null
                 ? child
@@ -200,7 +247,7 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
           errorBuilder: (context, error, stackTrace) {
             return Container(
               width: maxWidth,
-              height: 420,
+              height: MediaQuery.of(context).size.height * 0.42,
               color: Colors.grey[800],
               child: const Center(
                 child: Icon(
@@ -227,7 +274,7 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
             child: _isLoadingThumbnail
                 ? Container(
                     width: maxWidth,
-                    height: 420,
+                    height: MediaQuery.of(context).size.height * 0.42,
                     color: Colors.grey[800],
                     child: const Center(
                       child: CircularProgressIndicator(color: uiColor),
@@ -242,7 +289,7 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
                   )
                 : Container(
                     width: maxWidth,
-                    height: 420,
+                    height: MediaQuery.of(context).size.height * 0.42,
                     color: Colors.grey[800],
                   ),
           ),

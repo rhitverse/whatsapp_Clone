@@ -135,6 +135,24 @@ class ChatController {
     }
   }
 
+  Future<void> sendGif({
+    required String chatId,
+    required String senderId,
+    required String gifUrl,
+    required String receiverId,
+  }) async {
+    try {
+      await _chatRepository.sendGif(
+        chatId: chatId,
+        senderId: senderId,
+        gifUrl: gifUrl,
+        receiverId: receiverId,
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<void> markAsRead(String chatId, String userId) async {
     try {
       await _chatRepository.markAsRead(chatId, userId);

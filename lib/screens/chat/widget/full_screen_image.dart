@@ -10,12 +10,6 @@ class FullScreenImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-        backgroundColor: backgroundColor,
-        iconTheme: const IconThemeData(color: whiteColor),
-        elevation: 0,
-        title: const SizedBox.shrink(),
-      ),
       body: Center(
         child: InteractiveViewer(
           minScale: 0.5,

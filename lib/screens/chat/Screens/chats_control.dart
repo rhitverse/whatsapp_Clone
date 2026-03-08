@@ -68,26 +68,40 @@ class ChatControl extends ConsumerWidget {
                   .get();
 
               String realLastMessage = 'Message';
+
               if (lastMsgSnap.docs.isNotEmpty) {
                 final lastMsgData = lastMsgSnap.docs.first.data();
                 final senderId = lastMsgData['senderId'] ?? '';
-                final textField = senderId == userId
-                    ? lastMsgData['encryptedSenderCopy'] ??
-                          lastMsgData['plainText'] ??
-                          'Message'
-                    : lastMsgData['encryptedText'] ??
-                          lastMsgData['text'] ??
-                          'Message';
 
-                try {
-                  realLastMessage = await EncryptionService().decryptMessage(
-                    textField,
-                    userId,
-                  );
-                } catch (_) {
-                  realLastMessage = senderId == userId
-                      ? lastMsgData['plainText'] ?? 'Message'
-                      : 'Message';
+                final mediaType = lastMsgData['mediaType'];
+
+                if (mediaType != null) {
+                  switch (mediaType) {
+                    case 'image':
+                      realLastMessage = '🖼️ Photo';
+                      break;
+                    case 'video':
+                      realLastMessage = '🎥 Video';
+                      break;
+                    case 'gif':
+                      realLastMessage = 'GIF';
+                      break;
+                    default:
+                      realLastMessage = '📄 File';
+                  }
+                } else {
+                  final textField = senderId == userId
+                      ? lastMsgData['encryptedSenderCopy']
+                      : lastMsgData['encryptedText'];
+
+                  if (textField != null) {
+                    try {
+                      realLastMessage = await EncryptionService()
+                          .decryptMessage(textField, userId);
+                    } catch (_) {
+                      realLastMessage = 'Message';
+                    }
+                  }
                 }
               }
 
