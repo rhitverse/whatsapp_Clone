@@ -45,14 +45,9 @@ class _DiaryScreenState extends State<DiaryScreen> {
           ),
           centerTitle: true,
         ),
-        // ✅ 3 screens, 3 children — index kabhi out of range nahi hoga
         body: IndexedStack(
           index: selectedTab,
-          children: const [
-            EntryScreen(), // index 0
-            CalenderScreen(), // index 1
-            DiaryTabScreen(), // index 2
-          ],
+          children: const [EntryScreen(), CalenderScreen(), DiaryTabScreen()],
         ),
       ),
     );

@@ -9,6 +9,9 @@ import 'package:whatsapp_clone/screens/chat/widget/attachment_send_screen.dart';
 import 'package:whatsapp_clone/screens/chat/widget/attachment_sheet.dart';
 import 'package:whatsapp_clone/screens/chat/widget/custom_emoji_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:whatsapp_clone/screens/chat/widget/voice_recorder_field.dart';
+
+enum ChatInputMode { none, attachment, recording }
 
 class BottomChatField extends ConsumerStatefulWidget {
   final TextEditingController controller;
@@ -37,9 +40,10 @@ class BottomChatField extends ConsumerStatefulWidget {
 class _BottomChatFieldState extends ConsumerState<BottomChatField>
     with SingleTickerProviderStateMixin {
   final ScrollController _emojiScrollController = ScrollController();
-  bool _showAttachment = false;
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
+
+  ChatInputMode _mode = ChatInputMode.none;
 
   @override
   void initState() {
@@ -54,19 +58,20 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
     );
   }
 
-  void _toggleAttachment() {
-    setState(() {
-      if (widget.showEmoji) {
-        widget.onEmojiTap();
-      }
-      _showAttachment = !_showAttachment;
-      if (_showAttachment) {
-        widget.focusNode.unfocus();
-        _animController.forward();
-      } else {
-        _animController.reverse();
-      }
-    });
+  void _setMode(ChatInputMode newMode) {
+    if (widget.showEmoji) widget.onEmojiTap();
+
+    widget.focusNode.unfocus();
+
+    final resolvedMode = _mode == newMode ? ChatInputMode.none : newMode;
+
+    setState(() => _mode = resolvedMode);
+
+    if (resolvedMode == ChatInputMode.attachment) {
+      _animController.forward();
+    } else {
+      _animController.reverse();
+    }
   }
 
   double _emojiHeight(BuildContext context) {
@@ -74,32 +79,28 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
     final padding = MediaQuery.of(context).padding;
     const appBarHeight = kToolbarHeight;
     const chatFieldHeight = 66.0;
-
     final available =
         screenHeight -
         padding.top -
         padding.bottom -
         appBarHeight -
         chatFieldHeight;
-
     return available.clamp(200.0, 450.0);
   }
 
   Future<void> _openGoogleMaps() async {
     final Uri googleMapUrl = Uri.parse("geo:0,0?q=my+location");
-
     if (await canLaunchUrl(googleMapUrl)) {
       await launchUrl(googleMapUrl, mode: LaunchMode.externalApplication);
-    } else {
-      debugPrint("Could not Open Google Maps");
     }
   }
 
   Future<void> _openAttachmentScreen() async {
     setState(() {
-      _showAttachment = false;
+      _mode = ChatInputMode.none;
       _animController.reverse();
     });
+
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       allowMultiple: true,
       type: FileType.any,
@@ -120,6 +121,7 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
         );
       }
     }
+
     if (mounted) {
       Navigator.push(
         context,
@@ -136,29 +138,15 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
 
   FileType _getFileType(String fileName) {
     final ext = fileName.split('.').last.toLowerCase();
-    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(ext)) {
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(ext))
       return FileType.image;
-    } else if (['mp4', 'avi', 'mov', 'flv'].contains(ext)) {
-      return FileType.video;
-    } else if (['pdf', 'doc', 'docx', 'txt', 'xlsx', 'xls'].contains(ext)) {
-      return FileType.custom;
-    }
+    if (['mp4', 'avi', 'mov', 'flv'].contains(ext)) return FileType.video;
     return FileType.custom;
   }
 
   void _openGalleryAttachment() {
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
-
-    if (currentUid == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('User not authenticated'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
+    if (currentUid == null) return;
     showAttachmentSheet(
       context,
       chatId: widget.chatId,
@@ -179,18 +167,13 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
             gifUrl: gifUrl,
             receiverId: widget.receiverUid,
           );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Failed to send GIF')));
-      }
-    }
+    } catch (_) {}
   }
 
   @override
   void dispose() {
     _emojiScrollController.dispose();
+    _animController.dispose();
     super.dispose();
   }
 
@@ -213,7 +196,7 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
             decoration: BoxDecoration(
               color: attacment,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Color(0xff2A2F33), width: 1.4),
+              border: Border.all(color: const Color(0xff2A2F33), width: 1.4),
             ),
             child: Center(
               child: SizedBox(
@@ -222,7 +205,6 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
                 child: SvgPicture.asset(
                   svgPath,
                   fit: BoxFit.contain,
-                  alignment: Alignment.center,
                   colorFilter: svgColor != null
                       ? ColorFilter.mode(svgColor, BlendMode.srcIn)
                       : null,
@@ -253,11 +235,10 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          decoration: BoxDecoration(color: backgroundColor),
+          color: backgroundColor,
           child: Wrap(
             spacing: 30,
             runSpacing: 20,
-            alignment: WrapAlignment.start,
             children: [
               _attachmentItem(
                 svgPath: 'assets/svg/photos.svg',
@@ -266,7 +247,7 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
                 iconHeight: 54,
                 onTap: () {
                   setState(() {
-                    _showAttachment = false;
+                    _mode = ChatInputMode.none;
                     _animController.reverse();
                   });
                   _openGalleryAttachment();
@@ -286,17 +267,16 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
                 iconWidth: 52,
                 onTap: () async {
                   setState(() {
-                    _showAttachment = false;
+                    _mode = ChatInputMode.none;
                     _animController.reverse();
                   });
                   await _openGoogleMaps();
                 },
               ),
-
               _attachmentItem(
                 svgPath: 'assets/svg/poll.svg',
                 label: 'Poll',
-                svgColor: Color(0xffFF8314),
+                svgColor: const Color(0xffFF8314),
                 iconHeight: 55,
                 iconWidth: 55,
                 onTap: () {},
@@ -317,8 +297,11 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
 
   @override
   Widget build(BuildContext context) {
+    final isAttachment = _mode == ChatInputMode.attachment;
+    final isRecording = _mode == ChatInputMode.recording;
+
     return Column(
-      mainAxisSize: MainAxisSize.max,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -329,11 +312,11 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
             ),
           ),
           child: SafeArea(
-            bottom: !widget.showEmoji && !_showAttachment,
+            bottom: !widget.showEmoji && !isAttachment,
             child: Row(
               children: [
                 GestureDetector(
-                  onTap: _toggleAttachment,
+                  onTap: () => _setMode(ChatInputMode.attachment),
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),
                     transitionBuilder: (child, anim) => RotationTransition(
@@ -341,13 +324,11 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
                       child: FadeTransition(opacity: anim, child: child),
                     ),
                     child: CircleAvatar(
-                      key: ValueKey(_showAttachment),
-                      backgroundColor: _showAttachment
-                          ? Colors.grey[900]
-                          : Colors.grey[900],
+                      key: ValueKey(isAttachment),
+                      backgroundColor: Colors.grey[900],
                       radius: 24,
                       child: Icon(
-                        _showAttachment ? Icons.close : Icons.add,
+                        isAttachment ? Icons.close : Icons.add,
                         color: Colors.white,
                         size: 27,
                       ),
@@ -355,6 +336,7 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
                   ),
                 ),
                 const SizedBox(width: 8),
+
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
@@ -370,12 +352,11 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
                       maxLines: null,
                       textInputAction: TextInputAction.newline,
                       onTap: () {
-                        if (_showAttachment) {
-                          setState(() {
-                            _showAttachment = false;
-                            _animController.reverse();
-                          });
-                        }
+                        setState(() {
+                          _mode = ChatInputMode.none;
+                          _animController.reverse();
+                        });
+                        if (widget.showEmoji) widget.onEmojiTap();
                       },
                       onSubmitted: (_) => widget.onSend(),
                       decoration: InputDecoration(
@@ -387,12 +368,10 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
                         border: InputBorder.none,
                         suffixIcon: GestureDetector(
                           onTap: () {
-                            if (_showAttachment) {
-                              setState(() {
-                                _showAttachment = false;
-                                _animController.reverse();
-                              });
-                            }
+                            setState(() {
+                              _mode = ChatInputMode.none;
+                              _animController.reverse();
+                            });
                             widget.focusNode.unfocus();
                             widget.onEmojiTap();
                           },
@@ -419,23 +398,28 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
                   ),
                 ),
                 const SizedBox(width: 8),
+
                 ValueListenableBuilder<TextEditingValue>(
                   valueListenable: widget.controller,
                   builder: (context, value, child) {
                     final hasText = value.text.trim().isNotEmpty;
                     return GestureDetector(
-                      onTap: hasText ? widget.onSend : null,
-                      child: SvgPicture.asset(
-                        hasText
-                            ? "assets/svg/message.svg"
-                            : "assets/svg/mic.svg",
-                        width: 28,
-                        height: 28,
-                        colorFilter: const ColorFilter.mode(
-                          whiteColor,
-                          BlendMode.srcIn,
-                        ),
-                      ),
+                      onTap: hasText
+                          ? widget.onSend
+                          : () => _setMode(ChatInputMode.recording),
+                      child: isRecording
+                          ? const Icon(Icons.close, color: whiteColor, size: 28)
+                          : SvgPicture.asset(
+                              hasText
+                                  ? "assets/svg/message.svg"
+                                  : "assets/svg/mic.svg",
+                              width: 28,
+                              height: 28,
+                              colorFilter: const ColorFilter.mode(
+                                whiteColor,
+                                BlendMode.srcIn,
+                              ),
+                            ),
                     );
                   },
                 ),
@@ -443,7 +427,7 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
             ),
           ),
         ),
-        if (_showAttachment) _buildAttachmentPanel(),
+        if (isAttachment) _buildAttachmentPanel(),
         if (widget.showEmoji)
           SizedBox(
             height: _emojiHeight(context),
@@ -452,6 +436,12 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
               scrollController: _emojiScrollController,
               onGiftSelected: _sendGif,
             ),
+          ),
+        if (isRecording)
+          VoiceRecorderField(
+            chatId: widget.chatId,
+            receiverUid: widget.receiverUid,
+            onRecordingDone: () => setState(() => _mode = ChatInputMode.none),
           ),
       ],
     );

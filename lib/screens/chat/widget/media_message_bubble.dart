@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -300,6 +301,9 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
         return _buildGifContent(maxWidth);
       case 'video':
         return _buildVideoContent(context, maxWidth);
+      case 'audio':
+      case 'mp3':
+        return _buildAudioContent(maxWidth);
       default:
         return _buildFileContent(maxWidth);
     }
@@ -574,6 +578,15 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
     );
   }
 
+  Widget _buildAudioContent(double maxWidth) {
+    return _AudioPlayerBubble(
+      mediaUrl: widget.mediaUrl,
+      duration: widget.duration,
+      isMe: widget.isMe,
+      maxWidth: maxWidth,
+    );
+  }
+
   Widget _buildFileContent(double maxWidth) {
     return GestureDetector(
       onTap: _isDownloaded
@@ -707,5 +720,178 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
       default:
         return Icons.file_present;
     }
+  }
+}
+
+class _AudioPlayerBubble extends StatefulWidget {
+  final String mediaUrl;
+  final int? duration;
+  final bool isMe;
+  final double maxWidth;
+
+  const _AudioPlayerBubble({
+    required this.mediaUrl,
+    required this.duration,
+    required this.isMe,
+    required this.maxWidth,
+  });
+
+  @override
+  State<_AudioPlayerBubble> createState() => _AudioPlayerBubbleState();
+}
+
+class _AudioPlayerBubbleState extends State<_AudioPlayerBubble> {
+  late AudioPlayer _player;
+  bool _isPlaying = false;
+  Duration _current = Duration.zero;
+  Duration _total = Duration.zero;
+
+  @override
+  void initState() {
+    super.initState();
+    _player = AudioPlayer();
+
+    _player.durationStream.listen((d) {
+      if (d != null && d.inSeconds > 0 && mounted) {
+        setState(() {
+          _total = d;
+        });
+      }
+    });
+
+    _player.positionStream.listen((p) {
+      if (mounted) setState(() => _current = p);
+    });
+
+    _player.playerStateStream.listen((state) {
+      if (state.processingState == ProcessingState.completed) {
+        if (mounted) {
+          setState(() {
+            _isPlaying = false;
+            _current = Duration.zero;
+          });
+          _player.seek(Duration.zero);
+          _player.pause();
+        }
+      }
+    });
+
+    if (widget.duration != null && widget.duration! > 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _total = Duration(seconds: widget.duration!);
+          });
+        }
+      });
+    }
+  }
+
+  Future<void> _togglePlay() async {
+    if (_isPlaying) {
+      await _player.pause();
+      setState(() => _isPlaying = false);
+    } else {
+      try {
+        if (_player.processingState == ProcessingState.idle) {
+          await _player.setUrl(widget.mediaUrl);
+        }
+        await _player.play();
+        setState(() => _isPlaying = true);
+      } catch (e) {
+        debugPrint('Audio error: $e');
+      }
+    }
+  }
+
+  String _fmt(Duration d) {
+    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = _total.inMilliseconds > 0
+        ? (_current.inMilliseconds / _total.inMilliseconds).clamp(0.0, 1.0)
+        : 0.0;
+
+    final displayDuration = _isPlaying
+        ? _current
+        : (_total.inSeconds > 0
+              ? _total
+              : Duration(seconds: widget.duration ?? 0));
+    return Container(
+      width: widget.maxWidth,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      decoration: BoxDecoration(
+        color: widget.isMe ? senderMessageColor : receiverMessageColor,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: _togglePlay,
+            child: Icon(
+              _isPlaying ? Icons.pause : Icons.play_arrow,
+              color: whiteColor,
+              size: 32,
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+          Expanded(
+            child: SizedBox(
+              height: 28,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final maxWidth = constraints.maxWidth;
+
+                  const barWidth = 5.5;
+
+                  final barCount = (maxWidth / barWidth).floor();
+
+                  final playedBars = (progress * barCount).round();
+
+                  return Row(
+                    children: List.generate(barCount, (i) {
+                      final played = i < playedBars;
+
+                      return Container(
+                        width: 3,
+                        height: (i % 6 + 5).toDouble(),
+                        margin: const EdgeInsets.symmetric(horizontal: 1.2),
+                        decoration: BoxDecoration(
+                          color: played ? uiColor : whiteColor.withOpacity(0.4),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      );
+                    }),
+                  );
+                },
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+          Text(
+            _fmt(displayDuration),
+            style: const TextStyle(
+              color: whiteColor,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
