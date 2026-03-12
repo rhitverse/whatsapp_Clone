@@ -50,7 +50,7 @@ class _ChatLoaderState extends State<ChatLoader>
 
     return AnimatedBuilder(
       animation: _animation,
-      builder: (_, __) => Opacity(
+      builder: (_, _) => Opacity(
         opacity: _animation.value,
         child: Align(
           alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,

@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
@@ -30,7 +29,7 @@ class _VoiceRecorderFieldState extends ConsumerState<VoiceRecorderField>
   final AudioRecorder _audioRecorder = AudioRecorder();
   String? _recordedFilePath;
   Duration _recordDuration = Duration.zero;
-  final List<double> _waveformBars = List.generate(40, (i) => 0.2);
+  final List<double> _waveformBars = List.generate(40, (i) => 0.08);
   int _waveIndex = 0;
   bool _isRecording = false;
   late AnimationController _slideController;
@@ -114,7 +113,7 @@ class _VoiceRecorderFieldState extends ConsumerState<VoiceRecorderField>
       _recordedFilePath = null;
       _recordDuration = Duration.zero;
       _waveIndex = 0;
-      _waveformBars.fillRange(0, _waveformBars.length, 0.2);
+      _waveformBars.fillRange(0, _waveformBars.length, 0.8);
     });
   }
 
@@ -186,14 +185,16 @@ class _VoiceRecorderFieldState extends ConsumerState<VoiceRecorderField>
                         ? const Color(0xFF1E1E1E)
                         : const Color(0xFF2A2A2A),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.grey[800]!, width: 1),
+                    border: Border.all(color: Colors.grey[800]!, width: 1.6),
                   ),
-                  child: const Icon(Icons.mic, color: Colors.white, size: 28),
+                  child: Icon(
+                    _isRecording ? Icons.mic : Icons.mic_none,
+                    color: _isRecording ? uiColor : Colors.white,
+                    size: 28,
+                  ),
                 ),
               ),
-
               const SizedBox(height: 8),
-
               Text(
                 _isRecording
                     ? _formatDuration(_recordDuration)

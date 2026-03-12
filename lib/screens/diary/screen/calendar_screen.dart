@@ -339,7 +339,9 @@ class _CalenderScreenState extends State<CalenderScreen> {
     for (int d = 1; d <= daysInMonth; d++) {
       cells.add(DateTime(_focusedMonth.year, _focusedMonth.month, d));
     }
-    while (cells.length % 7 != 0) cells.add(null);
+    while (cells.length % 7 != 0) {
+      cells.add(null);
+    }
 
     final today = DateTime.now();
 
@@ -432,8 +434,9 @@ class _CalenderScreenState extends State<CalenderScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: List.generate(7, (col) {
                       final cell = cells[row * 7 + col];
-                      if (cell == null)
+                      if (cell == null) {
                         return const SizedBox(width: 38, height: 38);
+                      }
 
                       final isToday =
                           cell.year == today.year &&

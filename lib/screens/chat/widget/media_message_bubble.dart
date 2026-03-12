@@ -83,11 +83,12 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
     final dirPath = await _getDownloadPath();
     final path = '$dirPath/${_safeName(widget.fileName)}';
     if (File(path).existsSync()) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _localFilePath = path;
           _isDownloaded = true;
         });
+      }
     }
   }
 
@@ -99,11 +100,12 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
         maxHeight: 300,
         quality: 75,
       );
-      if (mounted)
+      if (mounted) {
         setState(() {
           _thumbnailData = data;
           _isLoadingThumbnail = false;
         });
+      }
     } catch (_) {
       if (mounted) setState(() => _isLoadingThumbnail = false);
     }
@@ -130,13 +132,14 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
         // Android 9/10 ke liye old permission
         final status = await Permission.storage.request();
         if (!status.isGranted) {
-          if (mounted)
+          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Storage permission required'),
                 backgroundColor: Colors.red,
               ),
             );
+          }
           return;
         }
       }
@@ -195,12 +198,13 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
         throw Exception('Downloaded file is empty or missing');
       }
 
-      if (mounted)
+      if (mounted) {
         setState(() {
           _isDownloading = false;
           _isDownloaded = true;
           _localFilePath = filePath;
         });
+      }
       await OpenFile.open(filePath);
     } catch (e) {
       debugPrint('Download error: $e');
@@ -339,7 +343,7 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
                   width: maxWidth,
                   height: height,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (_, _, _) => Container(
                     width: maxWidth,
                     height: height,
                     color: Colors.grey[850],
@@ -464,7 +468,7 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
                       child: CircularProgressIndicator(color: uiColor),
                     ),
                   ),
-            errorBuilder: (_, __, ___) => Container(
+            errorBuilder: (_, _, _) => Container(
               constraints: BoxConstraints(maxWidth: maxWidth),
               color: Colors.grey[800],
               padding: const EdgeInsets.all(20),
@@ -502,7 +506,7 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
                     child: CircularProgressIndicator(color: uiColor),
                   ),
                 ),
-          errorBuilder: (_, __, ___) => Container(
+          errorBuilder: (_, _, _) => Container(
             width: maxWidth,
             height: MediaQuery.of(context).size.height * 0.42,
             color: Colors.grey[800],
@@ -579,7 +583,45 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
   }
 
   Widget _buildAudioContent(double maxWidth) {
-    return _AudioPlayerBubble(
+    if (widget.isLoading) {
+      return Container(
+        width: maxWidth,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: widget.isMe ? senderMessageColor : receiverMessageColor,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: backgroundColor.withOpacity(0.25),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(uiColor),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Sending...',
+              style: TextStyle(
+                color: whiteColor.withOpacity(0.6),
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return AudioPlayerBubble(
       mediaUrl: widget.mediaUrl,
       duration: widget.duration,
       isMe: widget.isMe,
@@ -723,13 +765,57 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
   }
 }
 
-class _AudioPlayerBubble extends StatefulWidget {
+const List<double> _kBarHeights = [
+  6,
+  10,
+  16,
+  22,
+  28,
+  20,
+  14,
+  9,
+  18,
+  26,
+  12,
+  24,
+  30,
+  16,
+  10,
+  20,
+  28,
+  14,
+  8,
+  22,
+  28,
+  12,
+  18,
+  24,
+  16,
+  10,
+  26,
+  20,
+  14,
+  28,
+  8,
+  22,
+  18,
+  12,
+  24,
+  16,
+  20,
+  10,
+  26,
+  14,
+];
+
+class AudioPlayerBubble extends StatefulWidget {
   final String mediaUrl;
   final int? duration;
   final bool isMe;
   final double maxWidth;
 
-  const _AudioPlayerBubble({
+  const AudioPlayerBubble({
+    super.key,
     required this.mediaUrl,
     required this.duration,
     required this.isMe,
@@ -737,24 +823,32 @@ class _AudioPlayerBubble extends StatefulWidget {
   });
 
   @override
-  State<_AudioPlayerBubble> createState() => _AudioPlayerBubbleState();
+  State<AudioPlayerBubble> createState() => _AudioPlayerBubbleState();
 }
 
-class _AudioPlayerBubbleState extends State<_AudioPlayerBubble> {
-  late AudioPlayer _player;
+class _AudioPlayerBubbleState extends State<AudioPlayerBubble> {
+  late final AudioPlayer _player;
   bool _isPlaying = false;
   Duration _current = Duration.zero;
   Duration _total = Duration.zero;
+  bool _isLoadingDuration = false;
+  bool _durationLoaded = false;
 
   @override
   void initState() {
     super.initState();
     _player = AudioPlayer();
 
+    final rawDuration = widget.duration;
+    if (rawDuration != null && rawDuration > 0) {
+      _total = Duration(seconds: rawDuration);
+    }
+
     _player.durationStream.listen((d) {
-      if (d != null && d.inSeconds > 0 && mounted) {
+      if (d != null && d.inMilliseconds > 0 && mounted) {
         setState(() {
           _total = d;
+          _durationLoaded = true;
         });
       }
     });
@@ -763,44 +857,61 @@ class _AudioPlayerBubbleState extends State<_AudioPlayerBubble> {
       if (mounted) setState(() => _current = p);
     });
 
-    _player.playerStateStream.listen((state) {
-      if (state.processingState == ProcessingState.completed) {
-        if (mounted) {
-          setState(() {
-            _isPlaying = false;
-            _current = Duration.zero;
-          });
-          _player.seek(Duration.zero);
-          _player.pause();
+    _player.playerStateStream.listen((s) {
+      if (!mounted) return;
+      if (s.processingState == ProcessingState.completed) {
+        setState(() {
+          _isPlaying = false;
+          _current = Duration.zero;
+        });
+        _player.seek(Duration.zero);
+        _player.pause();
+      } else {
+        final nowPlaying =
+            s.playing &&
+            s.processingState != ProcessingState.loading &&
+            s.processingState != ProcessingState.buffering;
+        if (_isPlaying != nowPlaying) {
+          setState(() => _isPlaying = nowPlaying);
         }
       }
     });
 
-    if (widget.duration != null && widget.duration! > 0) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          setState(() {
-            _total = Duration(seconds: widget.duration!);
-          });
-        }
-      });
+    if (_total.inSeconds == 0) {
+      _fetchDurationSilently();
     }
   }
 
+  Future<void> _fetchDurationSilently() async {
+    if (_isLoadingDuration) return;
+    _isLoadingDuration = true;
+    try {
+      await _player.setUrl(widget.mediaUrl);
+    } catch (e) {
+      debugPrint('Duration fetch error: $e');
+    } finally {
+      _isLoadingDuration = false;
+    }
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
+  }
+
   Future<void> _togglePlay() async {
-    if (_isPlaying) {
-      await _player.pause();
-      setState(() => _isPlaying = false);
-    } else {
-      try {
+    try {
+      if (_isPlaying) {
+        await _player.pause();
+      } else {
         if (_player.processingState == ProcessingState.idle) {
           await _player.setUrl(widget.mediaUrl);
         }
         await _player.play();
-        setState(() => _isPlaying = true);
-      } catch (e) {
-        debugPrint('Audio error: $e');
       }
+    } catch (e) {
+      debugPrint('Audio toggle error: $e');
     }
   }
 
@@ -811,37 +922,42 @@ class _AudioPlayerBubbleState extends State<_AudioPlayerBubble> {
   }
 
   @override
-  void dispose() {
-    _player.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final progress = _total.inMilliseconds > 0
+    final double progress = _total.inMilliseconds > 0
         ? (_current.inMilliseconds / _total.inMilliseconds).clamp(0.0, 1.0)
         : 0.0;
 
-    final displayDuration = _isPlaying
-        ? _current
-        : (_total.inSeconds > 0
-              ? _total
-              : Duration(seconds: widget.duration ?? 0));
+    final Duration displayDuration = _isPlaying ? _current : _total;
+    final int playedBars = (progress * _kBarHeights.length).round();
+
     return Container(
       width: widget.maxWidth,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: widget.isMe ? senderMessageColor : receiverMessageColor,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: backgroundColor.withOpacity(0.25),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
             onTap: _togglePlay,
-            child: Icon(
-              _isPlaying ? Icons.pause : Icons.play_arrow,
-              color: whiteColor,
-              size: 32,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: Icon(
+                _isPlaying ? Icons.pause : Icons.play_arrow,
+                key: ValueKey(_isPlaying),
+                color: whiteColor,
+                size: 30,
+              ),
             ),
           ),
 
@@ -849,47 +965,44 @@ class _AudioPlayerBubbleState extends State<_AudioPlayerBubble> {
 
           Expanded(
             child: SizedBox(
-              height: 28,
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final maxWidth = constraints.maxWidth;
-
-                  const barWidth = 5.5;
-
-                  final barCount = (maxWidth / barWidth).floor();
-
-                  final playedBars = (progress * barCount).round();
-
-                  return Row(
-                    children: List.generate(barCount, (i) {
-                      final played = i < playedBars;
-
-                      return Container(
-                        width: 3,
-                        height: (i % 6 + 5).toDouble(),
-                        margin: const EdgeInsets.symmetric(horizontal: 1.2),
-                        decoration: BoxDecoration(
-                          color: played ? uiColor : whiteColor.withOpacity(0.4),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      );
-                    }),
+              height: 34,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(_kBarHeights.length, (i) {
+                  final bool played = i < playedBars;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 80),
+                    width: 3,
+                    height: _kBarHeights[i],
+                    decoration: BoxDecoration(
+                      color: played ? uiColor : whiteColor,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   );
-                },
+                }),
               ),
             ),
           ),
 
           const SizedBox(width: 8),
-
-          Text(
-            _fmt(displayDuration),
-            style: const TextStyle(
-              color: whiteColor,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          _durationLoaded
+              ? Text(
+                  _fmt(displayDuration),
+                  style: TextStyle(
+                    color: whiteColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                )
+              : SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(whiteColor),
+                  ),
+                ),
         ],
       ),
     );

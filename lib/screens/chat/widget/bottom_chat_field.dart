@@ -138,8 +138,9 @@ class _BottomChatFieldState extends ConsumerState<BottomChatField>
 
   FileType _getFileType(String fileName) {
     final ext = fileName.split('.').last.toLowerCase();
-    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(ext))
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(ext)) {
       return FileType.image;
+    }
     if (['mp4', 'avi', 'mov', 'flv'].contains(ext)) return FileType.video;
     return FileType.custom;
   }
