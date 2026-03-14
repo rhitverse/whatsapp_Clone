@@ -36,7 +36,7 @@ class _PageFlipCalendarState extends State<PageFlipCalendar>
 
   Size _size = Size.zero;
 
-  double get _minSize => _size.width / 10;
+  double get _minSize => _size.width / 5;
 
   @override
   void initState() {
@@ -108,13 +108,24 @@ class _PageFlipCalendarState extends State<PageFlipCalendar>
     final endPoint = Offset(_touchPoint.dx + dx, _touchPoint.dy + dy);
 
     _animTouchPoint = Tween<Offset>(begin: _touchPoint, end: endPoint).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
+      CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
     );
 
     _animController.forward(from: 0);
   }
 
   void _onPanStart(DragStartDetails d) {
+    final corners = [
+      Offset(0, 0),
+      Offset(_size.width, 0),
+      Offset(0, _size.height),
+      Offset(_size.width, _size.height),
+    ];
+    final nearCorner = corners.any(
+      (c) => (d.localPosition - c).distance < _minSize * 1.5,
+    );
+    if (!nearCorner) return;
+
     _animController.stop();
     _isCalendarUpdated = false;
     _isDragging = true;
@@ -133,7 +144,10 @@ class _PageFlipCalendarState extends State<PageFlipCalendar>
       _isCalendarUpdated = true;
     }
     setState(() {
-      _touchPoint = d.localPosition;
+      double x = d.localPosition.dx.clamp(10, _size.width - 10);
+      double y = d.localPosition.dy.clamp(10, _size.height - 10);
+
+      _touchPoint = Offset(x, y);
     });
   }
 
@@ -152,7 +166,7 @@ class _PageFlipCalendarState extends State<PageFlipCalendar>
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        _size = Size(constraints.maxWidth, constraints.maxHeight * 0.7);
+        _size = Size(constraints.maxWidth, constraints.maxHeight * 0.4);
 
         return GestureDetector(
           onPanStart: _onPanStart,
@@ -371,22 +385,23 @@ class _PageFlipPainter extends CustomPainter {
     _drawCurrentBackArea(canvas, canvasSize, path0, path1);
 
     _drawCurrentPageShadow(canvas, path0);
+    _drawPageEdge(canvas);
   }
 
   void _drawDatePage(Canvas canvas, DateTime date, Size canvasSize) {
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
-
+    // size ki jagah canvasSize use karo
+    final rect = Rect.fromLTWH(0, 0, canvasSize.width, canvasSize.height);
     canvas.drawRect(rect, Paint()..color = Colors.white);
 
-    final centerX = size.width / 2;
-    final centerY = size.height / 2;
+    final centerX = canvasSize.width / 2;
+    final centerY = canvasSize.height / 2;
 
     final dayStr = DateFormat('d').format(date);
     final datePaint = TextPainter(
       text: TextSpan(
         text: dayStr,
         style: TextStyle(
-          fontSize: size.width * 0.28,
+          fontSize: canvasSize.width * 0.28,
           fontWeight: FontWeight.bold,
           color: themeColor,
         ),
@@ -403,7 +418,7 @@ class _PageFlipPainter extends CustomPainter {
       text: TextSpan(
         text: monthStr,
         style: TextStyle(
-          fontSize: size.width * 0.055,
+          fontSize: canvasSize.width * 0.055,
           color: themeColor,
           letterSpacing: 2,
         ),
@@ -423,7 +438,7 @@ class _PageFlipPainter extends CustomPainter {
       text: TextSpan(
         text: dayNameStr,
         style: TextStyle(
-          fontSize: size.width * 0.04,
+          fontSize: canvasSize.width * 0.04,
           color: themeColor.withOpacity(0.7),
           letterSpacing: 3,
         ),
@@ -439,11 +454,31 @@ class _PageFlipPainter extends CustomPainter {
     );
   }
 
+  void _drawPageEdge(Canvas canvas) {
+    final edgePaint = Paint()
+      ..shader = LinearGradient(
+        colors: [Colors.white, Colors.grey.shade300, Colors.grey.shade500],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    final edgePath = Path()
+      ..moveTo(_bezierStart1.dx, _bezierStart1.dy)
+      ..lineTo(_bezierVertex1.dx, _bezierVertex1.dy)
+      ..lineTo(_bezierVertex2.dx, _bezierVertex2.dy)
+      ..lineTo(_bezierStart2.dx, _bezierStart2.dy);
+
+    canvas.drawPath(edgePath, edgePaint);
+  }
+
   void _drawBackShadow(Canvas canvas) {
     final shadowPaint = Paint()
       ..shader =
           LinearGradient(
-            colors: [Colors.black54, Colors.transparent],
+            colors: [
+              Colors.black.withOpacity(0.4),
+              Colors.black.withOpacity(0.05),
+            ],
             begin: isRTandLB ? Alignment.centerLeft : Alignment.centerRight,
             end: isRTandLB ? Alignment.centerRight : Alignment.centerLeft,
           ).createShader(
@@ -587,8 +622,8 @@ class _PageFlipPainter extends CustomPainter {
       ..shader =
           LinearGradient(
             colors: [
-              Colors.black.withOpacity(0.2),
-              Colors.black.withOpacity(0.7),
+              Colors.black.withOpacity(0.05),
+              Colors.black.withOpacity(0.35),
             ],
             begin: isRTandLB ? Alignment.centerRight : Alignment.centerLeft,
             end: isRTandLB ? Alignment.centerLeft : Alignment.centerRight,
