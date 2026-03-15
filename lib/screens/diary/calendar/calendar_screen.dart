@@ -89,6 +89,7 @@ class _CalendarScreenState extends State<CalendarScreen>
     const skyFraction = 0.28;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [

@@ -10,6 +10,8 @@ class DiaryModel {
   final DateTime createdAt;
   final int weatherIndex;
   final int moodIndex;
+  final List<String> mediaTypes;
+  final List<String> mediaUrls;
 
   DiaryModel({
     required this.id,
@@ -21,6 +23,8 @@ class DiaryModel {
     required this.createdAt,
     this.weatherIndex = 0,
     this.moodIndex = 0,
+    this.mediaTypes = const [],
+    this.mediaUrls = const [],
   });
 
   factory DiaryModel.fromMap(String id, Map<String, dynamic> map) {
@@ -34,6 +38,8 @@ class DiaryModel {
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       weatherIndex: map['weatherIndex'] ?? 0,
       moodIndex: map['moodIndex'] ?? 0,
+      mediaTypes: List<String>.from(map['mediaTypes'] ?? []),
+      mediaUrls: List<String>.from(map['mediaUrls'] ?? []),
     );
   }
 

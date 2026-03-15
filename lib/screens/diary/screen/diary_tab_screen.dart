@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/screens/diary/controller/diary_controller.dart';
+import 'package:whatsapp_clone/screens/diary/widget/diary_attachment_sheet.dart';
 
 class DiaryTabScreen extends StatefulWidget {
   const DiaryTabScreen({super.key});
@@ -17,6 +19,9 @@ class _DiaryTabScreenState extends State<DiaryTabScreen> {
 
   int _weatherIndex = 0;
   int _moodIndex = 0;
+  List<File> _attachedFiles = [];
+  List<String> _attachedTypes = [];
+
   static const _weatherIcons = [
     'assets/svg/sunny.svg',
     'assets/svg/cloud.svg',
@@ -67,96 +72,162 @@ class _DiaryTabScreenState extends State<DiaryTabScreen> {
 
   String _padded(int n) => n.toString().padLeft(2, '0');
 
-  void _pickWeather() {
-    showModalBottomSheet(
+  void _pickWeather(BuildContext btnContext) {
+    final box = btnContext.findRenderObject() as RenderBox;
+    final pos = box.localToGlobal(Offset.zero);
+    showDialog(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: List.generate(_weatherIcons.length, (i) {
-            return GestureDetector(
-              onTap: () {
-                setState(() => _weatherIndex = i);
-                Navigator.pop(context);
-              },
-              child: SvgPicture.asset(
-                _weatherIcons[i],
-                width: 36,
-                height: 36,
-                colorFilter: ColorFilter.mode(
-                  _weatherIndex == i
-                      ? calendarLightTheme1
-                      : Colors.grey.shade400,
-                  BlendMode.srcIn,
+      barrierColor: Colors.transparent,
+      builder: (_) => Stack(
+        children: [
+          Positioned(
+            top: pos.dy + box.size.height * -1.7,
+            right:
+                MediaQuery.of(context).size.width -
+                pos.dx -
+                box.size.width * 1.3,
+            child: Material(
+              color: Colors.white,
+              elevation: 6,
+              borderRadius: BorderRadius.circular(10),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 3),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(_weatherIcons.length, (i) {
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() => _weatherIndex = i);
+                        Navigator.pop(context);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 3,
+                          horizontal: 10,
+                        ),
+                        child: SvgPicture.asset(
+                          _weatherIcons[i],
+                          width: 32,
+                          height: 32,
+                          colorFilter: ColorFilter.mode(
+                            _weatherIndex == i
+                                ? calendarLightTheme1
+                                : Colors.grey.shade400,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
                 ),
               ),
-            );
-          }),
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  void _pickMood() {
-    showModalBottomSheet(
+  void _pickMood(BuildContext btnContext) {
+    final box = btnContext.findRenderObject() as RenderBox;
+    final pos = box.localToGlobal(Offset.zero);
+    showDialog(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: List.generate(_moodIcons.length, (i) {
-            return GestureDetector(
-              onTap: () {
-                setState(() => _moodIndex = i);
-                Navigator.pop(context);
-              },
-              child: SvgPicture.asset(
-                _moodIcons[i],
-                width: 36,
-                height: 36,
-                colorFilter: ColorFilter.mode(
-                  _moodIndex == i ? calendarLightTheme1 : Colors.grey.shade400,
-                  BlendMode.srcIn,
+      barrierColor: Colors.transparent,
+      builder: (_) => Stack(
+        children: [
+          Positioned(
+            top: pos.dy + box.size.height * -1.7,
+            right:
+                MediaQuery.of(context).size.width -
+                pos.dx -
+                box.size.width * 1.2,
+            child: Material(
+              color: Colors.white,
+              elevation: 6,
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(_moodIcons.length, (i) {
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() => _moodIndex = i);
+                        Navigator.pop(context);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 3,
+                          horizontal: 10,
+                        ),
+                        child: SvgPicture.asset(
+                          _moodIcons[i],
+                          width: 32,
+                          height: 32,
+                          colorFilter: ColorFilter.mode(
+                            _moodIndex == i
+                                ? calendarLightTheme1
+                                : Colors.grey.shade400,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
                 ),
               ),
-            );
-          }),
-        ),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  void _openAttachment() async {
+    final files = await showDiaryAttachmentSheet(context);
+    if (files.isNotEmpty) {
+      setState(() {
+        for (final f in files) {
+          _attachedFiles.add(f);
+          final ext = f.path.split('.').last.toLowerCase();
+          _attachedTypes.add(
+            ['mp4', 'mov', 'avi', 'mkv'].contains(ext) ? 'video' : 'image',
+          );
+        }
+      });
+    }
   }
 
   Future<void> _save(DiaryController controller) async {
-    final title = _titleController.text.trim();
-    final body = _bodyController.text.trim();
     final combined = [
-      if (title.isNotEmpty) title,
-      if (body.isNotEmpty) body,
+      if (_titleController.text.trim().isNotEmpty) _titleController.text.trim(),
+      if (_bodyController.text.trim().isNotEmpty) _bodyController.text.trim(),
     ].join('\n');
-    if (combined.isEmpty) return;
+
+    if (combined.isEmpty && _attachedFiles.isEmpty) return;
+
     await controller.addEntry(
       combined,
       weatherIndex: _weatherIndex,
       moodIndex: _moodIndex,
+      mediaFiles: _attachedFiles,
+      mediaTypes: _attachedTypes,
     );
+
     _titleController.clear();
     _bodyController.clear();
-    setState(() {});
+    setState(() {
+      _attachedFiles = [];
+      _attachedTypes = [];
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final controller = context.read<DiaryController>();
+
     return Column(
       children: [
         Container(
@@ -196,7 +267,7 @@ class _DiaryTabScreenState extends State<DiaryTabScreen> {
 
         Expanded(
           child: Container(
-            color: Colors.white,
+            color: whiteColor,
             child: Column(
               children: [
                 Padding(
@@ -220,14 +291,13 @@ class _DiaryTabScreenState extends State<DiaryTabScreen> {
                               color: Colors.grey.shade400,
                               fontSize: 15,
                             ),
-
                             enabledBorder: UnderlineInputBorder(
                               borderSide: BorderSide(
                                 color: calendarLightTheme1.withOpacity(0.5),
                                 width: 1.5,
                               ),
                             ),
-                            focusedBorder: UnderlineInputBorder(
+                            focusedBorder: const UnderlineInputBorder(
                               borderSide: BorderSide(
                                 color: calendarLightTheme1,
                                 width: 1.5,
@@ -236,30 +306,32 @@ class _DiaryTabScreenState extends State<DiaryTabScreen> {
                           ),
                         ),
                       ),
-                      GestureDetector(
-                        onTap: _pickWeather,
-                        child: SvgPicture.asset(
-                          _weatherIcons[_weatherIndex],
-                          color: calendarLightTheme1,
-                          width: 32,
-                          height: 32,
-                          colorFilter: const ColorFilter.mode(
-                            calendarLightTheme1,
-                            BlendMode.srcIn,
+                      Builder(
+                        builder: (ctx) => GestureDetector(
+                          onTap: () => _pickWeather(ctx),
+                          child: SvgPicture.asset(
+                            _weatherIcons[_weatherIndex],
+                            width: 32,
+                            height: 32,
+                            colorFilter: const ColorFilter.mode(
+                              calendarLightTheme1,
+                              BlendMode.srcIn,
+                            ),
                           ),
                         ),
                       ),
-
                       const SizedBox(width: 30),
-                      GestureDetector(
-                        onTap: _pickMood,
-                        child: SvgPicture.asset(
-                          _moodIcons[_moodIndex],
-                          width: 32,
-                          height: 32,
-                          colorFilter: const ColorFilter.mode(
-                            calendarLightTheme1,
-                            BlendMode.srcIn,
+                      Builder(
+                        builder: (ctx) => GestureDetector(
+                          onTap: () => _pickMood(ctx),
+                          child: SvgPicture.asset(
+                            _moodIcons[_moodIndex],
+                            width: 32,
+                            height: 32,
+                            colorFilter: const ColorFilter.mode(
+                              calendarLightTheme1,
+                              BlendMode.srcIn,
+                            ),
                           ),
                         ),
                       ),
@@ -268,29 +340,111 @@ class _DiaryTabScreenState extends State<DiaryTabScreen> {
                 ),
 
                 Expanded(
-                  child: Padding(
+                  child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 8,
                     ),
-                    child: TextField(
-                      controller: _bodyController,
-                      maxLines: null,
-                      expands: true,
-                      textAlignVertical: TextAlignVertical.top,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        height: 1.6,
-                        color: Colors.black87,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'Write something...',
-                        hintStyle: TextStyle(
-                          color: Colors.grey.shade300,
-                          fontSize: 14,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _bodyController,
+                                maxLines: null,
+                                minLines: 2,
+                                textAlignVertical: TextAlignVertical.top,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  height: 1.6,
+                                  color: Colors.black87,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: 'Write something...',
+                                  hintStyle: TextStyle(
+                                    color: Colors.grey.shade300,
+                                    fontSize: 14,
+                                  ),
+                                  border: InputBorder.none,
+                                ),
+                              ),
+                            ),
+
+                            GestureDetector(
+                              onTap: _openAttachment,
+                              child: const Padding(
+                                padding: EdgeInsets.only(top: 6),
+                                child: Icon(
+                                  Icons.attach_file,
+                                  color: calendarLightTheme1,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        border: InputBorder.none,
-                      ),
+                        if (_attachedFiles.isNotEmpty)
+                          ...List.generate(_attachedFiles.length, (i) {
+                            final isVideo = _attachedTypes[i] == 'video';
+                            return Stack(
+                              children: [
+                                Container(
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    color: Colors.grey.shade200,
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: isVideo
+                                        ? Container(
+                                            height: 180,
+                                            color: Colors.black87,
+                                            child: const Center(
+                                              child: Icon(
+                                                Icons.play_circle_outline,
+                                                color: Colors.white,
+                                                size: 56,
+                                              ),
+                                            ),
+                                          )
+                                        : Image.file(
+                                            _attachedFiles[i],
+                                            fit: BoxFit.contain,
+                                            width: double.infinity,
+                                          ),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 6,
+                                  right: 6,
+                                  child: GestureDetector(
+                                    onTap: () => setState(() {
+                                      _attachedFiles.removeAt(i);
+                                      _attachedTypes.removeAt(i);
+                                    }),
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                        color: Colors.black54,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      padding: const EdgeInsets.all(5),
+                                      child: const Icon(
+                                        Icons.delete,
+                                        color: Colors.white,
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }),
+                      ],
                     ),
                   ),
                 ),
@@ -306,14 +460,15 @@ class _DiaryTabScreenState extends State<DiaryTabScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _ToolbarBtn(icon: Icons.camera_alt_outlined, onTap: () {}),
-              _ToolbarBtn(icon: Icons.image_outlined, onTap: () {}),
               _ToolbarBtn(
                 icon: Icons.close,
                 onTap: () {
                   _titleController.clear();
                   _bodyController.clear();
-                  setState(() {});
+                  setState(() {
+                    _attachedFiles = [];
+                    _attachedTypes = [];
+                  });
                 },
               ),
               _ToolbarBtn(

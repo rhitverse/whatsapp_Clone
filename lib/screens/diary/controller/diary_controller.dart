@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/models/diary_model.dart';
 import 'package:whatsapp_clone/screens/diary/repository/diary_repository.dart';
@@ -33,13 +35,17 @@ class DiaryController extends ChangeNotifier {
     String text, {
     int weatherIndex = 0,
     int moodIndex = 0,
+    List<File> mediaFiles = const [],
+    List<String> mediaTypes = const [],
   }) async {
-    if (text.trim().isEmpty) return;
+    if (text.trim().isEmpty && mediaFiles.isEmpty) return;
     try {
       await _repo.addEntry(
         text.trim(),
         weatherIndex: weatherIndex,
         moodIndex: moodIndex,
+        mediaFiles: mediaFiles,
+        mediaTypes: mediaTypes,
       );
     } catch (e) {
       errorMessage = "Entry doesn't save: $e";
