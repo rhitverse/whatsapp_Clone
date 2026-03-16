@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/models/diary_model.dart';
 import 'package:whatsapp_clone/screens/diary/controller/diary_controller.dart';
+import 'package:whatsapp_clone/screens/diary/widget/diary_details_screen.dart';
 
 class EntryScreen extends StatefulWidget {
   const EntryScreen({super.key});
@@ -45,11 +46,29 @@ class _EntryScreenState extends State<EntryScreen> {
                       entry: e,
                       onDelete: () => controller.deleteEntry(e.id),
                       onEdit: () => _showEditDialog(context, controller, e),
+                      // ✅ single tap → detail screen
+                      onTap: () => _openDetail(context, e),
                     );
                   },
                 ),
         ),
       ],
+    );
+  }
+
+  // ── Navigate to detail ──────────────────────────────────────────────────
+  void _openDetail(BuildContext context, DiaryModel e) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.black54,
+        barrierDismissible: true,
+        transitionDuration: const Duration(milliseconds: 300),
+        pageBuilder: (_, __, ___) => DiaryDetailScreen(entry: e),
+        transitionsBuilder: (_, anim, __, child) {
+          return FadeTransition(opacity: anim, child: child);
+        },
+      ),
     );
   }
 
@@ -93,11 +112,14 @@ class DiaryCard extends StatelessWidget {
   final DiaryModel entry;
   final VoidCallback onDelete;
   final VoidCallback onEdit;
+  final VoidCallback onTap; // ✅ NEW
+
   const DiaryCard({
     super.key,
     required this.entry,
     required this.onDelete,
     required this.onEdit,
+    required this.onTap, // ✅ NEW
   });
 
   static const _weatherIcons = [
@@ -136,7 +158,7 @@ class DiaryCard extends StatelessWidget {
             title: const Text("Delete"),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context, "Cancel"),
+                onPressed: () => Navigator.pop(context, false),
                 child: const Text("Cancel"),
               ),
               TextButton(
@@ -150,9 +172,10 @@ class DiaryCard extends StatelessWidget {
           ),
         );
       },
-      onDismissed: (_) => onDelete,
+      onDismissed: (_) => onDelete(), // ✅ fixed: was missing ()
       child: GestureDetector(
-        onLongPress: onEdit,
+        onTap: onTap, // ✅ single tap → detail
+        onLongPress: onEdit, // long press → edit
         child: Container(
           margin: const EdgeInsets.only(bottom: 7),
           padding: const EdgeInsets.all(8),
