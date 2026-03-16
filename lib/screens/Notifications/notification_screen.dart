@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
+import 'package:whatsapp_clone/common/utils/time_utils.dart';
 import 'package:whatsapp_clone/screens/Notifications/controller/notification_controller.dart';
 
 class NotificaionScreen extends ConsumerWidget {
@@ -109,7 +109,7 @@ class NotificaionScreen extends ConsumerWidget {
                     try {
                       time = (data['timestamp'] as Timestamp).toDate();
                     } catch (_) {}
-                    final timeStr = time != null ? _formatTime(time) : '';
+                    final timeStr = time != null ? getRelativeTime(time) : '';
 
                     if (type == 'friend_request') {
                       return _FriendRequestTile(
@@ -150,16 +150,6 @@ class NotificaionScreen extends ConsumerWidget {
               },
             ),
     );
-  }
-
-  String _formatTime(DateTime time) {
-    final now = DateTime.now();
-    final diff = now.difference(time);
-    if (diff.inSeconds < 60) return 'now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m';
-    if (diff.inHours < 24) return '${diff.inHours}h';
-    if (diff.inDays < 7) return '${diff.inDays}d';
-    return DateFormat('d MMM').format(time);
   }
 }
 

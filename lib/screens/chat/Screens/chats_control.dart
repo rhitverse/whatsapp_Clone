@@ -5,6 +5,7 @@ import 'package:whatsapp_clone/common/encryption/encryption_service.dart';
 import 'package:whatsapp_clone/models/chat_contact.dart';
 import 'package:whatsapp_clone/screens/chat/Screens/contacts_list_screen.dart';
 import 'package:whatsapp_clone/screens/chat/Screens/empty_contacts_screen.dart';
+import 'package:whatsapp_clone/screens/chat/widget/chat_list_loader.dart';
 
 class ChatControl extends ConsumerWidget {
   final String userId;
@@ -29,7 +30,7 @@ class ChatControl extends ConsumerWidget {
           );
         }
         if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
+          return const ChatListLoader();
         }
 
         final docs = snapshot.data!.docs;
@@ -125,7 +126,7 @@ class ChatControl extends ConsumerWidget {
               );
             }
             if (!chatSnapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
+              return const ChatListLoader();
             }
 
             final chats = chatSnapshot.data!;
