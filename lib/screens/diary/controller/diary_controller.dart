@@ -47,6 +47,8 @@ class DiaryController extends ChangeNotifier {
         mediaFiles: mediaFiles,
         mediaTypes: mediaTypes,
       );
+      errorMessage = null;
+      notifyListeners();
     } catch (e) {
       errorMessage = "Entry doesn't save: $e";
       notifyListeners();
@@ -57,6 +59,12 @@ class DiaryController extends ChangeNotifier {
     if (newText.trim().isEmpty) return;
     try {
       await _repo.updateEntry(entryId, newText.trim());
+      final index = _entries.indexWhere((e) => e.id == entryId);
+      if (index != -1) {
+        _entries[index] = _entries[index].copyWith(text: newText.trim());
+      }
+      errorMessage = null;
+      notifyListeners();
     } catch (e) {
       errorMessage = "Not Updated: $e";
       notifyListeners();
@@ -65,9 +73,39 @@ class DiaryController extends ChangeNotifier {
 
   Future<void> deleteEntry(String entryId) async {
     try {
+      _entries.removeWhere((e) => e.id == entryId);
+      notifyListeners();
       await _repo.deleteEntry(entryId);
     } catch (e) {
       errorMessage = "Delete failed :$e";
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateEntryWithMedia({
+    required String entryId,
+    required String newText,
+    required List<String> existingUrls,
+    required List<String> existingTypes,
+    required List<String> urlsToDelete,
+    required List<File> newFiles,
+    required List<String> newTypes,
+  }) async {
+    try {
+      await _repo.updateEntryWithMedia(
+        entryId: entryId,
+        newText: newText,
+        existingUrls: existingUrls,
+        urlsToDelete: urlsToDelete,
+        newFiles: newFiles,
+        newTypes: newTypes,
+        existingTypes: existingTypes,
+      );
+
+      errorMessage = null;
+      notifyListeners();
+    } catch (e) {
+      errorMessage = "Update failed: $e";
       notifyListeners();
     }
   }

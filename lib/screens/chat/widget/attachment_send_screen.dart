@@ -173,7 +173,6 @@ class _AttachmentSendScreenState extends ConsumerState<AttachmentSendScreen> {
             );
           }
 
-          // ✅ Use actual Firestore message ID for tracking
           if (messageId != null) {
             uploadingMessagesNotifier.removeUploading(messageId);
           }

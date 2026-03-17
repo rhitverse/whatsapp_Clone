@@ -124,12 +124,9 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
   Future<void> _downloadFile() async {
     if (_isDownloading) return;
 
-    // ✅ Android 13+ mein Permission.storage deprecated hai
-    // MANAGE_EXTERNAL_STORAGE already manifest mein hai — direct download karo
     if (Platform.isAndroid) {
       final sdkInt = await _getAndroidSdkInt();
       if (sdkInt < 30) {
-        // Android 9/10 ke liye old permission
         final status = await Permission.storage.request();
         if (!status.isGranted) {
           if (mounted) {
@@ -143,7 +140,6 @@ class _MediaMessageBubbleState extends State<MediaMessageBubble> {
           return;
         }
       }
-      // Android 11+ (API 30+): MANAGE_EXTERNAL_STORAGE manifest mein hai, direct access milta hai
     }
 
     setState(() {

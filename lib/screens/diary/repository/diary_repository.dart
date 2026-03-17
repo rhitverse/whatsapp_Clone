@@ -1,7 +1,7 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/rendering.dart';
 import 'package:whatsapp_clone/common/utils/common_cloudinary_repository.dart';
 import 'package:whatsapp_clone/models/diary_model.dart';
 
@@ -41,7 +41,8 @@ class DiaryRepository {
   ];
 
   Future<void> addEntry(
-    String text, {
+    String title,
+    String body, {
     int weatherIndex = 0,
     int moodIndex = 0,
     List<File> mediaFiles = const [],
@@ -55,11 +56,13 @@ class DiaryRepository {
       final url = await _cloudinary.storeFileToCloudinary(mediaFiles[i]);
       if (url != null) {
         uploadedUrls.add(url);
-        uploadedTypes.add(i < mediaTypes.length ? mediaTypes[i] : 'images');
+        uploadedTypes.add(i < mediaTypes.length ? mediaTypes[i] : 'image');
       }
     }
+
     await _diaryRef.add({
-      'text': text,
+      'title': title,
+      'text': body,
       'day': now.day.toString(),
       'month': _monthNames[now.month],
       'weekday': _weekdays[now.weekday],
@@ -83,6 +86,49 @@ class DiaryRepository {
       }
     }
     await _diaryRef.doc(entryId).delete();
+  }
+
+  Future<void> updateEntryWithMedia({
+    required String entryId,
+    required String newText,
+    required List<String> existingUrls,
+    required List<String> urlsToDelete,
+    required List<File> newFiles,
+    required List<String> newTypes,
+    required List<String> existingTypes,
+  }) async {
+    final List<String> finalUrls = [];
+    final List<String> finalTypes = [];
+
+    for (final url in urlsToDelete) {
+      try {
+        await _cloudinary.deleteFileFromCloudinary(url);
+      } catch (e) {
+        debugPrint("Delete failed for $url");
+      }
+    }
+
+    for (int i = 0; i < existingUrls.length; i++) {
+      final url = existingUrls[i];
+      if (!urlsToDelete.contains(url)) {
+        finalUrls.add(url);
+        finalTypes.add(i < existingTypes.length ? existingTypes[i] : 'image');
+      }
+    }
+    for (int i = 0; i < newFiles.length; i++) {
+      final uploaderUrl = await _cloudinary.storeFileToCloudinary(newFiles[i]);
+
+      if (uploaderUrl != null) {
+        finalUrls.add(uploaderUrl);
+        finalTypes.add(i < newTypes.length ? newTypes[i] : 'image');
+      }
+    }
+
+    await _diaryRef.doc(entryId).update({
+      'text': newText,
+      'mediaUrls': finalUrls,
+      'mediaTypes': finalTypes,
+    });
   }
 
   Stream<List<DiaryModel>> getEntriesStream() {

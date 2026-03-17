@@ -5,6 +5,7 @@ import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/models/diary_model.dart';
 import 'package:whatsapp_clone/screens/diary/controller/diary_controller.dart';
 import 'package:whatsapp_clone/screens/diary/widget/diary_details_screen.dart';
+import 'package:whatsapp_clone/screens/diary/widget/diary_edit_screen.dart';
 
 class EntryScreen extends StatefulWidget {
   const EntryScreen({super.key});
@@ -18,6 +19,30 @@ class _EntryScreenState extends State<EntryScreen> {
   void initState() {
     super.initState();
     Future.microtask(() => context.read<DiaryController>().listenToEntries());
+  }
+
+  void _openEditScreen(
+    BuildContext context,
+    DiaryController controller,
+    DiaryModel e,
+  ) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.black54,
+        transitionDuration: const Duration(milliseconds: 300),
+        pageBuilder: (_, __, ___) => DiaryEditScreen(
+          entry: e,
+          controller: controller,
+          onEdit: () {},
+          onDelete: () => controller.deleteEntry(e.id),
+          onAddPhoto: () {},
+        ),
+        transitionsBuilder: (_, anim, __, child) {
+          return FadeTransition(opacity: anim, child: child);
+        },
+      ),
+    );
   }
 
   @override
@@ -45,9 +70,8 @@ class _EntryScreenState extends State<EntryScreen> {
                     return DiaryCard(
                       entry: e,
                       onDelete: () => controller.deleteEntry(e.id),
-                      onEdit: () => _showEditDialog(context, controller, e),
-                      // ✅ single tap → detail screen
-                      onTap: () => _openDetail(context, e),
+                      onEdit: () => _openEditScreen(context, controller, e),
+                      onTap: () => _openDetail(context, controller, e),
                     );
                   },
                 ),
@@ -56,53 +80,26 @@ class _EntryScreenState extends State<EntryScreen> {
     );
   }
 
-  // ── Navigate to detail ──────────────────────────────────────────────────
-  void _openDetail(BuildContext context, DiaryModel e) {
+  void _openDetail(
+    BuildContext context,
+    DiaryController controller,
+    DiaryModel e,
+  ) {
     Navigator.of(context).push(
       PageRouteBuilder(
         opaque: false,
         barrierColor: Colors.black54,
         barrierDismissible: true,
-        transitionDuration: const Duration(milliseconds: 300),
-        pageBuilder: (_, __, ___) => DiaryDetailScreen(entry: e),
+        transitionDuration: const Duration(milliseconds: 280),
+        pageBuilder: (_, __, ___) => DiaryDetailScreen(
+          entry: e,
+          onEdit: () => _openEditScreen(context, controller, e),
+          onDelete: () => controller.deleteEntry(e.id),
+          onAddPhoto: () {},
+        ),
         transitionsBuilder: (_, anim, __, child) {
           return FadeTransition(opacity: anim, child: child);
         },
-      ),
-    );
-  }
-
-  void _showEditDialog(
-    BuildContext context,
-    DiaryController ctrl,
-    DiaryModel e,
-  ) {
-    final textControlller = TextEditingController(text: e.text);
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Edit Entry", style: TextStyle(color: Colors.blue)),
-        content: TextField(
-          controller: textControlller,
-          maxLines: 4,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-            onPressed: () async {
-              await ctrl.updateEntry(e.id, textControlller.text);
-              Navigator.pop(context);
-            },
-            child: const Text("Update", style: TextStyle(color: whiteColor)),
-          ),
-        ],
       ),
     );
   }
@@ -112,14 +109,14 @@ class DiaryCard extends StatelessWidget {
   final DiaryModel entry;
   final VoidCallback onDelete;
   final VoidCallback onEdit;
-  final VoidCallback onTap; // ✅ NEW
+  final VoidCallback onTap;
 
   const DiaryCard({
     super.key,
     required this.entry,
     required this.onDelete,
     required this.onEdit,
-    required this.onTap, // ✅ NEW
+    required this.onTap,
   });
 
   static const _weatherIcons = [
@@ -138,144 +135,108 @@ class DiaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Dismissible(
-      key: Key(entry.id),
-      direction: DismissDirection.endToStart,
-      background: Container(
-        alignment: Alignment.centerRight,
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(12),
+    return GestureDetector(
+      onTap: onTap,
+      onLongPress: onEdit,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 7),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.red.shade400,
-          borderRadius: BorderRadius.circular(10),
+          color: whiteColor,
+          borderRadius: BorderRadius.circular(7),
         ),
-        child: const Icon(Icons.delete, color: whiteColor),
-      ),
-      confirmDismiss: (_) async {
-        return await showDialog<bool>(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: const Text("Delete"),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text("Cancel"),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text(
-                  "Delete",
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-      onDismissed: (_) => onDelete(), // ✅ fixed: was missing ()
-      child: GestureDetector(
-        onTap: onTap, // ✅ single tap → detail
-        onLongPress: onEdit, // long press → edit
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 7),
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: whiteColor,
-            borderRadius: BorderRadius.circular(7),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: 62,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      entry.month,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: calendarLightTheme1.withOpacity(0.9),
-                      ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 62,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    entry.month,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: calendarLightTheme1.withOpacity(0.9),
                     ),
-                    Text(
-                      entry.day,
-                      style: const TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.w500,
-                        color: calendarLightTheme1,
-                        height: 1.1,
-                      ),
+                  ),
+                  Text(
+                    entry.day,
+                    style: const TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.w500,
+                      color: calendarLightTheme1,
+                      height: 1.1,
                     ),
-                    Text(
-                      entry.weekday,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: calendarLightTheme1.withOpacity(0.9),
-                      ),
+                  ),
+                  Text(
+                    entry.weekday,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: calendarLightTheme1.withOpacity(0.9),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          entry.time,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: calendarLightTheme1,
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        entry.time,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: calendarLightTheme1,
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          SvgPicture.asset(
+                            _weatherIcons[entry.weatherIndex.clamp(
+                              0,
+                              _weatherIcons.length - 1,
+                            )],
+                            width: 16,
+                            height: 16,
+                            colorFilter: ColorFilter.mode(
+                              calendarLightTheme1.withOpacity(0.7),
+                              BlendMode.srcIn,
+                            ),
                           ),
-                        ),
-                        Row(
-                          children: [
-                            SvgPicture.asset(
-                              _weatherIcons[entry.weatherIndex.clamp(
-                                0,
-                                _weatherIcons.length - 1,
-                              )],
-                              width: 16,
-                              height: 16,
-                              colorFilter: ColorFilter.mode(
-                                calendarLightTheme1.withOpacity(0.7),
-                                BlendMode.srcIn,
-                              ),
+                          const SizedBox(width: 6),
+                          SvgPicture.asset(
+                            _moodIcons[entry.moodIndex.clamp(
+                              0,
+                              _moodIcons.length - 1,
+                            )],
+                            width: 16,
+                            height: 16,
+                            colorFilter: ColorFilter.mode(
+                              calendarLightTheme1.withOpacity(0.7),
+                              BlendMode.srcIn,
                             ),
-                            const SizedBox(width: 6),
-                            SvgPicture.asset(
-                              _moodIcons[entry.moodIndex.clamp(
-                                0,
-                                _moodIcons.length - 1,
-                              )],
-                              width: 16,
-                              height: 16,
-                              colorFilter: ColorFilter.mode(
-                                calendarLightTheme1.withOpacity(0.7),
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      entry.text,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: calendarLightTheme1,
-                        fontWeight: FontWeight.w500,
+                          ),
+                        ],
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    entry.text,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: calendarLightTheme1,
+                      fontWeight: FontWeight.w500,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -1,12 +1,26 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
+import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/models/diary_model.dart';
+import 'package:whatsapp_clone/screens/chat/widget/full_screen_image.dart';
+import 'package:whatsapp_clone/screens/chat/widget/video_player_screen.dart';
+import 'package:video_player/video_player.dart';
 
 class DiaryDetailScreen extends StatefulWidget {
   final DiaryModel entry;
-
-  const DiaryDetailScreen({super.key, required this.entry});
-
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+  final VoidCallback onAddPhoto;
+  const DiaryDetailScreen({
+    super.key,
+    required this.entry,
+    required this.onEdit,
+    required this.onDelete,
+    required this.onAddPhoto,
+  });
   @override
   State<DiaryDetailScreen> createState() => _DiaryDetailScreenState();
 }
@@ -16,31 +30,31 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen>
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
+  static const _weatherData = [
+    ('assets/svg/sunny.svg', 'sunny'),
+    ('assets/svg/cloud.svg', 'cloudy'),
+    ('assets/svg/wind.svg', 'windy'),
+    ('assets/svg/rain.svg', 'rainy'),
+    ('assets/svg/snow.svg', 'snowy'),
+    ('assets/svg/fog.svg', 'foggy'),
+  ];
 
-  static const _weatherIcons = [
-    'assets/svg/sunny.svg',
-    'assets/svg/cloud.svg',
-    'assets/svg/wind.svg',
-    'assets/svg/rain.svg',
-    'assets/svg/snow.svg',
-    'assets/svg/fog.svg',
-  ];
-  static const _moodIcons = [
-    'assets/svg/smile.svg',
-    'assets/svg/unsmile.svg',
-    'assets/svg/bad.svg',
-  ];
+  Future<VideoPlayerController> _initializeVideo(String url) async {
+    final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+    await controller.initialize();
+    return controller;
+  }
 
   @override
   void initState() {
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 380),
+      duration: const Duration(milliseconds: 350),
     );
     _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
     _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.07),
+      begin: const Offset(0, 0.06),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOut));
     _animController.forward();
@@ -58,18 +72,70 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen>
     final images = <String>[];
     for (int i = 0; i < e.mediaUrls.length; i++) {
       final type = i < e.mediaTypes.length ? e.mediaTypes[i] : '';
-      if (type.startsWith('image')) {
-        images.add(e.mediaUrls[i]);
-      }
+      if (type.startsWith('image')) images.add(e.mediaUrls[i]);
     }
     return images;
+  }
+
+  List<String> get _videoUrls {
+    final e = widget.entry;
+    if (e.mediaUrls.isEmpty) return [];
+    final videos = <String>[];
+    for (int i = 0; i < e.mediaUrls.length; i++) {
+      final type = i < e.mediaTypes.length ? e.mediaTypes[i] : '';
+
+      if (type.startsWith('video')) {
+        videos.add(e.mediaUrls[i]);
+      }
+    }
+    return videos;
+  }
+
+  void _openFullScreenImage(String url) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => FullScreenImage(imageUrl: url)),
+    );
+  }
+
+  void _openVideoPlayer(String url) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoUrl: url)),
+    );
+  }
+
+  Future<Uint8List?> _getVideoThumbnail(String url) async {
+    return await VideoThumbnail.thumbnailData(
+      video: url,
+      imageFormat: ImageFormat.JPEG,
+      maxHeight: 720,
+      quality: 100,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final e = widget.entry;
     final imageUrls = _imageUrls;
-
+    final weatherIdx = e.weatherIndex.clamp(0, _weatherData.length - 1);
+    final weatherIcon = _weatherData[weatherIdx].$1;
+    final weatherLabel = _weatherData[weatherIdx].$2;
+    final String displayTitle;
+    final String displayBody;
+    if (e.title.trim().isNotEmpty) {
+      displayTitle = e.title.trim();
+      displayBody = e.text;
+    } else {
+      final lines = e.text.trim().split('\n');
+      if (lines.length > 1) {
+        displayTitle = lines.first.trim();
+        displayBody = lines.skip(1).join('\n').trim();
+      } else {
+        displayTitle = 'Title';
+        displayBody = e.text;
+      }
+    }
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: FadeTransition(
@@ -78,183 +144,226 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen>
           position: _slideAnim,
           child: Center(
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 60),
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 48),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.28),
-                    blurRadius: 32,
-                    offset: const Offset(0, 12),
-                  ),
-                ],
+                color: whiteColor,
+                borderRadius: BorderRadius.circular(16),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(18),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // ── Blue Gradient Header ─────────────────────────────
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Color(0xFF42B8EE), Color(0xFF1E96C8)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                borderRadius: BorderRadius.circular(16),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.fromLTRB(16, 5, 12, 8),
+                        color: calendarLightTheme1,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Positioned(
+                              top: 5,
+                              right: 2,
+                              child: GestureDetector(
+                                onTap: () => Navigator.pop(context),
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: whiteColor.withOpacity(0.25),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.close,
+                                    color: whiteColor,
+                                    size: 22,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Column(
+                              children: [
+                                Text(
+                                  e.month,
+                                  style: const TextStyle(
+                                    color: whiteColor,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1,
+                                  ),
+                                ),
+                                Text(
+                                  e.day,
+                                  style: const TextStyle(
+                                    color: whiteColor,
+                                    fontSize: 54,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1.0,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  '${e.weekday} ${e.time}',
+                                  style: TextStyle(
+                                    color: whiteColor.withOpacity(0.95),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SvgPicture.asset(
+                                      weatherIcon,
+                                      width: 15,
+                                      height: 15,
+                                      colorFilter: const ColorFilter.mode(
+                                        whiteColor,
+                                        BlendMode.srcIn,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      weatherLabel,
+                                      style: TextStyle(
+                                        color: whiteColor.withOpacity(0.9),
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
-                      child: Stack(
-                        children: [
-                          // Close ×
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            child: GestureDetector(
-                              onTap: () => Navigator.pop(context),
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.25),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.close,
-                                  color: Colors.white,
-                                  size: 18,
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          // Date + time + icons (centred)
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              // Month
-                              Text(
-                                e.month.toUpperCase(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  letterSpacing: 3,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              // Big day number
-                              Text(
-                                e.day,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 64,
-                                  fontWeight: FontWeight.w300,
-                                  height: 1.0,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              // Weekday · time · weather icon · mood icon
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    '${e.weekday}   ${e.time}',
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.93),
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  SvgPicture.asset(
-                                    _weatherIcons[e.weatherIndex.clamp(
-                                      0,
-                                      _weatherIcons.length - 1,
-                                    )],
-                                    width: 17,
-                                    height: 17,
-                                    colorFilter: const ColorFilter.mode(
-                                      Colors.white,
-                                      BlendMode.srcIn,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 7),
-                                  SvgPicture.asset(
-                                    _moodIcons[e.moodIndex.clamp(
-                                      0,
-                                      _moodIcons.length - 1,
-                                    )],
-                                    width: 17,
-                                    height: 17,
-                                    colorFilter: const ColorFilter.mode(
-                                      Colors.white,
-                                      BlendMode.srcIn,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // ── Scrollable Body ──────────────────────────────────
-                    Flexible(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(20),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Entry text
                             Text(
-                              e.text,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                color: Color(0xFF2C3E50),
-                                height: 1.7,
-                                fontWeight: FontWeight.w400,
+                              displayTitle,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 30,
+                                color: calendarLightTheme1,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
-
+                            Text(
+                              displayBody,
+                              style: const TextStyle(
+                                fontSize: 14.5,
+                                color: Colors.black,
+                                height: 1.65,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                             if (imageUrls.isNotEmpty) ...[
                               const SizedBox(height: 14),
                               ...imageUrls.map(
                                 (url) => Padding(
                                   padding: const EdgeInsets.only(bottom: 10),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Image.network(
-                                      url,
-                                      width: double.infinity,
-                                      fit: BoxFit.cover,
-                                      loadingBuilder: (_, child, progress) {
-                                        if (progress == null) return child;
-                                        return Container(
-                                          height: 160,
-                                          color: Colors.grey.shade100,
-                                          child: const Center(
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      errorBuilder: (_, __, ___) =>
-                                          const SizedBox.shrink(),
+                                  child: GestureDetector(
+                                    onTap: () => _openFullScreenImage(url),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(
+                                        url,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                             ],
 
-                            const SizedBox(height: 4),
+                            if (_videoUrls.isNotEmpty) ...[
+                              const SizedBox(height: 14),
+                              ..._videoUrls.map(
+                                (url) => FutureBuilder(
+                                  future: Future.wait([
+                                    _getVideoThumbnail(url),
+                                    _initializeVideo(url),
+                                  ]),
+                                  builder: (context, snapshot) {
+                                    if (!snapshot.hasData) {
+                                      return Container(
+                                        height: 200,
+                                        margin: const EdgeInsets.only(
+                                          bottom: 10,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          color: Colors.black12,
+                                        ),
+                                        child: const Center(
+                                          child: CircularProgressIndicator(
+                                            color: calendarLightTheme1,
+                                          ),
+                                        ),
+                                      );
+                                    }
+
+                                    final thumbnail =
+                                        snapshot.data![0] as Uint8List;
+                                    final controller =
+                                        snapshot.data![1]
+                                            as VideoPlayerController;
+                                    final aspectRatio =
+                                        controller.value.aspectRatio;
+
+                                    return GestureDetector(
+                                      onTap: () => _openVideoPlayer(url),
+                                      child: Container(
+                                        margin: const EdgeInsets.only(
+                                          bottom: 10,
+                                        ),
+                                        child: Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              child: AspectRatio(
+                                                aspectRatio: aspectRatio,
+                                                child: Image.memory(
+                                                  thumbnail,
+                                                  fit: BoxFit.cover,
+                                                  width: double.infinity,
+                                                  filterQuality:
+                                                      FilterQuality.high,
+                                                ),
+                                              ),
+                                            ),
+                                            Container(
+                                              decoration: const BoxDecoration(
+                                                color: Colors.black45,
+                                                shape: BoxShape.circle,
+                                              ),
+                                              padding: const EdgeInsets.all(12),
+                                              child: const Icon(
+                                                Icons.play_arrow,
+                                                color: Colors.white,
+                                                size: 40,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
