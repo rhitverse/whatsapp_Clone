@@ -90,6 +90,7 @@ class DiaryRepository {
 
   Future<void> updateEntryWithMedia({
     required String entryId,
+    required String newTitle,
     required String newText,
     required List<String> existingUrls,
     required List<String> urlsToDelete,
@@ -125,6 +126,7 @@ class DiaryRepository {
     }
 
     await _diaryRef.doc(entryId).update({
+      'title': newTitle,
       'text': newText,
       'mediaUrls': finalUrls,
       'mediaTypes': finalTypes,

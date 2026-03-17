@@ -135,6 +135,14 @@ class DiaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String title = entry.title.trim();
+    String body = entry.text.trim();
+
+    if (title.isEmpty && body.contains('\n')) {
+      final parts = body.split('\n');
+      title = parts.first.trim();
+      body = parts.skip(1).join('\n').trim();
+    }
     return GestureDetector(
       onTap: onTap,
       onLongPress: onEdit,
@@ -225,13 +233,32 @@ class DiaryCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    entry.text,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: calendarLightTheme1,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (title.isNotEmpty)
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: calendarLightTheme1,
+                          ),
+                        ),
+                      if (body.isNotEmpty)
+                        Text(
+                          body,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: calendarLightTheme1.withOpacity(0.8),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),

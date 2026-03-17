@@ -182,12 +182,6 @@ class _DiaryEditScreenState extends State<DiaryEditScreen>
     final title = _titleController.text.trim();
     final body = _bodyController.text.trim();
 
-    final combined = [
-      if (title.isNotEmpty) title,
-      if (body.isNotEmpty) body,
-    ].join('\n');
-
-    if (combined.isEmpty) return;
     if (!mounted) return;
 
     setState(() => _isSaving = true);
@@ -200,7 +194,8 @@ class _DiaryEditScreenState extends State<DiaryEditScreen>
       }).toList();
       await widget.controller.updateEntryWithMedia(
         entryId: widget.entry.id,
-        newText: combined,
+        newTitle: title,
+        newText: body,
         existingUrls: widget.entry.mediaUrls,
         urlsToDelete: _imagesToDelete,
         existingTypes: widget.entry.mediaTypes,
@@ -785,7 +780,7 @@ class _ActionBtn extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Material(
-        color: Colors.transparent, // Needed for InkWell ripple
+        color: Colors.transparent,
         child: InkWell(
           onTap: isLoading ? null : onTap,
           borderRadius: BorderRadius.circular(8),

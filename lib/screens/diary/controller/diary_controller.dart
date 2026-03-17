@@ -31,22 +31,27 @@ class DiaryController extends ChangeNotifier {
     );
   }
 
-  Future<void> addEntry(
-    String text, {
+  Future<void> addEntry({
+    required String title,
+    required String body,
     int weatherIndex = 0,
     int moodIndex = 0,
     List<File> mediaFiles = const [],
     List<String> mediaTypes = const [],
   }) async {
-    if (text.trim().isEmpty && mediaFiles.isEmpty) return;
+    if (title.trim().isEmpty && body.trim().isEmpty && mediaFiles.isEmpty)
+      return;
+
     try {
       await _repo.addEntry(
-        text.trim(),
+        title,
+        body,
         weatherIndex: weatherIndex,
         moodIndex: moodIndex,
         mediaFiles: mediaFiles,
         mediaTypes: mediaTypes,
       );
+
       errorMessage = null;
       notifyListeners();
     } catch (e) {
@@ -84,6 +89,7 @@ class DiaryController extends ChangeNotifier {
 
   Future<void> updateEntryWithMedia({
     required String entryId,
+    required String newTitle,
     required String newText,
     required List<String> existingUrls,
     required List<String> existingTypes,
@@ -95,6 +101,7 @@ class DiaryController extends ChangeNotifier {
       await _repo.updateEntryWithMedia(
         entryId: entryId,
         newText: newText,
+        newTitle: newTitle,
         existingUrls: existingUrls,
         urlsToDelete: urlsToDelete,
         newFiles: newFiles,

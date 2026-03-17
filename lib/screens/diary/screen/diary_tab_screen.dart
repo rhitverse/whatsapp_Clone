@@ -232,14 +232,9 @@ class _DiaryTabScreenState extends State<DiaryTabScreen> {
       _isUploading = true;
     });
 
-    final combined = [
-      if (titleText.isNotEmpty) titleText,
-      if (bodyText.isNotEmpty) bodyText,
-    ].join('\n');
-
     await controller.addEntry(
-      title: combined,
-      body: combined,
+      title: titleText,
+      body: bodyText,
       weatherIndex: _weatherIndex,
       moodIndex: _moodIndex,
       mediaFiles: _attachedFiles,
