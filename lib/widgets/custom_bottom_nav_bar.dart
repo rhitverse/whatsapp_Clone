@@ -47,7 +47,7 @@ class CustomBottomNavBar extends StatelessWidget {
             padding: const EdgeInsets.all(3),
             constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
             decoration: const BoxDecoration(
-              color: uiColor,
+              color: Colors.red,
               shape: BoxShape.circle,
             ),
             child: Text(

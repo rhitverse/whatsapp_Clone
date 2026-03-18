@@ -115,7 +115,7 @@ class ContactsListScreen extends StatelessWidget {
                                 child: Text(
                                   chat.unreadCount.toString(),
                                   style: const TextStyle(
-                                    color: backgroundColor,
+                                    color: whiteColor,
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
                                   ),
