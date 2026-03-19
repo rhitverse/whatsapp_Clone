@@ -3,9 +3,10 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:whatsapp_clone/models/call_state.dart';
 import 'package:whatsapp_clone/screens/calls/repository/call_repository.dart';
+import 'package:whatsapp_clone/screens/calls/screen/calls_screen.dart';
+import 'package:whatsapp_clone/main.dart';
 
 class CallController extends StateNotifier<CallState> {
   final CallRepository _repo;
@@ -20,7 +21,6 @@ class CallController extends StateNotifier<CallState> {
 
   Future<void> _initAgora() async {
     await _repo.initAgora();
-
     _repo.agoraEngine.registerEventHandler(
       RtcEngineEventHandler(
         onJoinChannelSuccess: (connection, elapsed) {
@@ -41,13 +41,15 @@ class CallController extends StateNotifier<CallState> {
   }
 
   void _listenIncomingCalls() {
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    if (userId.isEmpty) return;
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user == null) return;
 
-    _incomingCallSub = _repo.listenForIncomingCall(userId).listen((call) {
-      if (call != null) {
-        state = state.copyWith(incomingCall: call);
-      }
+      _incomingCallSub?.cancel();
+      _incomingCallSub = _repo.listenForIncomingCall(user.uid).listen((call) {
+        if (call != null) {
+          state = state.copyWith(incomingCall: call);
+        }
+      });
     });
   }
 
@@ -62,26 +64,38 @@ class CallController extends StateNotifier<CallState> {
     );
     state = state.copyWith(currentCallId: callId, isVideoOn: isVideo);
     await _repo.enableVideo(isVideo);
-    if (context.mounted) {
-      Navigator.pushNamed(context, '/call-screen');
-    }
+
+    navigatorKey.currentState?.push(
+      MaterialPageRoute(
+        settings: const RouteSettings(name: 'call-screen'), // ✅ naam do
+        builder: (_) => const CallScreen(),
+      ),
+    );
   }
 
-  Future<void> acceptCall(BuildContext context) async {
+  Future<void> acceptCall() async {
     if (state.incomingCall == null) return;
+    final call = state.incomingCall!;
 
-    state = state.copyWith(isVideoOn: state.incomingCall!.isVideo);
-    await _repo.enableVideo(state.incomingCall!.isVideo);
-    await _repo.acceptCall(state.incomingCall!);
-    state = state.copyWith(currentCallId: state.incomingCall!.callId);
+    state = state.copyWith(isVideoOn: call.isVideo, clearIncomingCall: true);
+    await _repo.enableVideo(call.isVideo);
+    await _repo.acceptCall(call);
+    state = state.copyWith(currentCallId: call.callId);
 
-    if (context.mounted) {
-      context.pushReplacementNamed('call-screen');
-    }
+    navigatorKey.currentState?.push(
+      MaterialPageRoute(
+        settings: const RouteSettings(name: 'call-screen'),
+        builder: (_) => const CallScreen(),
+      ),
+    );
   }
 
   Future<void> endCall(BuildContext? context) async {
-    if (state.currentCallId.isEmpty) return;
+    if (state.currentCallId.isEmpty) {
+      state = state.copyWith(clearIncomingCall: true);
+      return;
+    }
+
     await _repo.endCall(state.currentCallId);
     state = state.copyWith(
       isCallActive: false,
@@ -89,9 +103,10 @@ class CallController extends StateNotifier<CallState> {
       clearIncomingCall: true,
       currentCallId: '',
     );
-    if (context != null && context.mounted) {
-      Navigator.pop(context);
-    }
+
+    navigatorKey.currentState?.popUntil(
+      (route) => route.settings.name != 'call-screen',
+    );
   }
 
   Future<void> toggleMute() async {

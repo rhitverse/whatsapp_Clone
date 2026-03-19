@@ -51,7 +51,6 @@ class IncomingCallScreen extends ConsumerWidget {
                 ],
               ),
             ),
-
             Padding(
               padding: const EdgeInsets.only(bottom: 60),
               child: Row(
@@ -60,7 +59,7 @@ class IncomingCallScreen extends ConsumerWidget {
                   Column(
                     children: [
                       GestureDetector(
-                        onTap: () => callNotifier.endCall(context),
+                        onTap: () => callNotifier.endCall(null), // ✅ null
                         child: const CircleAvatar(
                           radius: 36,
                           backgroundColor: Colors.red,
@@ -78,11 +77,10 @@ class IncomingCallScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-
                   Column(
                     children: [
                       GestureDetector(
-                        onTap: () => callNotifier.acceptCall(context),
+                        onTap: () => callNotifier.acceptCall(),
                         child: const CircleAvatar(
                           radius: 36,
                           backgroundColor: Colors.green,

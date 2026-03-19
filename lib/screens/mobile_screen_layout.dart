@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/core/providers/unread_count_provider.dart';
 import 'package:whatsapp_clone/screens/Notifications/notification_screen.dart';
+import 'package:whatsapp_clone/screens/calls/screen/call_details_screen.dart';
 import 'package:whatsapp_clone/screens/chat/Screens/chats_control.dart';
 import 'package:whatsapp_clone/screens/diary/screen/diary_screen.dart';
 import 'package:whatsapp_clone/screens/friends/friends_newchat.dart';
@@ -10,7 +11,6 @@ import 'package:whatsapp_clone/screens/friends/qr_scanner.dart';
 import 'package:whatsapp_clone/screens/friends/user_search.dart';
 import 'package:whatsapp_clone/screens/meet/server_screen.dart';
 import 'package:whatsapp_clone/screens/setting_screen.dart';
-import 'package:whatsapp_clone/screens/calls/screen/calls_screen.dart';
 import 'package:whatsapp_clone/widgets/custom_bottom_nav_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -223,7 +223,7 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> {
           ChatControl(userId: FirebaseAuth.instance.currentUser?.uid ?? ''),
           const NotificaionScreen(),
           const ServerScreen(),
-          const CallScreen(),
+          const CallsScreen(),
         ],
       ),
 

@@ -1,8 +1,6 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:uuid/uuid.dart';
 import 'package:whatsapp_clone/models/call_model.dart';
 import 'package:whatsapp_clone/secret/secret.dart';
 
@@ -12,7 +10,6 @@ class CallRepository {
 
   late RtcEngine agoraEngine;
   static const String appId = Secrets.agoraAppId;
-  static const String certificate = Secrets.certificate;
 
   Future<void> initAgora() async {
     agoraEngine = createAgoraRtcEngine();
@@ -28,27 +25,15 @@ class CallRepository {
     }
   }
 
-  String _generateToken(String channelName) {
-    final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-    final jwt = JWT({
-      'iss': appId,
-      'sub': channelName,
-      'iat': currentTime,
-      'exp': currentTime + 3600,
-      'uid': 0,
-    });
-
-    return jwt.sign(SecretKey(certificate), algorithm: JWTAlgorithm.HS256);
-  }
+  static const String _tempToken = Secrets.tempToken;
+  static const String _testChannel = 'test';
 
   Future<String> startCall({
     required String receiverId,
     required bool isVideo,
   }) async {
     final currentUser = _auth.currentUser!;
-    final callId = const Uuid().v4();
-    final token = _generateToken(callId);
+    final callId = _testChannel;
 
     final call = CallModel(
       callId: callId,
@@ -61,7 +46,7 @@ class CallRepository {
     await _firestore.collection('calls').doc(callId).set(call.toMap());
 
     await agoraEngine.joinChannel(
-      token: token,
+      token: _tempToken,
       channelId: callId,
       uid: 0,
       options: const ChannelMediaOptions(
@@ -76,9 +61,8 @@ class CallRepository {
     await _firestore.collection('calls').doc(call.callId).update({
       'status': 'accepted',
     });
-    final token = _generateToken(call.callId);
     await agoraEngine.joinChannel(
-      token: token,
+      token: _tempToken,
       channelId: call.callId,
       uid: 0,
       options: const ChannelMediaOptions(

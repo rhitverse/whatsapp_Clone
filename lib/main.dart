@@ -5,6 +5,10 @@ import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:whatsapp_clone/features/app/splash/splash_screen.dart';
+import 'package:whatsapp_clone/screens/calls/controller/call_provider.dart';
+import 'package:whatsapp_clone/screens/calls/screen/incoming_call_screen.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   runZonedGuarded(
@@ -21,18 +25,30 @@ void main() {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final callState = ref.watch(callControllerProvider);
+
     return MaterialApp(
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'Whatsapp Clone',
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: backgroundColor,
       ),
-      home: SplashScreen(),
+      home: const SplashScreen(),
+      builder: (context, child) {
+        return Stack(
+          children: [
+            child ?? const SizedBox(),
+            if (callState.incomingCall != null)
+              const Positioned.fill(child: IncomingCallScreen()),
+          ],
+        );
+      },
     );
   }
 }

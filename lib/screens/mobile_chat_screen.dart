@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/screens/calls/controller/call_provider.dart';
 import 'package:whatsapp_clone/screens/chat/provider/chat_provider.dart';
 import 'package:whatsapp_clone/screens/chat/widget/bottom_chat_field.dart';
 import 'package:whatsapp_clone/screens/chat/widget/chat_loader.dart';
@@ -148,7 +149,15 @@ class _MobileChatScreenState extends ConsumerState<MobileChatScreen> {
         ),
         actions: [
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              ref
+                  .read(callControllerProvider.notifier)
+                  .startCall(
+                    receiverId: widget.receiverUid,
+                    isVideo: true,
+                    context: context,
+                  );
+            },
             child: SvgPicture.asset(
               'assets/svg/videocall.svg',
               width: 27,
@@ -158,7 +167,15 @@ class _MobileChatScreenState extends ConsumerState<MobileChatScreen> {
           ),
           SizedBox(width: 16),
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              ref
+                  .read(callControllerProvider.notifier)
+                  .startCall(
+                    receiverId: widget.receiverUid,
+                    isVideo: false,
+                    context: context,
+                  );
+            },
             child: SvgPicture.asset(
               'assets/svg/call1.svg',
               width: 27,
