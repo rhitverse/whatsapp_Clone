@@ -7,7 +7,10 @@ class BirthdayScreen extends StatefulWidget {
   final DateTime birthday;
   final bool showBirthday;
   final bool showBirthYear;
+
   final Function(DateTime dob) onBirthdayChanged;
+  final Function(bool)? onShowBirthdayChanged;
+  final Function(bool)? onShowBirthYearChanged;
 
   const BirthdayScreen({
     super.key,
@@ -15,6 +18,8 @@ class BirthdayScreen extends StatefulWidget {
     required this.birthday,
     this.showBirthYear = true,
     this.showBirthday = true,
+    this.onShowBirthdayChanged,
+    this.onShowBirthYearChanged,
   });
 
   @override
@@ -26,9 +31,11 @@ class _BirthdayScreenState extends State<BirthdayScreen> {
   late bool _showBirthYear;
   DateTime? _birthday;
   String? errorText;
+
   @override
   void initState() {
     super.initState();
+
     if (widget.birthday.year == DateTime.now().year &&
         widget.birthday.month == DateTime.now().month &&
         widget.birthday.day == DateTime.now().day) {
@@ -36,6 +43,7 @@ class _BirthdayScreenState extends State<BirthdayScreen> {
     } else {
       _birthday = widget.birthday;
     }
+
     _showBirthYear = widget.showBirthYear;
     _showBirthday = widget.showBirthday;
   }
@@ -60,6 +68,7 @@ class _BirthdayScreenState extends State<BirthdayScreen> {
     if (date != null) {
       final now = DateTime.now();
       int age = now.year - date.year;
+
       if (now.month < date.month ||
           (now.month == date.month && now.day < date.day)) {
         age--;
@@ -79,6 +88,7 @@ class _BirthdayScreenState extends State<BirthdayScreen> {
   String get formattedDate => _birthday == null
       ? "DD / MM / YYYY"
       : DateFormat("d MMMM yyyy").format(_birthday!);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,7 +100,7 @@ class _BirthdayScreenState extends State<BirthdayScreen> {
           onPressed: () => Navigator.pop(context),
           icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
         ),
-        title: Text(
+        title: const Text(
           "Birthday",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
         ),
@@ -98,7 +108,7 @@ class _BirthdayScreenState extends State<BirthdayScreen> {
       body: Column(
         children: [
           InkWell(
-            onTap: (openDatePicker),
+            onTap: openDatePicker,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
               child: Row(
@@ -113,9 +123,10 @@ class _BirthdayScreenState extends State<BirthdayScreen> {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: const Divider(height: 1, thickness: 0.6, color: Colors.grey),
+
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            child: Divider(height: 1, thickness: 0.6, color: Colors.grey),
           ),
 
           if (errorText != null) ...[
@@ -128,13 +139,15 @@ class _BirthdayScreenState extends State<BirthdayScreen> {
                   const SizedBox(width: 6),
                   Text(
                     errorText!,
-                    style: TextStyle(color: Colors.red, fontSize: 11),
+                    style: const TextStyle(color: Colors.red, fontSize: 11),
                   ),
                 ],
               ),
             ),
           ],
-          SizedBox(height: 10),
+
+          const SizedBox(height: 10),
+
           waToggle(
             title: "Show my birthday",
             value: _showBirthday,
@@ -144,24 +157,31 @@ class _BirthdayScreenState extends State<BirthdayScreen> {
 
                 if (!_showBirthday) {
                   _showBirthYear = false;
+                  widget.onShowBirthYearChanged?.call(false);
                 }
               });
+
+              widget.onShowBirthdayChanged?.call(value);
             },
           ),
+
+          /// 🔥 SHOW YEAR TOGGLE
           if (_showBirthday)
             waToggle(
               title: "Show my birth year",
               value: _showBirthYear,
               onChanged: (value) {
                 setState(() => _showBirthYear = value);
+                widget.onShowBirthYearChanged?.call(value);
               },
             ),
-          SizedBox(height: 10),
+
+          const SizedBox(height: 10),
+
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              "if you choose to show your birthday, your friends will be able to see"
-              " the date from your profile, the Home and Chat tabs, and more.",
+              "if you choose to show your birthday, your friends will be able to see the date from your profile, the Home and Chat tabs, and more.",
               style: TextStyle(
                 fontSize: 12.6,
                 color: Colors.grey.shade600,
@@ -194,9 +214,6 @@ class _BirthdayScreenState extends State<BirthdayScreen> {
             child: Switch(
               value: value,
               onChanged: onChanged,
-              trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-              trackOutlineWidth: WidgetStateProperty.all(0),
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               activeThumbColor: whiteColor,
               activeTrackColor: uiColor,
               inactiveTrackColor: Colors.grey.shade300,

@@ -74,6 +74,8 @@ dependencies:
   firebase_messaging: ^16.1.2
   dart_jsonwebtoken: ^3.3.2
   go_router: ^17.1.0
+  shared_preferences: ^2.5.4
+  image_cropper: ^11.0.0
 
 dev_dependencies:
   flutter_test:
@@ -94,7 +96,6 @@ dev_dependencies:
   firebase_storage: ^13.0.6
   google_sign_in: ^6.2.1
   flutter_riverpod: ^2.4.9
-  shared_preferences: ^2.2.2
   cloud_functions: ^6.0.6
   image_picker: ^1.2.1
   crypto: ^3.0.7

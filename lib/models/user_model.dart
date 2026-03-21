@@ -8,6 +8,9 @@ class UserModel {
   final List<String> groupId;
   final String? publicKey;
 
+  final bool showBirthday;
+  final bool showBirthYear;
+
   UserModel({
     required this.displayname,
     required this.uid,
@@ -17,6 +20,9 @@ class UserModel {
     this.username,
     this.birthday,
     this.publicKey,
+
+    required this.showBirthday,
+    required this.showBirthYear,
   });
 
   Map<String, dynamic> toMap() {
@@ -29,6 +35,8 @@ class UserModel {
       'birthday': birthday,
       'groupId': groupId,
       'publicKey': publicKey,
+      'showBirthday': showBirthday,
+      'showBirthYear': showBirthYear,
     };
   }
 
@@ -42,6 +50,8 @@ class UserModel {
       birthday: map['birthday'],
       groupId: map['groupId'] != null ? List<String>.from(map['groupId']) : [],
       publicKey: map['publicKey'],
+      showBirthday: map['showBirthday'] ?? true,
+      showBirthYear: map['showBirthYear'] ?? true,
     );
   }
 }

@@ -170,6 +170,14 @@ class AuthController {
     await _authRepository.updateBirthday(context: context, dob: dob);
   }
 
+  Future<void> updateShowBirthday(bool value) async {
+    await _authRepository.updateShowBirthday(value);
+  }
+
+  Future<void> updateShowBirthYear(bool value) async {
+    await _authRepository.updateShowBirthYear(value);
+  }
+
   Future<void> updateBio(String bio) async {
     await _authRepository.updateUserBio(bio);
   }

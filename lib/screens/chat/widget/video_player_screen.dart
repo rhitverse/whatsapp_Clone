@@ -15,7 +15,6 @@ class VideoPlayerScreen extends StatefulWidget {
 class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     with TickerProviderStateMixin {
   late VideoPlayerController _controller;
-  late AnimationController _fadeController;
   bool isLoading = true;
   bool hasError = false;
   String errorMessage = '';
@@ -38,10 +37,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
   }
 
   void _initializeVideo() {
@@ -52,6 +47,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
               setState(() {
                 isLoading = false;
               });
+              _controller.addListener(() => setState(() {}));
               _controller.play();
               _startControlsTimer();
             })
@@ -104,7 +100,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   void dispose() {
     _controller.dispose();
     _controlsAnimationController.dispose();
-    _fadeController.dispose();
     super.dispose();
   }
 
@@ -122,10 +117,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        Navigator.pop(context);
-        return false;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) Navigator.pop(context);
       },
       child: Scaffold(
         backgroundColor: Colors.black,

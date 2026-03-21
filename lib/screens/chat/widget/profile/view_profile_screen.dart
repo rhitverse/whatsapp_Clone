@@ -1,32 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/screens/calls/controller/call_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+final receiverProfileProvider =
+    FutureProvider.family<Map<String, dynamic>?, String>((ref, uid) async {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+      return doc.data();
+    });
+
+String _formatDob(String raw, bool showYear) {
+  try {
+    final dt = DateTime.parse(raw);
+    return showYear
+        ? DateFormat('dd MMMM yyyy').format(dt)
+        : DateFormat('dd MMMM').format(dt);
+  } catch (_) {
+    return raw;
+  }
+}
 
 class ViewProfileScreen extends ConsumerWidget {
   final String receiverUid;
   final String receiverDisplayName;
   final String receiverProfilePic;
-  final String? dob; // optional date of birth
-  final String? bio; // optional bio
 
   const ViewProfileScreen({
     super.key,
     required this.receiverUid,
     required this.receiverDisplayName,
     required this.receiverProfilePic,
-    this.dob,
-    this.bio,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final profileAsync = ref.watch(receiverProfileProvider(receiverUid));
     return Scaffold(
       backgroundColor: backgroundColor,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 220,
+            expandedHeight: MediaQuery.of(context).size.height * 0.188,
             pinned: true,
             backgroundColor: backgroundColor,
             automaticallyImplyLeading: false,
@@ -50,52 +70,28 @@ class ViewProfileScreen extends ConsumerWidget {
                     height: 180,
                     color: const Color(0xFFD4E8C2),
                   ),
-
                   Positioned(
                     bottom: 0,
                     left: 20,
-                    child: Stack(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: backgroundColor,
-                              width: 3,
-                            ),
-                          ),
-                          child: CircleAvatar(
-                            radius: 42,
-                            backgroundImage: receiverProfilePic.isNotEmpty
-                                ? NetworkImage(receiverProfilePic)
-                                : null,
-                            backgroundColor: Colors.grey.shade800,
-                            child: receiverProfilePic.isEmpty
-                                ? const Icon(
-                                    Icons.person,
-                                    size: 42,
-                                    color: whiteColor,
-                                  )
-                                : null,
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 4,
-                          right: 2,
-                          child: Container(
-                            width: 14,
-                            height: 14,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFF9800),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: backgroundColor,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: backgroundColor, width: 3),
+                      ),
+                      child: CircleAvatar(
+                        radius: 42,
+                        backgroundImage: receiverProfilePic.isNotEmpty
+                            ? NetworkImage(receiverProfilePic)
+                            : null,
+                        backgroundColor: Colors.grey.shade800,
+                        child: receiverProfilePic.isEmpty
+                            ? const Icon(
+                                Icons.person,
+                                size: 42,
+                                color: whiteColor,
+                              )
+                            : null,
+                      ),
                     ),
                   ),
                 ],
@@ -104,236 +100,212 @@ class ViewProfileScreen extends ConsumerWidget {
           ),
 
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    receiverDisplayName,
-                    style: const TextStyle(
-                      color: whiteColor,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                    ),
+            child: profileAsync.when(
+              loading: () => const Padding(
+                padding: EdgeInsets.only(top: 40),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (e, _) => Padding(
+                padding: const EdgeInsets.all(20),
+                child: Text(
+                  e.toString(),
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+              data: (data) {
+                final bio = (data?['bio'] as String?)?.trim() ?? '';
+                final rawDob = (data?['birthday'] as String?)?.trim() ?? '';
+
+                final showBirthday = data?['showBirthday'] ?? true;
+                final showBirthYear = data?['showBirthYear'] ?? true;
+
+                final shouldShowDob = showBirthday && rawDob.isNotEmpty;
+
+                final dobText = shouldShowDob
+                    ? _formatDob(rawDob, showBirthYear)
+                    : '';
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 2,
                   ),
-                  const SizedBox(height: 4),
-
-                  if (dob != null && dob!.isNotEmpty)
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.cake_outlined,
-                          size: 16,
-                          color: Colors.grey,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          dob!,
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                  const SizedBox(height: 16),
-
-                  Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: SizedBox(
-                          height: 42,
-                          child: ElevatedButton.icon(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.person_add_alt_1,
-                              size: 20,
-                              color: whiteColor,
-                            ),
-                            label: const Text(
-                              'Add Friend',
-                              style: TextStyle(
-                                color: whiteColor,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 15,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: uiColor,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              elevation: 0,
-                            ),
-                          ),
+                      Text(
+                        receiverDisplayName,
+                        style: const TextStyle(
+                          color: whiteColor,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(width: 10),
-
-                      Container(
-                        height: 42,
-                        width: 42,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E1E2E),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.chat_bubble_outline,
-                            color: whiteColor,
-                            size: 20,
-                          ),
-                          onPressed: () => Navigator.pop(context),
-                          tooltip: 'Message',
-                        ),
-                      ),
-
-                      const SizedBox(width: 10),
-
-                      Container(
-                        height: 42,
-                        width: 42,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E1E2E),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.call_outlined,
-                            color: whiteColor,
-                            size: 20,
-                          ),
-                          onPressed: () {
-                            ref
-                                .read(callControllerProvider.notifier)
-                                .startCall(
-                                  receiverId: receiverUid,
-                                  isVideo: false,
-                                  context: context,
-                                );
-                          },
-                          tooltip: 'Voice Call',
-                        ),
-                      ),
-
-                      const SizedBox(width: 10),
-
-                      // Video call button
-                      Container(
-                        height: 42,
-                        width: 42,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E1E2E),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.videocam_outlined,
-                            color: whiteColor,
-                            size: 20,
-                          ),
-                          onPressed: () {
-                            ref
-                                .read(callControllerProvider.notifier)
-                                .startCall(
-                                  receiverId: receiverUid,
-                                  isVideo: true,
-                                  context: context,
-                                );
-                          },
-                          tooltip: 'Video Call',
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Bio card
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1E1E2E),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Bio',
-                          style: TextStyle(
-                            color: whiteColor,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
-                        ),
-                        if (bio != null && bio!.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            bio!,
-                            style: const TextStyle(
+                      const SizedBox(height: 4),
+                      if (shouldShowDob)
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.cake_outlined,
+                              size: 16,
                               color: Colors.grey,
-                              fontSize: 14,
-                              height: 1.5,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              dobText,
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 42,
+                            width: MediaQuery.of(context).size.width * 0.6,
+                            decoration: BoxDecoration(
+                              color: uiColor,
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(30),
+                                onTap: () => Navigator.pop(context),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SvgPicture.asset(
+                                      "assets/svg/chat3.svg",
+                                      colorFilter: const ColorFilter.mode(
+                                        whiteColor,
+                                        BlendMode.srcIn,
+                                      ),
+                                      width: 38,
+                                      height: 38,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    const Text(
+                                      'Chat',
+                                      style: TextStyle(
+                                        color: whiteColor,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          _buildCircularIcon(
+                            child: SvgPicture.asset(
+                              'assets/svg/call1.svg',
+                              colorFilter: const ColorFilter.mode(
+                                whiteColor,
+                                BlendMode.srcIn,
+                              ),
+                              width: 32,
+                              height: 32,
+                            ),
+                            onTap: () {
+                              ref
+                                  .read(callControllerProvider.notifier)
+                                  .startCall(
+                                    receiverId: receiverUid,
+                                    isVideo: false,
+                                    context: context,
+                                  );
+                            },
+                          ),
+                          const SizedBox(width: 10),
+                          _buildCircularIcon(
+                            onTap: () {
+                              ref
+                                  .read(callControllerProvider.notifier)
+                                  .startCall(
+                                    receiverId: receiverUid,
+                                    isVideo: true,
+                                    context: context,
+                                  );
+                            },
+                            child: SvgPicture.asset(
+                              'assets/svg/videocall.svg',
+                              colorFilter: const ColorFilter.mode(
+                                whiteColor,
+                                BlendMode.srcIn,
+                              ),
+                              width: 32,
+                              height: 32,
                             ),
                           ),
                         ],
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // Media / Shared files card placeholder
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1E1E2E),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Media, Links & Docs',
-                          style: TextStyle(
-                            color: whiteColor,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
-                        ),
-                        const Icon(
-                          Icons.arrow_forward_ios,
-                          size: 14,
-                          color: Colors.grey,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  Center(
-                    child: TextButton(
-                      onPressed: () {},
-                      child: const Text(
-                        'Block User',
-                        style: TextStyle(
-                          color: Colors.redAccent,
-                          fontWeight: FontWeight.w500,
-                        ),
                       ),
-                    ),
+                      const SizedBox(height: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (bio.isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: attacment,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Bio',
+                                    style: TextStyle(
+                                      color: whiteColor,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    bio,
+                                    style: const TextStyle(
+                                      color: whiteColor,
+                                      fontSize: 14,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCircularIcon({
+    required Widget child,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(color: container, shape: BoxShape.circle),
+        child: child,
       ),
     );
   }

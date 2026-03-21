@@ -10,6 +10,7 @@ import 'package:whatsapp_clone/screens/Profile/birthday_screen.dart';
 import 'package:whatsapp_clone/screens/Profile/display_edit_screen.dart';
 import 'package:whatsapp_clone/screens/Profile/username_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:whatsapp_clone/screens/settings/widget/image_crop_helper.dart';
 import 'package:whatsapp_clone/widgets/helpful_widgets/profilepic.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -33,6 +34,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool allowAddById = true;
   bool _allowAddLoaded = false;
   File? image;
+  File? bannerImage;
 
   String formatBirthday(String date) {
     final dob = DateTime.parse(date);
@@ -70,8 +72,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   void selectImage() async {
-    image = await pickImageFromGallery(context);
-    setState(() {});
+    final picked = await pickImageFromGallery(context);
+    if (picked == null) return;
+
+    final cropped = await ImageCropHelper.cropProfilePic(picked);
+    if (cropped == null) return;
+
+    setState(() {
+      image = cropped;
+    });
   }
 
   @override
@@ -167,7 +176,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     'https://yt3.ggpht.com/a/default-user=s600-k-no-rp-mo')) {
                           return;
                         }
-
                         showModalBottomSheet(
                           context: context,
                           backgroundColor: backgroundColor,
@@ -218,7 +226,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   ),
                                   onTap: () async {
                                     Navigator.pop(context);
-
                                     final confirm = await showDialog<bool>(
                                       context: context,
                                       builder: (context) => AlertDialog(
@@ -312,17 +319,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     value: user.bio,
                     onTap: () => _go(context, const BioScreen()),
                   ),
-
                   const SizedBox(height: 8),
-
                   _tile(
                     "Usename",
                     value: user.username,
                     onTap: () => _go(context, const UsernameScreen()),
                   ),
-                  SizedBox(height: 17),
+                  const SizedBox(height: 17),
                   const Divider(),
-                  SizedBox(height: 9),
+                  const SizedBox(height: 9),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -365,9 +370,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   const Divider(),
-                  SizedBox(height: 6),
+                  const SizedBox(height: 6),
                   InkWell(
                     onTap: () {
                       DateTime dob;
@@ -376,11 +381,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       } else {
                         dob = DateTime.parse(user.birthday!);
                       }
-
                       _go(
                         context,
                         BirthdayScreen(
                           birthday: dob,
+                          showBirthday: user.showBirthday,
+                          showBirthYear: user.showBirthYear,
+                          onShowBirthdayChanged: (val) {
+                            ref
+                                .read(authControllerProvider)
+                                .updateShowBirthday(val);
+                          },
+                          onShowBirthYearChanged: (val) {
+                            ref
+                                .read(authControllerProvider)
+                                .updateShowBirthYear(val);
+                          },
                           onBirthdayChanged: (newDob) {
                             ref
                                 .read(authControllerProvider)
@@ -389,7 +405,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                       );
                     },
-
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       child: Row(
@@ -398,22 +413,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             "Birthday",
                             style: TextStyle(color: whiteColor, fontSize: 18),
                           ),
-                          Spacer(),
+                          const Spacer(),
                           Text(
-                            user.birthday != null && user.birthday!.isNotEmpty
-                                ? formatBirthday(user.birthday!)
-                                : "Not set",
-                            style: TextStyle(
-                              color:
-                                  user.birthday != null &&
-                                      user.birthday!.isEmpty
-                                  ? Colors.grey
-                                  : Colors.white60,
+                            user.showBirthday
+                                ? (user.birthday != null &&
+                                          user.birthday!.isNotEmpty
+                                      ? (user.showBirthYear
+                                            ? formatBirthday(user.birthday!)
+                                            : DateFormat('dd MMMM').format(
+                                                DateTime.parse(user.birthday!),
+                                              ))
+                                      : "Not set")
+                                : "Hidden",
+                            style: const TextStyle(
+                              color: Colors.white60,
                               fontSize: 16,
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Icon(Icons.chevron_right, color: Colors.grey),
+                          const Icon(Icons.chevron_right, color: Colors.grey),
                         ],
                       ),
                     ),

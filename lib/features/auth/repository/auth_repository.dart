@@ -374,6 +374,20 @@ class AuthRepository {
     }
   }
 
+  Future<void> updateShowBirthday(bool value) async {
+    final uid = _auth.currentUser!.uid;
+    await _firestore.collection('users').doc(uid).update({
+      'showBirthday': value,
+    });
+  }
+
+  Future<void> updateShowBirthYear(bool value) async {
+    final uid = _auth.currentUser!.uid;
+    await _firestore.collection('users').doc(uid).update({
+      'showBirthYear': value,
+    });
+  }
+
   Stream<UserModel> getUserData() {
     final uid = _auth.currentUser!.uid;
 

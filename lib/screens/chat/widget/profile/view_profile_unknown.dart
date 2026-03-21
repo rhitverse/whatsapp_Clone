@@ -14,10 +14,12 @@ final receiverProfileProvider =
       return doc.data();
     });
 
-String _formatDob(String raw) {
+String _formatDob(String raw, bool showYear) {
   try {
     final dt = DateTime.parse(raw);
-    return DateFormat('dd MMMM yyyy').format(dt);
+    return showYear
+        ? DateFormat('dd MMMM yyyy').format(dt)
+        : DateFormat('dd MMMM').format(dt);
   } catch (_) {
     return raw;
   }
@@ -38,13 +40,12 @@ class ViewProfileUnknown extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(receiverProfileProvider(receiverUid));
-
     return Scaffold(
       backgroundColor: backgroundColor,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 170,
+            expandedHeight: MediaQuery.of(context).size.height * 0.188,
             pinned: true,
             backgroundColor: backgroundColor,
             automaticallyImplyLeading: false,
@@ -63,11 +64,7 @@ class ViewProfileUnknown extends ConsumerWidget {
               background: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  Container(
-                    width: double.infinity,
-                    height: 180,
-                    color: const Color(0xFFD4E8C2),
-                  ),
+                  Container(height: 180, color: const Color(0xFFD4E8C2)),
                   Positioned(
                     bottom: 0,
                     left: 20,
@@ -113,7 +110,12 @@ class ViewProfileUnknown extends ConsumerWidget {
               data: (data) {
                 final bio = (data?['bio'] as String?)?.trim() ?? '';
                 final rawDob = (data?['birthday'] as String?)?.trim() ?? '';
-                final dobText = rawDob.isNotEmpty ? _formatDob(rawDob) : '';
+                final showBirthday = data?['showBirthday'] ?? true;
+                final showBirthYear = data?['showBirthYear'] ?? true;
+                final shouldShowDob = showBirthday && rawDob.isNotEmpty;
+                final dobText = shouldShowDob
+                    ? _formatDob(rawDob, showBirthYear)
+                    : '';
 
                 return Padding(
                   padding: const EdgeInsets.symmetric(
@@ -132,8 +134,7 @@ class ViewProfileUnknown extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 4),
-
-                      if (dobText.isNotEmpty)
+                      if (shouldShowDob)
                         Row(
                           children: [
                             const Icon(
@@ -185,7 +186,6 @@ class ViewProfileUnknown extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(width: 19),
-
                           GestureDetector(
                             onTap: () => Navigator.pop(context),
                             child: SvgPicture.asset(
@@ -201,9 +201,9 @@ class ViewProfileUnknown extends ConsumerWidget {
                           const SizedBox(width: 10),
                         ],
                       ),
+
                       if (bio.isNotEmpty) ...[
                         const SizedBox(height: 16),
-
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
