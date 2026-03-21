@@ -59,7 +59,7 @@ class IncomingCallScreen extends ConsumerWidget {
                   Column(
                     children: [
                       GestureDetector(
-                        onTap: () => callNotifier.endCall(null), // ✅ null
+                        onTap: () => callNotifier.endCall(null),
                         child: const CircleAvatar(
                           radius: 36,
                           backgroundColor: Colors.red,

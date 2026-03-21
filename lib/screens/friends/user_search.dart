@@ -4,6 +4,8 @@ import 'package:whatsapp_clone/colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:whatsapp_clone/screens/mobile_chat_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:whatsapp_clone/screens/chat/widget/profile/view_profile_screen.dart';
+import 'package:whatsapp_clone/screens/chat/widget/profile/view_profile_unknown.dart';
 
 class UserSearch extends StatefulWidget {
   const UserSearch({super.key});
@@ -252,49 +254,86 @@ class _UserSearchState extends State<UserSearch> {
     required String receiverUid,
     required bool isSelf,
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: userSearchContainerColor,
-        borderRadius: BorderRadius.circular(16),
+    return GestureDetector(
+      onTap: () => _navigateToProfile(
+        receiverUid: receiverUid,
+        displayName: user["displayname"] ?? "",
+        profilePic: user["profilePic"] ?? "",
       ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundImage:
-                user["profilePic"] != null && user["profilePic"] != ""
-                ? NetworkImage(user["profilePic"])
-                : null,
-            child: user["profilePic"] == null || user["profilePic"] == ""
-                ? const Icon(Icons.person, color: whiteColor, size: 24)
-                : null,
-          ),
-          const SizedBox(width: 12),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: userSearchContainerColor,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 24,
+              backgroundImage:
+                  user["profilePic"] != null && user["profilePic"] != ""
+                  ? NetworkImage(user["profilePic"])
+                  : null,
+              child: user["profilePic"] == null || user["profilePic"] == ""
+                  ? const Icon(Icons.person, color: whiteColor, size: 24)
+                  : null,
+            ),
+            const SizedBox(width: 12),
 
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Text(
-                user["displayname"] ?? "",
-                style: TextStyle(
-                  color: whiteColor,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Text(
+                  user["displayname"] ?? "",
+                  style: TextStyle(
+                    color: whiteColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
-          ),
-          if (!isSelf)
-            _buildIconButton(
-              receiverUid: receiverUid,
-              displayName: user["displayname"] ?? "",
-              profilePic: user["profilePic"] ?? "",
-            ),
-        ],
+            if (!isSelf)
+              _buildIconButton(
+                receiverUid: receiverUid,
+                displayName: user["displayname"] ?? "",
+                profilePic: user["profilePic"] ?? "",
+              ),
+          ],
+        ),
       ),
     );
+  }
+
+  void _navigateToProfile({
+    required String receiverUid,
+    required String displayName,
+    required String profilePic,
+  }) {
+    if (_buttonState == AddButtonState.alreadyFriend) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ViewProfileScreen(
+            receiverUid: receiverUid,
+            receiverDisplayName: displayName,
+            receiverProfilePic: profilePic,
+          ),
+        ),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ViewProfileUnknown(
+            receiverUid: receiverUid,
+            receiverDisplayName: displayName,
+            receiverProfilePic: profilePic,
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildIconButton({

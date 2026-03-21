@@ -74,23 +74,13 @@ class ViewProfileScreen extends ConsumerWidget {
                     bottom: 0,
                     left: 20,
                     child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: backgroundColor, width: 3),
-                      ),
+                      decoration: BoxDecoration(shape: BoxShape.circle),
                       child: CircleAvatar(
                         radius: 42,
                         backgroundImage: receiverProfilePic.isNotEmpty
                             ? NetworkImage(receiverProfilePic)
                             : null,
                         backgroundColor: Colors.grey.shade800,
-                        child: receiverProfilePic.isEmpty
-                            ? const Icon(
-                                Icons.person,
-                                size: 42,
-                                color: whiteColor,
-                              )
-                            : null,
                       ),
                     ),
                   ),

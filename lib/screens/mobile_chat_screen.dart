@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -109,15 +110,35 @@ class _MobileChatScreenState extends ConsumerState<MobileChatScreen> {
     }
   }
 
-  void _openProfile() {
+  Future<void> _openProfile() async {
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUid == null) return;
+
+    final friendQuery = await FirebaseFirestore.instance
+        .collection('Friends')
+        .where('uid', isEqualTo: currentUid)
+        .where('friendUid', isEqualTo: widget.receiverUid)
+        .limit(1)
+        .get();
+
+    final isFriend = friendQuery.docs.isNotEmpty;
+
+    if (!mounted) return;
+
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ViewProfileUnknown(
-          receiverUid: widget.receiverUid,
-          receiverDisplayName: receiverDisplayName,
-          receiverProfilePic: receiverProfilePic,
-        ),
+        builder: (_) => isFriend
+            ? ViewProfileScreen(
+                receiverUid: widget.receiverUid,
+                receiverDisplayName: receiverDisplayName,
+                receiverProfilePic: receiverProfilePic,
+              )
+            : ViewProfileUnknown(
+                receiverUid: widget.receiverUid,
+                receiverDisplayName: receiverDisplayName,
+                receiverProfilePic: receiverProfilePic,
+              ),
       ),
     );
   }

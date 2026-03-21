@@ -121,16 +121,6 @@ class NotificationRepository {
     required String notifId,
     required String myName,
   }) async {
-    await _firestore.collection('Chats').doc(chatId).set({
-      'participants': [currentUid, fromUid],
-      'lastMessage': '',
-      'lastMessageTime': FieldValue.serverTimestamp(),
-      'lastMessageSenderId': '',
-      'unreadCount_$currentUid': 0,
-      'unreadCount_$fromUid': 0,
-      'status': 'accepted',
-    }, SetOptions(merge: true));
-
     final batch = _firestore.batch();
     batch.set(_firestore.collection('Friends').doc('${currentUid}_$fromUid'), {
       'uid': currentUid,

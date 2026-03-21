@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 final receiverProfileProvider =
     FutureProvider.family<Map<String, dynamic>?, String>((ref, uid) async {
@@ -25,7 +26,9 @@ String _formatDob(String raw, bool showYear) {
   }
 }
 
-class ViewProfileUnknown extends ConsumerWidget {
+enum _AddState { idle, loading, sent }
+
+class ViewProfileUnknown extends ConsumerStatefulWidget {
   final String receiverUid;
   final String receiverDisplayName;
   final String receiverProfilePic;
@@ -38,8 +41,91 @@ class ViewProfileUnknown extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final profileAsync = ref.watch(receiverProfileProvider(receiverUid));
+  ConsumerState<ViewProfileUnknown> createState() => _ViewProfileUnknownState();
+}
+
+class _ViewProfileUnknownState extends ConsumerState<ViewProfileUnknown> {
+  _AddState _addState = _AddState.idle;
+  final String _currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+  Future<void> _sendFriendRequest() async {
+    if (_currentUid.isEmpty) return;
+    setState(() => _addState = _AddState.loading);
+
+    try {
+      final uids = [_currentUid, widget.receiverUid]..sort();
+      final chatId = "${uids[0]}_${uids[1]}";
+
+      final chatRef = FirebaseFirestore.instance
+          .collection("Chats")
+          .doc(chatId);
+      final chatSnap = await chatRef.get();
+
+      if (!chatSnap.exists) {
+        await chatRef.set({
+          "participants": [_currentUid, widget.receiverUid],
+          "createdAt": FieldValue.serverTimestamp(),
+          "lastMessage": "",
+          "lastMessageTime": FieldValue.serverTimestamp(),
+          "lastMessageSenderId": "",
+          "unreadCount_$_currentUid": 0,
+          "unreadCount_${widget.receiverUid}": 0,
+          "status": "pending",
+        });
+      }
+
+      final senderDoc = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(_currentUid)
+          .get();
+      final senderName = senderDoc.data()?["displayname"] ?? "Unknown";
+
+      await FirebaseFirestore.instance
+          .collection("users")
+          .doc(widget.receiverUid)
+          .collection("notifications")
+          .add({
+            "type": "friend_request",
+            "fromUid": _currentUid,
+            "fromName": senderName,
+            "chatId": chatId,
+            "timestamp": FieldValue.serverTimestamp(),
+            "isRead": false,
+          });
+      if (mounted) setState(() => _addState = _AddState.sent);
+    } catch (e) {
+      if (mounted) {
+        setState(() => _addState = _AddState.idle);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
+      }
+    }
+  }
+
+  Future<void> _checkIfAlreadySent() async {
+    if (_currentUid.isEmpty) return;
+    final uids = [_currentUid, widget.receiverUid]..sort();
+    final chatId = "${uids[0]}_${uids[1]}";
+    final chatSnap = await FirebaseFirestore.instance
+        .collection('Chats')
+        .doc(chatId)
+        .get();
+    if (!mounted) return;
+    if (chatSnap.exists && chatSnap.data()?['status'] == 'pending') {
+      setState(() => _addState = _AddState.sent);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfAlreadySent();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final profileAsync = ref.watch(receiverProfileProvider(widget.receiverUid));
     return Scaffold(
       backgroundColor: backgroundColor,
       body: CustomScrollView(
@@ -68,25 +154,12 @@ class ViewProfileUnknown extends ConsumerWidget {
                   Positioned(
                     bottom: 0,
                     left: 20,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: backgroundColor, width: 3),
-                      ),
-                      child: CircleAvatar(
-                        radius: 42,
-                        backgroundImage: receiverProfilePic.isNotEmpty
-                            ? NetworkImage(receiverProfilePic)
-                            : null,
-                        backgroundColor: Colors.grey.shade800,
-                        child: receiverProfilePic.isEmpty
-                            ? const Icon(
-                                Icons.person,
-                                size: 42,
-                                color: whiteColor,
-                              )
-                            : null,
-                      ),
+                    child: CircleAvatar(
+                      radius: 42,
+                      backgroundImage: widget.receiverProfilePic.isNotEmpty
+                          ? NetworkImage(widget.receiverProfilePic)
+                          : null,
+                      backgroundColor: Colors.grey.shade800,
                     ),
                   ),
                 ],
@@ -126,7 +199,7 @@ class ViewProfileUnknown extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        receiverDisplayName,
+                        widget.receiverDisplayName,
                         style: const TextStyle(
                           color: whiteColor,
                           fontSize: 22,
@@ -161,22 +234,39 @@ class ViewProfileUnknown extends ConsumerWidget {
                             child: SizedBox(
                               height: 42,
                               child: ElevatedButton.icon(
-                                onPressed: () {},
-                                icon: const Icon(
-                                  Icons.person_add_alt_1,
-                                  size: 20,
-                                  color: whiteColor,
-                                ),
-                                label: const Text(
-                                  'Add Friend',
-                                  style: TextStyle(
+                                onPressed: _addState == _AddState.idle
+                                    ? _sendFriendRequest
+                                    : null,
+                                icon: _addState == _AddState.loading
+                                    ? const SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: whiteColor,
+                                        ),
+                                      )
+                                    : Icon(
+                                        _addState == _AddState.sent
+                                            ? Icons.check_circle_outline
+                                            : Icons.person_add_alt_1,
+                                        size: 20,
+                                        color: whiteColor,
+                                      ),
+                                label: Text(
+                                  _addState == _AddState.sent
+                                      ? 'Request Sent'
+                                      : 'Add Friend',
+                                  style: const TextStyle(
                                     color: whiteColor,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 15,
                                   ),
                                 ),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: uiColor,
+                                  backgroundColor: _addState == _AddState.sent
+                                      ? Colors.grey[700]
+                                      : uiColor,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(20),
                                   ),
