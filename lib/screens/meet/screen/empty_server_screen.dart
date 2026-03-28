@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/screens/meet/screen/create_server_screen.dart';
 
 class EmptyServerScreen extends StatefulWidget {
   final List<Map<String, dynamic>> servers;
@@ -15,79 +16,14 @@ class EmptyServerScreen extends StatefulWidget {
 }
 
 class _EmptyServerScreenState extends State<EmptyServerScreen> {
-  void _createServer(BuildContext context) {
-    TextEditingController serverNameController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: backgroundColor,
-        title: const Text(
-          'Create Server',
-          style: TextStyle(color: whiteColor, fontWeight: FontWeight.bold),
-        ),
-        content: TextField(
-          controller: serverNameController,
-          style: const TextStyle(color: whiteColor),
-          decoration: InputDecoration(
-            hintText: 'Enter server name',
-            hintStyle: const TextStyle(color: Colors.grey),
-            enabledBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: Colors.grey),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: tabColor),
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-          ),
-          TextButton(
-            onPressed: () {
-              if (serverNameController.text.isNotEmpty) {
-                widget.servers.add({
-                  'name': serverNameController.text,
-                  'id': DateTime.now().millisecondsSinceEpoch.toString(),
-                  'channels': [
-                    {'name': 'general', 'type': 'text'},
-                    {'name': 'General', 'type': 'voice'},
-                  ],
-                });
-
-                Navigator.pop(context);
-                if (widget.onServerCreated != null) {
-                  widget.onServerCreated!();
-                }
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Server"${serverNameController.text}" created!',
-                    ),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Please enter server name'),
-                    duration: Duration(seconds: 1),
-                  ),
-                );
-              }
-            },
-            child: const Text(
-              'Create',
-              style: TextStyle(color: tabColor, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
+  void _createServer(BuildContext context) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CreateServerScreen()),
     );
+    if (widget.onServerCreated != null) {
+      widget.onServerCreated!();
+    }
   }
 
   void _joinServer(BuildContext context) {

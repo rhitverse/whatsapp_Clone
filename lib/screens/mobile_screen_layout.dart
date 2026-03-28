@@ -9,7 +9,7 @@ import 'package:whatsapp_clone/screens/diary/screen/diary_screen.dart';
 import 'package:whatsapp_clone/screens/friends/friends_newchat.dart';
 import 'package:whatsapp_clone/screens/friends/qr_scanner.dart';
 import 'package:whatsapp_clone/screens/friends/user_search.dart';
-import 'package:whatsapp_clone/screens/meet/server_screen.dart';
+import 'package:whatsapp_clone/screens/meet/screen/server_screen.dart';
 import 'package:whatsapp_clone/screens/setting_screen.dart';
 import 'package:whatsapp_clone/widgets/custom_bottom_nav_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
